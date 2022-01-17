@@ -1,0 +1,19 @@
+{
+  "roots": [
+    "<rootDir>/src"
+  ],
+  "transform": {
+    "^.+\\.ts$": "ts-jest"
+  },
+  "testRegex": "(test|spec)\\.[jt]sx?$",
+  "collectCoverageFrom": [
+    "src/**/*.ts"
+  ],
+  "globals": {
+    "ts-jest": {
+      "tsconfig": "tsconfig.dev.json",
+      "diagnostics": false
+    }
+  },
+  "verbose": true
+}

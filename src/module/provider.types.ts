@@ -18,3 +18,11 @@ export type ProviderDeclaration<P = unknown, DepToks extends ToksTuple = readonl
   inject?: DepToks;
   scope?: FactoryOptions['scope'];
 };
+
+/**
+ * Helper type to force the use of injectable method
+ */
+export type InjectableDeclaration<
+  P = unknown,
+  DepToks extends ToksTuple = readonly [Token<unknown>],
+> = ProviderDeclaration<P, DepToks> & { _brand: 'injectable' };

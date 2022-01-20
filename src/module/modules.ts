@@ -3,7 +3,7 @@ import { createBaseContainer } from '../base/container';
 import { CyclicDepError } from '../base/errors';
 import { createToken } from '../base/token';
 
-import type { ProviderDeclaration } from './provider.types';
+import type { InjectableDeclaration } from './provider.types';
 import type { TodoAny } from '../base/util.types';
 import type { Container } from '../base/container.types';
 import type { ToksTuple, Token } from '../base/token.types';
@@ -13,7 +13,7 @@ type Configuration = {
    * @todo
    */
   modules?: unknown[];
-  providers: ProviderDeclaration<TodoAny, ToksTuple>[];
+  providers: InjectableDeclaration<TodoAny, ToksTuple>[];
   parent?: Container;
 };
 
@@ -30,7 +30,7 @@ const logger = {
  * - 'transient' dependencies are never the same
  */
 export const CHILD_DI_FACTORY_TOKEN =
-  createToken<<T>(childProvider: ProviderDeclaration<T, ToksTuple>) => T>('inverter:child-di-factory');
+  createToken<<T>(childProvider: InjectableDeclaration<T, ToksTuple>) => T>('inverter:child-di-factory');
 
 export const declareContainer = ({ providers, parent }: Configuration) => {
   const container = createBaseContainer(parent);

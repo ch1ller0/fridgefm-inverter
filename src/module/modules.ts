@@ -1,5 +1,5 @@
 import debug from 'debug';
-import { createSoftContainer } from '../base/container';
+import { createBaseContainer } from '../base/container';
 import { CyclicDepError } from '../base/errors';
 import { createToken } from '../base/token';
 
@@ -33,7 +33,7 @@ export const CHILD_DI_FACTORY_TOKEN =
   createToken<<T>(childProvider: ProviderDeclaration<T, ToksTuple>) => T>('inverter:child-di-factory');
 
 export const declareContainer = ({ providers, parent }: Configuration) => {
-  const container = createSoftContainer(parent);
+  const container = createBaseContainer(parent);
   const resolvingTokens = new Set<Token<TodoAny>>(); // for cycle dep check
 
   container.bindValue(CHILD_DI_FACTORY_TOKEN, (childProvider) =>

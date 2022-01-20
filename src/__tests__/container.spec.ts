@@ -1,10 +1,10 @@
 import { createToken } from '../base/token';
-import { createSoftContainer } from '../base/container';
+import { createBaseContainer } from '../base/container';
 
-describe('createSoftContainer', () => {
+describe('createBaseContainer', () => {
   describe('values', () => {
     it('bind value', () => {
-      const container = createSoftContainer();
+      const container = createBaseContainer();
       const token = createToken('value1');
       container.bindValue(token, 1);
       container.bindValue(token, 2);
@@ -12,7 +12,7 @@ describe('createSoftContainer', () => {
     });
 
     it('optional value token', () => {
-      const container = createSoftContainer();
+      const container = createBaseContainer();
       const token = createToken('optionalV1', {
         optionalValue: 1,
       });
@@ -24,7 +24,7 @@ describe('createSoftContainer', () => {
 
   describe('factories', () => {
     it('bind factory', () => {
-      const container = createSoftContainer();
+      const container = createBaseContainer();
       const token = createToken('factory1');
       container.bindFactory(token, () => 1);
       container.bindFactory(token, () => 2);
@@ -32,7 +32,7 @@ describe('createSoftContainer', () => {
     });
 
     it('optional factory token', () => {
-      const container = createSoftContainer();
+      const container = createBaseContainer();
       const token = createToken('optionalF1', {
         optionalValue: 1,
       });
@@ -42,8 +42,8 @@ describe('createSoftContainer', () => {
     });
 
     it('scope - singleton', () => {
-      const parentContainer = createSoftContainer();
-      const container = createSoftContainer(parentContainer);
+      const parentContainer = createBaseContainer();
+      const container = createBaseContainer(parentContainer);
       const token = createToken('factory');
       let called = 0;
       parentContainer.bindFactory(
@@ -62,8 +62,8 @@ describe('createSoftContainer', () => {
     });
 
     it('scope - transient', () => {
-      const parentContainer = createSoftContainer();
-      const container = createSoftContainer(parentContainer);
+      const parentContainer = createBaseContainer();
+      const container = createBaseContainer(parentContainer);
       const token = createToken('factory');
       let called = 0;
       parentContainer.bindFactory(
@@ -84,8 +84,8 @@ describe('createSoftContainer', () => {
     });
 
     it('scope - scoped single', () => {
-      const parentContainer = createSoftContainer();
-      const container = createSoftContainer(parentContainer);
+      const parentContainer = createBaseContainer();
+      const container = createBaseContainer(parentContainer);
       const token = createToken('factory');
       let called = 0;
       const fn = () => {
@@ -102,9 +102,9 @@ describe('createSoftContainer', () => {
     });
 
     it('scope - scoped multiple', () => {
-      const parentContainer = createSoftContainer();
-      const container1 = createSoftContainer(parentContainer);
-      const container2 = createSoftContainer(parentContainer);
+      const parentContainer = createBaseContainer();
+      const container1 = createBaseContainer(parentContainer);
+      const container2 = createBaseContainer(parentContainer);
       const token = createToken('factory');
       parentContainer.bindFactory(token, () => 0);
       container1.bindFactory(token, () => 1, { scope: 'scoped' });

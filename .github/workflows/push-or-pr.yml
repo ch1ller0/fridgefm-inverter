@@ -56,6 +56,8 @@ jobs:
       run: yarn test:unit
     - name: ESLint
       run: yarn test:lint
+    - name: Build package
+      run: yarn build
     - name: Publish
       uses: mikeal/merge-release@v4.0.7
       env:

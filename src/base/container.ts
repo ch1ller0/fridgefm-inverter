@@ -7,7 +7,10 @@ import type { Token } from './token.types';
 import type { FactoryOptions } from '../module/provider.types';
 import type { TodoAny } from './util.types';
 
-export const createSoftContainer = (parentContainer?: Container): Container => {
+/**
+ * Creates a base container where each token and provider have to be manually binded to each other
+ */
+export const createBaseContainer = (parentContainer?: Container): Container => {
   const values: ValuesMap = new Map<symbol, TodoAny>();
   const factories: FactoriesMap = new Map<symbol, FactoryContext<TodoAny>>();
 

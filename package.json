@@ -12,7 +12,8 @@
     "example:server-app": "tsnd src/examples/server-app/",
     "watch": "tsc -w",
     "test:lint": "eslint --ext .js,.ts ./src",
-    "test:unit": "jest"
+    "test:unit": "jest",
+    "test:unit:cov": "jest --collectCoverage=true"
   },
   "engines": {
     "node": ">=14.0"

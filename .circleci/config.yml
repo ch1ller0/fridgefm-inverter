@@ -1,0 +1,123 @@
+version: 2.1
+
+orbs:
+  codecov: codecov/codecov@1.0.5
+
+defaults: &defaults
+  working_directory: ~/repo
+  docker:
+    - image: cimg/node:16.10
+
+whitelist: &whitelist
+  paths:
+    - lib/*
+    - node_modules/*
+    - src/*
+    - .eslintrc.json
+    - .npmignore
+    - jest.config.json
+    - LICENSE
+    - package.json
+    - README.md
+    - tsconfig.*
+
+jobs:
+  checkout:
+    <<: *defaults
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "yarn.lock" }}
+      - run:
+          name: Installing dependencies
+          command: yarn install
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1-dependencies-{{ checksum "yarn.lock" }}
+      - persist_to_workspace:
+          root: ~/repo
+          <<: *whitelist
+  lint:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/repo
+      - run:
+          name: Running linter
+          command: yarn test:lint
+  test:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/repo
+      - run:
+          name: Running unit tests and collecting coverage
+          command: yarn test:unit:cov
+      - persist_to_workspace:
+          root: ~/repo
+          <<: *whitelist
+      - store_artifacts:
+          path: coverage
+      - codecov/upload:
+          file: coverage/*
+  build:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/repo
+      - run:
+          name: Building code
+          command: yarn build
+      - persist_to_workspace:
+          root: ~/repo
+          <<: *whitelist
+  publish:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/repo
+      - run:
+          name: Authenticating via registry
+          command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/repo/.npmrc
+      - run:
+          name: Publishing package
+          command: yarn publish --access=public
+
+workflows:
+  version: 2
+  pr-branch:
+    jobs:
+      - checkout
+      - test:
+          requires:
+            - checkout
+      - lint:
+          requires:
+            - checkout
+      - build:
+          requires:
+            - lint
+            - test
+  tag-release:
+    jobs:
+      - checkout:
+          <<: *tag-filter
+      - test:
+          <<: *tag-filter
+          requires:
+            - checkout
+      - lint:
+          <<: *tag-filter
+          requires:
+            - checkout
+      - build:
+          <<: *tag-filter
+          requires:
+            - test
+            - lint
+      - publish:
+          <<: *tag-filter
+          requires:
+            - build

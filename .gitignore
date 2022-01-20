@@ -1,7 +1,8 @@
 node_modules
-build
+lib
 .idea/*
 .vscode
+coverage
 
 *.log
 *.tsbuildinfo

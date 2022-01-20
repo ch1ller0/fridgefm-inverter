@@ -1,0 +1,63 @@
+on:
+  push:
+    branches:
+    - main
+  pull_request:
+    branches:
+    - main
+
+name: Build, Test and maybe Publish
+
+jobs:
+  test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [16.x]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: Cache node_modules
+      id: cache-modules
+      uses: actions/cache@v2
+      with:
+        path: node_modules
+        key: ${{ matrix.node-version }}-${{ runner.OS }}-build-${{ hashFiles('yarn.lock') }}
+    - name: Install deps
+      if: steps.cache-modules.outputs.cache-hit != 'true'
+      run: yarn install
+    - name: Unit test
+      run: yarn test:unit
+    - name: ESLint
+      run: yarn test:lint
+    - name: Build package
+      run: yarn build
+  publish:
+    name: Publish
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+    - uses: actions/checkout@v2
+    - name: Cache node_modules
+      id: cache-modules
+      uses: actions/cache@v2
+      with:
+        path: node_modules
+        key: 16.x-${{ runner.OS }}-build-${{ hashFiles('yarn.lock') }} # get cache from the latest node version
+    - name: Install deps
+      if: steps.cache-modules.outputs.cache-hit != 'true'
+      run: yarn install
+    - name: Unit test
+      run: yarn test:unit
+    - name: ESLint
+      run: yarn test:lint
+    - name: Publish
+      uses: mikeal/merge-release@v4.0.7
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}

@@ -41,6 +41,16 @@ describe('createBaseContainer', () => {
       expect(container.get(token)).toEqual(2);
     });
 
+    it('values and factories shadow each other', () => {
+      const container = createBaseContainer();
+      const token = createToken('value1');
+      container.bindValue(token, 1);
+      container.bindFactory(token, () => 2);
+      expect(container.get(token)).toEqual(2);
+      container.bindValue(token, 3);
+      expect(container.get(token)).toEqual(3);
+    });
+
     it('scope - singleton', () => {
       const parentContainer = createBaseContainer();
       const container = createBaseContainer(parentContainer);

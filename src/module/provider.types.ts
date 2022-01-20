@@ -11,7 +11,7 @@ export type FactoryOptions = {
   scope?: 'singleton' | 'scoped' | 'transient';
 };
 
-export type ProviderDeclaration<P = unknown, DepToks extends ToksTuple = [Token<unknown>]> = {
+export type ProviderDeclaration<P = unknown, DepToks extends ToksTuple = readonly [Token<unknown>]> = {
   provide: Token<P>;
   useFactory?: (...deps: TokensProvide<DepToks>) => P;
   useValue?: P;

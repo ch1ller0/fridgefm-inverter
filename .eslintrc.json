@@ -7,6 +7,13 @@
   "parserOptions": {
     "project": "./tsconfig.dev.json"
   },
+  "overrides": [{
+    "files": ["**/*.spec.ts", "src/examples/**/*"],
+    "rules": {
+      "@typescript-eslint/no-explicit-any": 0,
+      "no-console": 0
+    }
+  }],
   "rules": {
     "class-methods-use-this": 0,
     "default-case": 0,

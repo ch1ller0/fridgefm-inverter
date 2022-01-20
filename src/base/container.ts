@@ -20,11 +20,19 @@ export const createBaseContainer = (parentContainer?: Container): Container => {
         return;
       }
 
+      if (factories.has(token.symbol)) {
+        factories.delete(token.symbol);
+      }
+
       values.set(token.symbol, value);
     },
     bindFactory<T>(token: Token<T>, factory: (container: Container) => T, options?: FactoryOptions): void {
       if (isInternalToken(token)) {
         return;
+      }
+
+      if (values.has(token.symbol)) {
+        values.delete(token.symbol);
       }
 
       factories.set(token.symbol, { factory, options });

@@ -10,7 +10,7 @@ name: Build, Test and maybe Publish
 
 jobs:
   test:
-    name: Build & Test
+    name: Test
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -34,8 +34,8 @@ jobs:
       run: yarn test:unit
     - name: ESLint
       run: yarn test:lint
-    - name: Build package
-      run: yarn build
+    - name: Types test
+      run: yarn test:types
   publish:
     name: Publish
     needs: test
@@ -52,10 +52,6 @@ jobs:
     - name: Install deps
       if: steps.cache-modules.outputs.cache-hit != 'true'
       run: yarn install
-    - name: Unit test
-      run: yarn test:unit
-    - name: ESLint
-      run: yarn test:lint
     - name: Build package
       run: yarn build
     - name: Publish

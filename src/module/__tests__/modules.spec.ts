@@ -80,7 +80,7 @@ describe('modules', () => {
       const values2 = container.get(ROOT_TOKEN)();
       // this time v2 is the same for both but v1 is different
       expect(values1).toEqual([100, 250, 250]);
-      expect(values2).toEqual([300, 250, 250]);
+      expect(values2).toEqual([200, 250, 250]);
     });
 
     it('scoped/scoped', () => {

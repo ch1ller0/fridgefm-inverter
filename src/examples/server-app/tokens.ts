@@ -8,6 +8,7 @@ export const STORE_TOKEN = createToken<{
   getAll: () => Record<string, number>;
 }>('store');
 export const CONTROLLER_TOKEN = createToken<() => Promise<{ id: string; count: number }>>('handler');
+export const LOGGER_TOKEN = createToken<{ log: (...messages: any[]) => void }>('logger');
 
 // client providers
 export const CLIENT_TOKEN = createToken<{ id: string }>('client');

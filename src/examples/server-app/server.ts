@@ -2,7 +2,7 @@
 import fastify from 'fastify';
 import { injectable, CHILD_DI_FACTORY_TOKEN } from '../../index';
 import { clientProvider } from './client';
-import { ROOT_TOKEN, CONTROLLER_TOKEN, STORE_TOKEN } from './tokens';
+import { ROOT_TOKEN, CONTROLLER_TOKEN, STORE_TOKEN, LOGGER_TOKEN } from './tokens';
 
 export const serverModule = [
   injectable({
@@ -27,15 +27,18 @@ export const serverModule = [
   injectable({
     provide: CONTROLLER_TOKEN,
     scope: 'singleton',
-    inject: [CHILD_DI_FACTORY_TOKEN, STORE_TOKEN] as const,
-    useFactory: (childDiFactory, store) => {
+    inject: [CHILD_DI_FACTORY_TOKEN, LOGGER_TOKEN, STORE_TOKEN] as const,
+    useFactory: (childDiFactory, logger, store) => {
       return () => {
-        // eslint-disable-next-line no-console
-        console.log('server-store', store.getAll());
+        logger.log('server-store', store.getAll());
         const userInfo = childDiFactory(clientProvider);
         return Promise.resolve(userInfo);
       };
     },
+  }),
+  injectable({
+    provide: LOGGER_TOKEN,
+    useValue: { log: console.log },
   }),
   injectable({
     provide: STORE_TOKEN,

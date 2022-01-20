@@ -1,6 +1,6 @@
 import { injectable } from '../../index';
 import { randomString } from '../utils';
-import { CLIENT_TOKEN, STORE_TOKEN, GET_ID_TOKEN, ID_LENGTH_TOKEN, CLIENT_LOGGER_TOKEN } from './tokens';
+import { CLIENT_TOKEN, STORE_TOKEN, GET_ID_TOKEN, ID_LENGTH_TOKEN, CLIENT_LOGGER_TOKEN, LOGGER_TOKEN } from './tokens';
 
 // this provider is exported separately because it is used within the child di on a server
 export const clientProvider = injectable({
@@ -18,11 +18,11 @@ export const clientModule = [
   injectable({
     provide: CLIENT_LOGGER_TOKEN,
     scope: 'scoped', // it recreates on each request
-    useFactory: (userId) => (message) => {
+    useFactory: (logger, userId) => (message) => {
       // eslint-disable-next-line no-console
-      console.log({ userId, message });
+      logger.log({ userId, message });
     },
-    inject: [GET_ID_TOKEN] as const,
+    inject: [LOGGER_TOKEN, GET_ID_TOKEN] as const,
   }),
   injectable({
     provide: GET_ID_TOKEN,

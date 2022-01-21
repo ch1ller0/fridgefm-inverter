@@ -39,6 +39,26 @@ const extractDeclaration = <T>(
   };
 };
 
+const traverseProvidersFactory = (providers: InjectableDeclaration<TodoAny, ToksTuple>[]) => {
+  const traverseProviders = (provider: InjectableDeclaration<TodoAny, ToksTuple>, stack: Token<TodoAny>[]) => {
+    provider.inject?.forEach((dec) => {
+      const { token, optional } = extractDeclaration(dec);
+      const provided = providers.find((x) => x.provide === token);
+      stack.push(token);
+
+      if (typeof provided === 'undefined') {
+        if (optional) {
+          return;
+        }
+        throw new ResolverError(stack);
+      }
+
+      traverseProviders(provided, stack);
+    });
+  };
+
+  return traverseProviders;
+};
 /**
  * Token for creating scoped providers, each dependency for this provider with different scope will behave different:
  * - 'singleton' dependencies are singleton for parent container scope
@@ -46,18 +66,19 @@ const extractDeclaration = <T>(
  * - 'transient' dependencies are never the same
  */
 export const CHILD_DI_FACTORY_TOKEN =
-  createToken<<T>(childProvider: InjectableDeclaration<T, ToksTuple>) => T>('inverter:child-di-factory');
+  createToken<<T>(childProvider: InjectableDeclaration<T, ToksTuple>) => () => T>('inverter:child-di-factory');
 
 export const declareContainer = ({ providers, parent }: Configuration) => {
   const container = createBaseContainer(parent);
   const resolvingTokens = new Set<Token<TodoAny>>(); // for cycle dep check
+  const traverseProviders = traverseProvidersFactory(providers);
 
-  container.bindValue(CHILD_DI_FACTORY_TOKEN, (childProvider) =>
-    declareContainer({
-      parent: container,
-      providers: [childProvider],
-    }).get(childProvider.provide),
-  );
+  container.bindValue(CHILD_DI_FACTORY_TOKEN, (childProvider) => {
+    // before we can use child di first should check that everything is correctly provided
+    // yes, this is a pretty costly operation but we better do it once at start rather than get runtime errors
+    traverseProviders(childProvider, [childProvider.provide]);
+    return () => declareContainer({ parent: container, providers: [childProvider] }).get(childProvider.provide);
+  });
 
   providers.forEach((injectableDep) => {
     const { inject, provide, useFactory, useValue, scope } = injectableDep;
@@ -67,27 +88,30 @@ export const declareContainer = ({ providers, parent }: Configuration) => {
         provide,
         (ctx) => {
           inject?.forEach((tokenDeclaration) => {
-            const { token } = extractDeclaration(tokenDeclaration);
-            if (resolvingTokens.has(token)) {
+            // check if there is a cycle
+            if (resolvingTokens.has(extractDeclaration(tokenDeclaration).token)) {
               throw new CyclicDepError([...Array.from(resolvingTokens).reverse(), provide]);
             }
           });
           const resolvedDeps = inject?.map((tokenDeclaration) => {
             const { token, optional } = extractDeclaration(tokenDeclaration);
 
+            // mark current reesolving dep
             resolvingTokens.add(token);
             const resolvedValue = ctx.resolve(token);
 
-            if (resolvedValue === NOT_FOUND_SYMBOL && !optional) {
-              throw new ResolverError([...Array.from(resolvingTokens)]);
+            if (resolvedValue === NOT_FOUND_SYMBOL) {
+              if (optional) {
+                return undefined;
+              }
+              traverseProviders(injectableDep, [injectableDep.provide]);
             }
 
             return resolvedValue;
           });
+          // unmark injected deps
           inject?.forEach((tokenDeclaration) => {
-            const { token } = extractDeclaration(tokenDeclaration);
-
-            resolvingTokens.delete(token);
+            resolvingTokens.delete(extractDeclaration(tokenDeclaration).token);
           });
           logger.resolvedToken(provide);
 

@@ -1,10 +1,17 @@
 import { injectable } from '../../index';
 import { randomString } from '../utils';
-import { CLIENT_TOKEN, STORE_TOKEN, GET_ID_TOKEN, ID_LENGTH_TOKEN, CLIENT_LOGGER_TOKEN, LOGGER_TOKEN } from './tokens';
+import {
+  CLIENT_ROOT_TOKEN,
+  STORE_TOKEN,
+  GET_ID_TOKEN,
+  ID_LENGTH_TOKEN,
+  CLIENT_LOGGER_TOKEN,
+  LOGGER_TOKEN,
+} from './tokens';
 
 // this provider is exported separately because it is used within the child di on a server
-export const clientProvider = injectable({
-  provide: CLIENT_TOKEN,
+export const clientRootProvider = injectable({
+  provide: CLIENT_ROOT_TOKEN,
   useFactory: (store, id, logger) => {
     store.increaseFor(id, 1);
     logger('increased');
@@ -20,9 +27,9 @@ export const clientModule = [
     scope: 'scoped', // it recreates on each request
     useFactory: (logger, userId) => (message) => {
       // eslint-disable-next-line no-console
-      logger.log({ userId, message });
+      logger?.log({ userId, message });
     },
-    inject: [LOGGER_TOKEN, GET_ID_TOKEN] as const,
+    inject: [{ token: LOGGER_TOKEN, optional: true }, GET_ID_TOKEN] as const,
   }),
   injectable({
     provide: GET_ID_TOKEN,

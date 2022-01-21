@@ -1,6 +1,6 @@
 import { createToken } from '../base/token';
 import { injectable } from '../module/provider';
-import { declareContainer } from '../module/modules';
+import { declareContainer, CHILD_DI_FACTORY_TOKEN } from '../module/modules';
 
 describe('declareContainer', () => {
   it('simple chain', () => {
@@ -96,6 +96,60 @@ describe('declareContainer', () => {
       // @TODO does not take root into account, should fix this
       expect(e.message).toEqual('Token "3" is not provided, stack: 2 -> 3');
       expect(e.depStack).toEqual([f2token, f3token]);
+    }
+  });
+
+  it('token is optional', () => {
+    const rootToken = createToken<number>('root');
+    const optToken = createToken<number>('opt');
+
+    const rootDep = injectable({
+      provide: rootToken,
+      inject: [{ token: optToken, optional: true }] as const,
+      useFactory: (opt) => (opt || 100) + 1,
+    });
+
+    const value = declareContainer({ providers: [rootDep] }).get(rootToken);
+    expect(value).toEqual(101);
+  });
+
+  it('token not provided for child container', () => {
+    expect.assertions(2);
+    const rootToken = createToken<number>('root');
+    const parentDepToken = createToken<number>('parent:dep');
+    const childToken = createToken<number>('child');
+    const childInnerToken = createToken<number>('child:inner');
+
+    const childDep = injectable({
+      provide: childToken,
+      inject: [childInnerToken] as const,
+      useFactory: (childInnerDep) => childInnerDep + 1,
+    });
+
+    const childInner = injectable({
+      provide: childInnerToken,
+      inject: [parentDepToken] as const,
+      useFactory: (parentDep) => parentDep + 1,
+    });
+
+    const rootDep = injectable({
+      provide: rootToken,
+      inject: [CHILD_DI_FACTORY_TOKEN] as const,
+      useFactory: (childDiFactory) => {
+        const childScope = childDiFactory(childDep);
+        return childScope();
+      },
+    });
+
+    // register only root provider and scoped provider (it is used inside of a childDep)
+    const container = declareContainer({ providers: [rootDep, childInner] });
+
+    try {
+      container.get(rootToken);
+    } catch (e) {
+      // @TODO does not take root into account, should fix this
+      expect(e.message).toEqual('Token "parent:dep" is not provided, stack: child -> child:inner -> parent:dep');
+      expect(e.depStack).toEqual([childToken, childInnerToken, parentDepToken]);
     }
   });
 });

@@ -39,26 +39,6 @@ const extractDeclaration = <T>(
   };
 };
 
-const traverseProvidersFactory = (providers: InjectableDeclaration<TodoAny, ToksTuple>[]) => {
-  const traverseProviders = (provider: InjectableDeclaration<TodoAny, ToksTuple>, stack: Token<TodoAny>[]) => {
-    provider.inject?.forEach((dec) => {
-      const { token, optional } = extractDeclaration(dec);
-      const provided = providers.find((x) => x.provide === token);
-      stack.push(token);
-
-      if (typeof provided === 'undefined') {
-        if (optional) {
-          return;
-        }
-        throw new ResolverError(stack);
-      }
-
-      traverseProviders(provided, stack);
-    });
-  };
-
-  return traverseProviders;
-};
 /**
  * Token for creating scoped providers, each dependency for this provider with different scope will behave different:
  * - 'singleton' dependencies are singleton for parent container scope
@@ -71,7 +51,22 @@ export const CHILD_DI_FACTORY_TOKEN =
 export const declareContainer = ({ providers, parent }: Configuration) => {
   const container = createBaseContainer(parent);
   const resolvingTokens = new Set<Token<TodoAny>>(); // for cycle dep check
-  const traverseProviders = traverseProvidersFactory(providers);
+  const traverseProviders = (provider: InjectableDeclaration<TodoAny, ToksTuple>, stack: Token<TodoAny>[]) => {
+    provider.inject?.forEach((dec) => {
+      const { token, optional } = extractDeclaration(dec);
+      const provided = providers.find((x) => x.provide === token);
+      stack.push(token);
+
+      if (typeof provided === 'undefined') {
+        if (optional || typeof token.optionalValue !== 'undefined') {
+          return;
+        }
+        throw new ResolverError(stack);
+      }
+
+      traverseProviders(provided, stack);
+    });
+  };
 
   // @ts-ignore
   container.bindValue(CHILD_DI_FACTORY_TOKEN, (childProvider) => {

@@ -66,18 +66,23 @@ const traverseProvidersFactory = (providers: InjectableDeclaration<TodoAny, Toks
  * - 'transient' dependencies are never the same
  */
 export const CHILD_DI_FACTORY_TOKEN =
-  createToken<<T>(childProvider: InjectableDeclaration<T, ToksTuple>) => () => T>('inverter:child-di-factory');
+  createToken<<A>(childProvider: InjectableDeclaration<A, ToksTuple>) => () => A>('inverter:child-di-factory');
 
 export const declareContainer = ({ providers, parent }: Configuration) => {
   const container = createBaseContainer(parent);
   const resolvingTokens = new Set<Token<TodoAny>>(); // for cycle dep check
   const traverseProviders = traverseProvidersFactory(providers);
 
+  // @ts-ignore
   container.bindValue(CHILD_DI_FACTORY_TOKEN, (childProvider) => {
-    // before we can use child di first should check that everything is correctly provided
+    // before we can start creating child di first should check that everything is correctly provided
     // yes, this is a pretty costly operation but we better do it once at start rather than get runtime errors
     traverseProviders(childProvider, [childProvider.provide]);
-    return () => declareContainer({ parent: container, providers: [childProvider] }).get(childProvider.provide);
+    return () =>
+      declareContainer({
+        parent: container,
+        providers: [childProvider],
+      }).get(childProvider.provide);
   });
 
   providers.forEach((injectableDep) => {

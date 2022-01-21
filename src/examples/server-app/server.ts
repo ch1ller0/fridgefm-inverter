@@ -33,8 +33,9 @@ export const serverModule = [
       const clientRoot = childDiFactory(clientRootProvider);
 
       return () => {
+        const userInfo = clientRoot();
         logger?.log('server-store', store.getAll());
-        return Promise.resolve(clientRoot());
+        return Promise.resolve(userInfo);
       };
     },
   }),

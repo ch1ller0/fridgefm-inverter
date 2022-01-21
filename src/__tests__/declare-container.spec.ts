@@ -71,4 +71,31 @@ describe('declareContainer', () => {
       expect(e.depStack).toEqual([f3token, f2token, f1token, f3token]);
     }
   });
+
+  it('token not provided', () => {
+    expect.assertions(2);
+    const f1token = createToken<{ a: number }>('1');
+    const f2token = createToken<{ a: number }>('2');
+    const f3token = createToken<{ a: number }>('3');
+
+    const f1prov = injectable({
+      provide: f1token,
+      inject: [f2token] as const,
+      useFactory: (value) => ({ a: value.a }),
+    });
+    const f2prov = injectable({
+      provide: f2token,
+      inject: [f3token] as const,
+      useFactory: (value) => ({ a: value.a }),
+    });
+    const container = declareContainer({ providers: [f1prov, f2prov] });
+
+    try {
+      container.get(f1token);
+    } catch (e) {
+      // @TODO does not take root into account, should fix this
+      expect(e.message).toEqual('Token "3" is not provided, stack: 2 -> 3');
+      expect(e.depStack).toEqual([f2token, f3token]);
+    }
+  });
 });

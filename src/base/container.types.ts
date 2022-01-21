@@ -24,9 +24,9 @@ export type Container = {
    */
   get<T>(token: Token<T>): T | undefined;
   /**
-   * Returns a resolved value by the token, or throws `ResolverError` in case the token is not found.
+   * Returns a resolved value by the token, or return NOT_FOUND_SYMBOL in case the token is not found.
    */
-  resolve<T>(token: Token<T>): T;
+  resolve<T>(token: Token<T>): T | typeof NOT_FOUND_SYMBOL;
 };
 
 /** @internal */

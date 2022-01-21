@@ -1,12 +1,13 @@
 import debug from 'debug';
 import { createBaseContainer } from '../base/container';
-import { CyclicDepError } from '../base/errors';
+import { CyclicDepError, ResolverError } from '../base/errors';
 import { createToken } from '../base/token';
+import { NOT_FOUND_SYMBOL } from '../base/internals';
 
 import type { InjectableDeclaration } from './provider.types';
 import type { TodoAny } from '../base/util.types';
 import type { Container } from '../base/container.types';
-import type { ToksTuple, Token } from '../base/token.types';
+import type { ToksTuple, Token, TokenDeclaration } from '../base/token.types';
 
 type Configuration = {
   /**
@@ -21,6 +22,21 @@ const logger = {
   resolvedToken: (token: Token<TodoAny>) => {
     debug('fridgefm-inverter')('Resolved token', token.symbol.description);
   },
+};
+
+const extractDeclaration = <T>(
+  tokenDeclaration: TokenDeclaration<T>,
+): {
+  token: Token<T>;
+  optional: boolean;
+} => {
+  if ('token' in tokenDeclaration) {
+    return tokenDeclaration;
+  }
+  return {
+    token: tokenDeclaration,
+    optional: false,
+  };
 };
 
 /**
@@ -50,27 +66,32 @@ export const declareContainer = ({ providers, parent }: Configuration) => {
       container.bindFactory(
         provide,
         (ctx) => {
-          if (!!inject) {
-            inject.forEach((tok) => {
-              if (resolvingTokens.has(tok)) {
-                const depStack = Array.from(resolvingTokens);
-                throw new CyclicDepError([...depStack.reverse(), provide]);
-              }
-            });
-            const resolvedDeps = inject?.map((x) => {
-              resolvingTokens.add(x);
-              return ctx.resolve(x);
-            });
-            inject.forEach((tok) => {
-              resolvingTokens.delete(tok);
-            });
-            logger.resolvedToken(provide);
+          inject?.forEach((tokenDeclaration) => {
+            const { token } = extractDeclaration(tokenDeclaration);
+            if (resolvingTokens.has(token)) {
+              throw new CyclicDepError([...Array.from(resolvingTokens).reverse(), provide]);
+            }
+          });
+          const resolvedDeps = inject?.map((tokenDeclaration) => {
+            const { token, optional } = extractDeclaration(tokenDeclaration);
 
-            return useFactory(...resolvedDeps);
-          }
+            resolvingTokens.add(token);
+            const resolvedValue = ctx.resolve(token);
+
+            if (resolvedValue === NOT_FOUND_SYMBOL && !optional) {
+              throw new ResolverError([...Array.from(resolvingTokens)]);
+            }
+
+            return resolvedValue;
+          });
+          inject?.forEach((tokenDeclaration) => {
+            const { token } = extractDeclaration(tokenDeclaration);
+
+            resolvingTokens.delete(token);
+          });
           logger.resolvedToken(provide);
 
-          return useFactory([]);
+          return useFactory(...(resolvedDeps || []));
         },
         { scope },
       );

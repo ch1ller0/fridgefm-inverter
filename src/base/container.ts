@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
-import { ResolverError } from './errors';
 import { isInternalToken, INTERNAL_TOKENS, NOT_FOUND_SYMBOL, DEFAULT_SCOPE } from './internals';
 
 import type { Container, ValuesMap, FactoriesMap, FactoryContext } from './container.types';
@@ -52,7 +51,7 @@ export const createBaseContainer = (parentContainer?: Container): Container => {
 
       return undefined;
     },
-    resolve<T>(token: Token<T>): T {
+    resolve<T>(token: Token<T>): T | typeof NOT_FOUND_SYMBOL {
       const value = resolver(token, container);
       if (value !== NOT_FOUND_SYMBOL) {
         return value;
@@ -62,7 +61,7 @@ export const createBaseContainer = (parentContainer?: Container): Container => {
         return token.optionalValue;
       }
 
-      throw new ResolverError(`Token "${token.symbol.description ?? ''}" is not provided`);
+      return NOT_FOUND_SYMBOL;
     },
   };
 

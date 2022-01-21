@@ -1,7 +1,7 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import fastify from 'fastify';
 import { injectable, CHILD_DI_FACTORY_TOKEN } from '../../index';
-import { clientProvider } from './client';
+import { clientRootProvider } from './client';
 import { ROOT_TOKEN, CONTROLLER_TOKEN, STORE_TOKEN, LOGGER_TOKEN } from './tokens';
 
 export const serverModule = [
@@ -27,11 +27,14 @@ export const serverModule = [
   injectable({
     provide: CONTROLLER_TOKEN,
     scope: 'singleton',
-    inject: [CHILD_DI_FACTORY_TOKEN, LOGGER_TOKEN, STORE_TOKEN] as const,
+    inject: [CHILD_DI_FACTORY_TOKEN, { token: LOGGER_TOKEN, optional: true }, STORE_TOKEN] as const,
     useFactory: (childDiFactory, logger, store) => {
+      // it is important to call a factory before return
+      const clientRoot = childDiFactory(clientRootProvider);
+
       return () => {
-        logger.log('server-store', store.getAll());
-        const userInfo = childDiFactory(clientProvider);
+        const userInfo = clientRoot();
+        logger?.log('server-store', store.getAll());
         return Promise.resolve(userInfo);
       };
     },

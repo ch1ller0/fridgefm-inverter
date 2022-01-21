@@ -11,7 +11,7 @@ export const CONTROLLER_TOKEN = createToken<() => Promise<{ id: string; count: n
 export const LOGGER_TOKEN = createToken<{ log: (...messages: any[]) => void }>('logger');
 
 // client providers
-export const CLIENT_TOKEN = createToken<{ id: string }>('client');
+export const CLIENT_ROOT_TOKEN = createToken<{ id: string }>('client-root');
+export const CLIENT_LOGGER_TOKEN = createToken<(message: string) => void>('client-logger-token');
 export const GET_ID_TOKEN = createToken<string>('get-id');
 export const ID_LENGTH_TOKEN = createToken<number>('id-length');
-export const CLIENT_LOGGER_TOKEN = createToken<(message: string) => void>('client-logger-token');

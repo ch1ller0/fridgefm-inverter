@@ -7,19 +7,22 @@ const ROOT_TOKEN = createToken<() => [number, number, number]>('root');
 
 describe('modules', () => {
   describe('child-di-factory', () => {
-    const CHILD_TOKEN = createToken<() => [number, number, number]>('child-token');
+    const CHILD_TOKEN = createToken<[number, number, number]>('child-token');
     const V_1_TOKEN = createToken<number>('v-1');
     const V_2_TOKEN = createToken<number>('v-2');
     const createProviders = ([v1scope, v2scope]: [FactoryOptions['scope'], FactoryOptions['scope']]) => {
       const childProvider = injectable({
         provide: CHILD_TOKEN,
         inject: [V_1_TOKEN, V_2_TOKEN, V_2_TOKEN],
-        useFactory: (v1, v2, v2next) => () => [v1, v2, v2next],
+        useFactory: (v1, v2, v2next) => [v1, v2, v2next],
       });
 
       const rootProvider = injectable({
         provide: ROOT_TOKEN,
-        useFactory: (childDiFactory) => () => childDiFactory(childProvider)(),
+        useFactory: (childDiFactory) => {
+          const childDi = childDiFactory(childProvider);
+          return childDi;
+        },
         inject: [CHILD_DI_FACTORY_TOKEN] as const,
       });
 
@@ -126,6 +129,27 @@ describe('modules', () => {
       // this time v2 gets called 4 times
       expect(values1).toEqual([100, 250, 350]);
       expect(values2).toEqual([400, 550, 650]);
+    });
+
+    it('checks if dependencies are all resolved', () => {
+      const NEVER_TOKEN = createToken<number>('nothing');
+
+      const dep1provider = injectable({
+        provide: V_1_TOKEN,
+        useFactory: (nothing) => nothing,
+        scope: 'scoped',
+        inject: [NEVER_TOKEN],
+      });
+
+      const container = declareContainer({
+        providers: [...createProviders(['scoped', 'scoped']), dep1provider],
+      });
+      try {
+        container.get(ROOT_TOKEN)();
+      } catch (e) {
+        expect(e.message).toEqual('Token "nothing" is not provided, stack: v-1 -> nothing');
+        expect(e.depStack).toEqual([V_1_TOKEN, NEVER_TOKEN]);
+      }
     });
   });
 });

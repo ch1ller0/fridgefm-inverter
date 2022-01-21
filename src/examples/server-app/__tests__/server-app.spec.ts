@@ -30,17 +30,16 @@ describe('integration:server-app', () => {
     expect(requestReturns[0].id.length).toEqual(8);
     expect(requestReturns[0].count).toEqual(1);
 
-    // cheeck that we have logger all incoming requests
+    // cheeck that we have logged all incoming requests
     expect(log.mock.calls.length).toEqual(6);
-    expect(log.mock.calls[1][0]).toEqual({ userId: requestReturns[0].id, message: 'increased' });
-    expect(log.mock.calls[3][0]).toEqual({ userId: requestReturns[1].id, message: 'increased' });
-    expect(log.mock.calls[5][0]).toEqual({ userId: requestReturns[2].id, message: 'increased' });
+    expect(log.mock.calls[0][0]).toEqual({ userId: requestReturns[0].id, message: 'increased' });
+    expect(log.mock.calls[2][0]).toEqual({ userId: requestReturns[1].id, message: 'increased' });
+    expect(log.mock.calls[4][0]).toEqual({ userId: requestReturns[2].id, message: 'increased' });
 
-    // initially store is empty
-    expect(log.mock.calls[0]).toEqual(['server-store', {}]);
+    expect(log.mock.calls[1]).not.toEqual(['server-store', {}]);
     // the store has filled with values
-    expect(log.mock.calls[2]).not.toEqual(['server-store', {}]);
-    expect(Object.values(log.mock.calls[2][1])).toEqual([1]);
-    expect(Object.values(log.mock.calls[4][1])).toEqual([1, 1]);
+    expect(Object.values(log.mock.calls[1][1])).toEqual([1]);
+    expect(Object.values(log.mock.calls[3][1])).toEqual([1, 1]);
+    expect(Object.values(log.mock.calls[5][1])).toEqual([1, 1, 1]);
   });
 });

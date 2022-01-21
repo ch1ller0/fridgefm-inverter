@@ -11,12 +11,7 @@ export type TokenOptions<T> = {
   optionalValue?: T;
 };
 
-export type Token<T> = {
-  symbol: symbol;
-  type?: T; // Anchor for Typescript type inference.
-  optionalValue?: T;
-};
-
+export type Token<T> = { symbol: symbol } & TokenOptions<T>;
 export type TokenDeclarationOpt<T> = { token: Token<T>; optional: true };
 export type TokenDeclaration<T> = Token<T> | TokenDeclarationOpt<T>;
 export type ToksTuple = readonly [...ReadonlyArray<TokenDeclaration<TodoAny>>];
@@ -28,4 +23,3 @@ export type TokenProvide<T> = T extends Token<infer A>
 export type TokensProvide<DepToks extends ToksTuple> = {
   +readonly [Index in keyof DepToks]: TokenProvide<DepToks[Index]>;
 };
-// export type TokenProvide<T extends Token<unknown>> = T['type'];

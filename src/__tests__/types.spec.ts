@@ -25,6 +25,7 @@ const runTypeTest = async (testFile: string): Promise<TestTypeRes> => {
   const diagnostics = await tsd({
     cwd: process.cwd(),
     testFiles: [testFile],
+    typingsFile: testFile, // fake
   });
 
   return diagnostics

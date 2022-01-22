@@ -1,11 +1,19 @@
-import { createToken } from '../base/token';
+import { createToken, multi, optionalValue } from '../base/token';
 import { createBaseContainer } from '../base/container';
+
+const createGetString = (prefix: string) => {
+  let counter = 0;
+  return () => {
+    counter++;
+    return prefix + counter.toString();
+  };
+};
 
 describe('createBaseContainer', () => {
   describe('values', () => {
     it('bind value', () => {
       const container = createBaseContainer();
-      const token = createToken('value1');
+      const token = createToken<number>('value1');
       container.bindValue(token, 1);
       container.bindValue(token, 2);
       expect(container.get(token)).toEqual(2);
@@ -13,12 +21,19 @@ describe('createBaseContainer', () => {
 
     it('optional value token', () => {
       const container = createBaseContainer();
-      const token = createToken('optionalV1', {
-        optionalValue: 1,
-      });
+      const token = optionalValue(createToken<number>('optionalV1'), 1);
       expect(container.get(token)).toEqual(1);
       container.bindValue(token, 2);
       expect(container.get(token)).toEqual(2);
+    });
+
+    it('multi value token', () => {
+      const container = createBaseContainer();
+      const multiValueToken = multi(createToken<number>('multivalue'));
+      container.bindValue(multiValueToken, 1);
+      expect(container.get(multiValueToken)).toEqual([1]);
+      container.bindValue(multiValueToken, 2);
+      expect(container.get(multiValueToken)).toEqual([1, 2]);
     });
   });
 
@@ -33,12 +48,19 @@ describe('createBaseContainer', () => {
 
     it('optional factory token', () => {
       const container = createBaseContainer();
-      const token = createToken('optionalF1', {
-        optionalValue: 1,
-      });
+      const token = optionalValue(createToken<number>('optionalF1'), 1);
       expect(container.get(token)).toEqual(1);
       container.bindFactory(token, () => 2);
       expect(container.get(token)).toEqual(2);
+    });
+
+    it('multi factory token', () => {
+      const container = createBaseContainer();
+      const multiValueToken = multi(createToken<number>('multivalue'));
+      container.bindFactory(multiValueToken, () => 1);
+      expect(container.get(multiValueToken)).toEqual([1]);
+      container.bindFactory(multiValueToken, () => 2);
+      expect(container.get(multiValueToken)).toEqual([1, 2]);
     });
 
     it('values and factories shadow each other', () => {
@@ -123,6 +145,59 @@ describe('createBaseContainer', () => {
       expect(parentContainer.get(token)).toEqual(0);
       expect(container1.get(token)).toEqual(1);
       expect(container2.get(token)).toEqual(2); // each container has different factory
+    });
+  });
+
+  describe('multi providers', () => {
+    it('multi different providers type', () => {
+      const container = createBaseContainer();
+      const token = multi(createToken('smth'));
+      expect(container.get(token)).toEqual([]);
+      container.bindValue(token, 1);
+      expect(container.get(token)).toEqual([1]);
+      container.bindFactory(token, () => 2);
+      expect(container.get(token)).toEqual([1, 2]);
+      container.bindValue(token, 3);
+      expect(container.get(token)).toEqual([1, 2, 3]);
+    });
+
+    it('multi different providers type with childs', () => {
+      // @TODO I am not pretty sure that everything works fine here
+      const parent = createBaseContainer();
+      const child = createBaseContainer(parent);
+      const token = multi(createToken<string>('smth'));
+
+      parent.bindValue(token, 'p1');
+      expect(child.get(token)).toEqual(['p1']);
+      expect(parent.get(token)).toEqual(['p1']);
+
+      child.bindValue(token, 'c2');
+      expect(child.get(token)).toEqual(['c2', 'p1']);
+      expect(parent.get(token)).toEqual(['p1']);
+
+      parent.bindFactory(token, createGetString('pa'), { scope: 'singleton' });
+      expect(child.get(token)).toEqual(['c2', 'p1', 'pa1']);
+      expect(parent.get(token)).toEqual(['p1', 'pa1']);
+
+      parent.bindFactory(token, createGetString('pb'), { scope: 'scoped' });
+      expect(child.get(token)).toEqual(['c2', 'p1', 'pa1', 'pb1']);
+      expect(parent.get(token)).toEqual(['p1', 'pa1', 'pb2']);
+
+      parent.bindFactory(token, createGetString('pc'), { scope: 'transient' });
+      expect(child.get(token)).toEqual(['c2', 'p1', 'pa1', 'pb3', 'pc1']);
+      expect(parent.get(token)).toEqual(['p1', 'pa1', 'pb4', 'pc2']); // pb bumped up
+
+      child.bindFactory(token, createGetString('ca'), { scope: 'singleton' });
+      expect(child.get(token)).toEqual(['c2', 'ca1', 'p1', 'pa1', 'pb5', 'pc3']);
+      expect(parent.get(token)).toEqual(['p1', 'pa1', 'pb6', 'pc4']);
+
+      child.bindFactory(token, createGetString('cb'), { scope: 'scoped' });
+      expect(child.get(token)).toEqual(['c2', 'ca1', 'cb1', 'p1', 'pa1', 'pb7', 'pc5']);
+      expect(parent.get(token)).toEqual(['p1', 'pa1', 'pb8', 'pc6']);
+
+      child.bindFactory(token, createGetString('cc'), { scope: 'transient' });
+      expect(child.get(token)).toEqual(['c2', 'ca1', 'cb2', 'cc1', 'p1', 'pa1', 'pb9', 'pc7']);
+      expect(parent.get(token)).toEqual(['p1', 'pa1', 'pb10', 'pc8']);
     });
   });
 });

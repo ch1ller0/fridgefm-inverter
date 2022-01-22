@@ -1,6 +1,19 @@
-import type { Token, TokenOptions } from './token.types';
+import type { Token } from './token.types';
+import type { TodoAny } from './util.types';
 
-export const createToken = <T>(description: string, opts?: TokenOptions<T>): Token<T> => ({
-  symbol: Symbol(description),
-  optionalValue: opts?.optionalValue,
-});
+/**
+ * Method for creating tokens that get bound to providers later
+ * @param description string literal describing your tokeen purpose
+ */
+export const createToken = <T>(description: string): Token<T> => ({ symbol: Symbol(description) });
+
+/**
+ * Modifier for providing value that will be used as default if not provided
+ */
+export const optionalValue = <T, A extends Token<T>>(token: A, value: T) => ({ ...token, optionalValue: value });
+
+/**
+ * Modifier for making a token multiple - that means that they dont
+ * shadow each other but instead are passed as an array
+ */
+export const multi = <A extends Token<TodoAny>>(token: A) => ({ ...token, multi: true as const });

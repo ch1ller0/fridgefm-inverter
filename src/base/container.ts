@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import { isInternalToken, INTERNAL_TOKENS, NOT_FOUND_SYMBOL, DEFAULT_SCOPE } from './internals';
 
-import type { Container, ValuesMap, FactoriesMap, FactoryContext } from './container.types';
-import type { Token } from './token.types';
+import type { Container, ValuesMap, FactoriesMap, MultiesMap, FactoryContext } from './container.types';
+import type { Token, TokenProvide } from './token.types';
 import type { FactoryOptions } from '../module/provider.types';
 import type { TodoAny } from './util.types';
 
@@ -12,10 +12,17 @@ import type { TodoAny } from './util.types';
 export const createBaseContainer = (parentContainer?: Container): Container => {
   const values: ValuesMap = new Map<symbol, TodoAny>();
   const factories: FactoriesMap = new Map<symbol, FactoryContext<TodoAny>>();
+  const multies: MultiesMap = new Map<symbol, FactoryContext<TodoAny>[]>();
 
   const container: Container = {
     bindValue<T>(token: Token<T>, value: T): void {
       if (isInternalToken(token)) {
+        return;
+      }
+
+      if (token.multi) {
+        const prevMulties = multies.get(token.symbol) || [];
+        multies.set(token.symbol, [...prevMulties, { value }]);
         return;
       }
 
@@ -34,12 +41,18 @@ export const createBaseContainer = (parentContainer?: Container): Container => {
         values.delete(token.symbol);
       }
 
+      if (token.multi) {
+        const prevMulties = multies.get(token.symbol) || [];
+        multies.set(token.symbol, [...prevMulties, { factory, scope: options?.scope }]);
+        return;
+      }
+
       factories.set(token.symbol, { factory, options });
     },
     hasToken(token: Token<unknown>): boolean {
       return values.has(token.symbol) || factories.has(token.symbol) || (parentContainer?.hasToken(token) ?? false);
     },
-    get<T>(token: Token<T>): T | undefined {
+    get<A extends Token<TodoAny>>(token: A): TokenProvide<A> | undefined {
       const value = resolver(token, container);
       if (value !== NOT_FOUND_SYMBOL) {
         return value;
@@ -51,7 +64,7 @@ export const createBaseContainer = (parentContainer?: Container): Container => {
 
       return undefined;
     },
-    resolve<T>(token: Token<T>): T | typeof NOT_FOUND_SYMBOL {
+    resolve<A extends Token<TodoAny>>(token: A): TokenProvide<A> | typeof NOT_FOUND_SYMBOL {
       const value = resolver(token, container);
       if (value !== NOT_FOUND_SYMBOL) {
         return value;
@@ -65,7 +78,41 @@ export const createBaseContainer = (parentContainer?: Container): Container => {
     },
   };
 
-  function resolver<T>(token: Token<T>, origin: Container): T | typeof NOT_FOUND_SYMBOL {
+  function resolver<T>(token: Token<T>, origin: Container): T | T[] | typeof NOT_FOUND_SYMBOL {
+    if (token.multi) {
+      const findInParent = () => {
+        const parentResolver = parentContainer?.get(INTERNAL_TOKENS.RESOLVER);
+        if (parentResolver) {
+          const resolved = parentResolver(token, origin);
+          return Array.isArray(resolved) ? resolved : ([] as T[]);
+        }
+        return [] as T[];
+      };
+      const multiFactories = multies.get(token.symbol);
+
+      if (typeof multiFactories === 'undefined') {
+        return findInParent();
+      }
+
+      const resolved = multiFactories.map((multiRecord, index) => {
+        if ('value' in multiRecord) {
+          return multiRecord.value;
+        }
+
+        const scope = multiRecord.scope || DEFAULT_SCOPE;
+        if (scope === 'singleton') {
+          // if it is a singleton - cache it
+          const value = multiRecord.factory(container);
+          multiFactories[index] = { value };
+          return value;
+        }
+
+        return multiRecord.factory(container);
+      });
+
+      return [...resolved, ...findInParent()];
+    }
+
     const arrivedValue = values.get(token.symbol);
     const hasValue = arrivedValue !== undefined || values.has(token.symbol);
 

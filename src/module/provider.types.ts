@@ -1,4 +1,4 @@
-import type { Token, TokensProvide, ToksTuple } from '../base/token.types';
+import type { Token, TokenDecTuple, TokensDeclarationProvide } from '../base/token.types';
 
 export type FactoryOptions = {
   /**
@@ -11,9 +11,9 @@ export type FactoryOptions = {
   scope?: 'singleton' | 'scoped' | 'transient';
 };
 
-export type ProviderDeclaration<P = unknown, DepToks extends ToksTuple = readonly [Token<unknown>]> = {
+export type ProviderDeclaration<P = unknown, DepToks extends TokenDecTuple = TokenDecTuple> = {
   provide: Token<P>;
-  useFactory?: (...deps: TokensProvide<DepToks>) => P;
+  useFactory?: (...deps: TokensDeclarationProvide<DepToks>) => P;
   useValue?: P;
   inject?: DepToks;
   scope?: FactoryOptions['scope'];
@@ -22,7 +22,7 @@ export type ProviderDeclaration<P = unknown, DepToks extends ToksTuple = readonl
 /**
  * Helper type to force the use of injectable method
  */
-export type InjectableDeclaration<
-  P = unknown,
-  DepToks extends ToksTuple = readonly [Token<unknown>],
-> = ProviderDeclaration<P, DepToks> & { _brand: 'injectable' };
+export type InjectableDeclaration<P = unknown, DepToks extends TokenDecTuple = TokenDecTuple> = ProviderDeclaration<
+  P,
+  DepToks
+> & { _brand: 'injectable' };

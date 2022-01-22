@@ -34,9 +34,17 @@ export type FactoryContext<T> = {
   factory: (container: Container) => T;
   options?: FactoryOptions;
 };
+export type MultiRecord<T> =
+  | {
+      factory: (container: Container) => T;
+      scope?: FactoryOptions['scope'];
+    }
+  | { value: T };
 /** @internal */
 export type ValuesMap = Map<symbol, TodoAny>;
 /** @internal */
 export type FactoriesMap = Map<symbol, FactoryContext<TodoAny>>;
+/** @internal */
+export type MultiesMap = Map<symbol, MultiRecord<TodoAny>[]>;
 /** @internal */
 export type Resolver = <T>(token: Token<T>, origin: Container) => T | typeof NOT_FOUND_SYMBOL;

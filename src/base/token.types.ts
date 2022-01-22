@@ -1,25 +1,39 @@
 import type { TodoAny } from './util.types';
-export type TokenOptions<T> = {
-  /**
-   * Token is provided by several providers and they are passed as an array
-   * @todo
-   */
-  multi?: true;
-  /**
-   * Fallback to this value if token not provided
-   */
-  optionalValue?: T;
-};
-
-export type Token<T> = { symbol: symbol } & TokenOptions<T>;
-export type TokenDeclarationOpt<T> = { token: Token<T>; optional: true };
-export type TokenDeclaration<T> = Token<T> | TokenDeclarationOpt<T>;
-export type ToksTuple = readonly [...ReadonlyArray<TokenDeclaration<TodoAny>>];
-export type TokenProvide<T> = T extends Token<infer A>
-  ? A
-  : T extends TokenDeclarationOpt<infer A>
-  ? A | undefined
+/**
+ * Regular token type providing value T.
+ */
+export type Token<T> = { symbol: symbol; type?: T; optionalValue?: T; multi?: true };
+/**
+ * Regular token provided value type
+ */
+export type TokenProvide<T> = T extends Token<infer A> ? A : unknown;
+/**
+ * Token declaration type. This is the interface tokens are declared in inject field
+ */
+export type TokenDec<T> = T | { token: T; optional: true };
+/**
+ * Token declaration provided value type. It takes into account the optionality and multiness of a token
+ */
+export type TokenDecProvide<T> = T extends TokenDec<infer A> & { optional: true }
+  ? A extends Token<infer B> & { multi: true }
+    ? B[]
+    : A extends Token<infer B>
+    ? B | undefined
+    : never
+  : T extends TokenDec<infer A>
+  ? A extends Token<infer B> & { multi: true }
+    ? B[]
+    : A extends Token<infer B>
+    ? B
+    : never
   : never;
-export type TokensProvide<DepToks extends ToksTuple> = {
-  +readonly [Index in keyof DepToks]: TokenProvide<DepToks[Index]>;
+/**
+ * Tuple of token declarations.
+ */
+export type TokenDecTuple = readonly [...ReadonlyArray<TokenDec<Token<TodoAny>>>];
+/**
+ * Tuple of token declaration provided value types
+ */
+export type TokensDeclarationProvide<DepToks extends TokenDecTuple> = {
+  +readonly [Index in keyof DepToks]: TokenDecProvide<DepToks[Index]>;
 };

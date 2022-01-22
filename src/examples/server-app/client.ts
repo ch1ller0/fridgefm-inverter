@@ -7,21 +7,32 @@ import {
   ID_LENGTH_TOKEN,
   CLIENT_LOGGER_TOKEN,
   LOGGER_TOKEN,
+  ON_REQUEST_TOKEN,
 } from './tokens';
 
 // this provider is exported separately because it is used within the child di on a server
 export const clientRootProvider = injectable({
   provide: CLIENT_ROOT_TOKEN,
-  useFactory: (store, id, logger) => {
+  useFactory: (store, id, logger, onRequest) => {
     store.increaseFor(id, 1);
     logger('increased');
+    const info = { id, count: store.getStateFor(id) };
+    onRequest.forEach((s) => {
+      s(info);
+    });
 
-    return { id, count: store.getStateFor(id) };
+    return info;
   },
-  inject: [STORE_TOKEN, GET_ID_TOKEN, CLIENT_LOGGER_TOKEN] as const,
+  inject: [STORE_TOKEN, GET_ID_TOKEN, CLIENT_LOGGER_TOKEN, { token: ON_REQUEST_TOKEN, optional: true }] as const,
 });
 
 export const clientModule = [
+  // injectable({
+  //   provide: ON_REQUEST_TOKEN,
+  //   useValue: (info) => {
+  //     console.log('got info', info);
+  //   },
+  // }),
   injectable({
     provide: CLIENT_LOGGER_TOKEN,
     scope: 'scoped', // it recreates on each request

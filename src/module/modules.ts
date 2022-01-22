@@ -7,14 +7,14 @@ import { NOT_FOUND_SYMBOL } from '../base/internals';
 import type { InjectableDeclaration } from './provider.types';
 import type { TodoAny } from '../base/util.types';
 import type { Container } from '../base/container.types';
-import type { ToksTuple, Token, TokenDeclaration } from '../base/token.types';
+import type { Token, TokenDec } from '../base/token.types';
 
 type Configuration = {
   /**
    * @todo
    */
   modules?: unknown[];
-  providers: InjectableDeclaration<TodoAny, ToksTuple>[];
+  providers: InjectableDeclaration<TodoAny>[];
   parent?: Container;
 };
 
@@ -25,7 +25,7 @@ const logger = {
 };
 
 const extractDeclaration = <T>(
-  tokenDeclaration: TokenDeclaration<T>,
+  tokenDeclaration: TokenDec<Token<T>>,
 ): {
   token: Token<T>;
   optional: boolean;
@@ -46,12 +46,12 @@ const extractDeclaration = <T>(
  * - 'transient' dependencies are never the same
  */
 export const CHILD_DI_FACTORY_TOKEN =
-  createToken<<A>(childProvider: InjectableDeclaration<A, ToksTuple>) => () => A>('inverter:child-di-factory');
+  createToken<<A>(childProvider: InjectableDeclaration<A>) => () => A>('inverter:child-di-factory');
 
 export const declareContainer = ({ providers, parent }: Configuration) => {
   const container = createBaseContainer(parent);
   const resolvingTokens = new Set<Token<TodoAny>>(); // for cycle dep check
-  const traverseProviders = (provider: InjectableDeclaration<TodoAny, ToksTuple>, stack: Token<TodoAny>[]) => {
+  const traverseProviders = (provider: InjectableDeclaration<TodoAny>, stack: Token<TodoAny>[]) => {
     provider.inject?.forEach((dec) => {
       const { token, optional } = extractDeclaration(dec);
       const provided = providers.find((x) => x.provide === token);

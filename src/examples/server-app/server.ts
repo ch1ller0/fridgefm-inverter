@@ -39,10 +39,10 @@ export const serverModule = [
       };
     },
   }),
-  injectable({
-    provide: LOGGER_TOKEN,
-    useValue: { log: console.log },
-  }),
+  // injectable({
+  //   provide: LOGGER_TOKEN,
+  //   useValue: { log: console.log },
+  // }),
   injectable({
     provide: STORE_TOKEN,
     useFactory: () => {

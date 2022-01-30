@@ -11,13 +11,29 @@ export type FactoryOptions = {
   scope?: 'singleton' | 'scoped' | 'transient';
 };
 
-export type ProviderDeclaration<P = unknown, DepToks extends TokenDecTuple = TokenDecTuple> = {
-  provide: Token<P>;
-  useFactory?: (...deps: TokensDeclarationProvide<DepToks>) => P;
-  useValue?: P;
-  inject?: DepToks;
-  scope?: FactoryOptions['scope'];
-};
+export type ProviderDeclaration<P = unknown, DepToks extends TokenDecTuple = TokenDecTuple> =
+  | {
+      provide: Token<P>;
+    } & (
+      | {
+          useFactory: (...deps: TokensDeclarationProvide<DepToks>) => P;
+          scope?: FactoryOptions['scope'];
+          inject: DepToks;
+          useValue?: never;
+        }
+      | {
+          useFactory: () => P;
+          scope?: FactoryOptions['scope'];
+          inject?: never;
+          useValue?: never;
+        }
+      | {
+          useFactory?: never;
+          scope?: never;
+          inject?: never;
+          useValue: P;
+        }
+    );
 
 /**
  * Helper type to force the use of injectable method

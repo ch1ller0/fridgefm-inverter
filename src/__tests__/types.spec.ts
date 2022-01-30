@@ -49,12 +49,41 @@ const runTypeTest = async (testFile: string): Promise<TestTypeRes> => {
 describe('types are sound', () => {
   it('token.type', async () => {
     const res = await runTypeTest('src/__tests__/token.spec-d.ts');
-    const { suite1, suite2 } = res;
-    console.log(res);
+    expect(res).toEqual({
+      suite1: [],
+      suite2: [
+        expect.objectContaining({
+          message: "Type '(x: 1) => 1' is not assignable to type 'Fn'.",
+          severity: 'error',
+        }),
+      ],
+    });
+  });
 
-    expect(suite1).toEqual([]);
-    expect(suite2.length).toEqual(1);
-    expect(suite2[0].message).toEqual("Type '(x: 1) => 1' is not assignable to type 'Fn'.");
+  it('provider.type', async () => {
+    const res = await runTypeTest('src/__tests__/provider.spec-d.ts');
+    expect(res).toEqual({
+      suite1: [],
+      suite2: [],
+      suite3: [],
+      suite4: [],
+      suite5: [
+        expect.objectContaining({
+          message: expect.stringContaining('is not assignable to parameter of type'),
+          severity: 'error',
+        }),
+      ],
+      suite6: [
+        expect.objectContaining({
+          message: expect.stringContaining('is not assignable to parameter of type'),
+          severity: 'error',
+        }),
+        expect.objectContaining({
+          message: "Parameter 'a' implicitly has an 'any' type.",
+          severity: 'error',
+        }),
+      ],
+    });
   });
 });
 

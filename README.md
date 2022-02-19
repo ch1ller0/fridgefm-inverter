@@ -25,7 +25,12 @@ or
 yarn add @fridgefm/inverter
 ```
 ## Examples
-Example usage is shown [here in examples](./src/examples/server-app/index). You can start the example app 
+Example usage is shown [here in examples](./src/examples/). You can start the example app 
 ```
-yarn example:server-app
+# cli calculator app
+yarn example src/examples/calc-app/
+```
+```
+# basic server app
+yarn example src/examples/server-app/
 ```

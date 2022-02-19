@@ -9,7 +9,7 @@
   "keywords": [],
   "scripts": {
     "build": "tsc -p tsconfig.json --listEmittedFiles",
-    "example:server-app": "tsnd src/examples/server-app/",
+    "example": "tsnd",
     "watch": "tsc -w",
     "test:lint": "eslint --ext .js,.ts ./src",
     "test:types": "tsc -p tsconfig.json --noEmit",

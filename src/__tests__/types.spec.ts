@@ -34,7 +34,7 @@ const runTypeTest = async (testFile: string): Promise<TestTypeRes> => {
       const index = suiteBounds.findIndex((s, i) => cur.line > s && cur.line < (suiteBounds[i + 1] || +Infinity));
       const key = `suite${index + 1}`;
       if (!acc[key]) {
-        throw new Error('You have a type error out of bounds');
+        throw new Error(`You have a type error out of bounds, please sync tests with typings in: ${cur.fileName}`);
       }
       acc[key].push({
         message: cur.message.split('\n')[0],
@@ -86,10 +86,3 @@ describe('types are sound', () => {
     });
   });
 });
-
-// (async () => {
-//   const diagnostics = await tsd();
-
-//   console.log(diagnostics.length);
-//   //=> 2
-// })();

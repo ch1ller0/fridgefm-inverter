@@ -4,6 +4,7 @@ import type { TodoAny } from './util.types';
 /**
  * Method for creating tokens that get bound to providers later
  * @param description string literal describing your tokeen purpose
+ * @todo Add readonly modifier
  */
 export const createToken = <T>(description: string): Token<T> => ({ symbol: Symbol(description) });
 

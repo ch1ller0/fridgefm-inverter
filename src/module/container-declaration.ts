@@ -4,20 +4,22 @@ import { CyclicDepError, ResolverError } from '../base/errors';
 import { createToken } from '../base/token';
 import { NOT_FOUND_SYMBOL } from '../base/internals';
 
-import type { InjectableDeclaration } from './provider.types';
+import type { InjectableDeclaration, ProviderDeclaration } from './provider.types';
 import type { TodoAny } from '../base/util.types';
 import type { Container } from '../base/container.types';
 import type { Token, TokenDec } from '../base/token.types';
+import type { ModuleDeclaration } from './module.types';
 
 type Configuration = {
   /**
    * @todo
    */
-  modules?: unknown[];
+  modules?: ModuleDeclaration[];
   providers: InjectableDeclaration<TodoAny>[];
   parent?: Container;
 };
 
+// @TODO move it to debug package for tree shaking and ability to add to a bundle only on-demand
 const logger = {
   resolvedToken: (token: Token<TodoAny>) => {
     debug('fridgefm-inverter')('Resolved token', token.symbol.description);
@@ -39,6 +41,23 @@ const extractDeclaration = <T>(
   };
 };
 
+const orderModuleProviders = (modules?: ModuleDeclaration[]): ProviderDeclaration[] => {
+  const uniqProviders = new Set<ProviderDeclaration>();
+  const traverseModules = (importedModules?: ModuleDeclaration[]) => {
+    importedModules?.forEach((moduleDeclaration) => {
+      const { providers, imports = [], name } = moduleDeclaration;
+      providers.forEach((providerDec) => {
+        uniqProviders.add(providerDec);
+      });
+      traverseModules(imports);
+      // console.log(`resolved module: ${name}`);
+    });
+  };
+  traverseModules(modules);
+
+  return Array.from(uniqProviders);
+};
+
 /**
  * Token for creating scoped providers, each dependency for this provider with different scope will behave different:
  * - 'singleton' dependencies are singleton for parent container scope
@@ -48,7 +67,7 @@ const extractDeclaration = <T>(
 export const CHILD_DI_FACTORY_TOKEN =
   createToken<<A>(childProvider: InjectableDeclaration<A>) => () => A>('inverter:child-di-factory');
 
-export const declareContainer = ({ providers, parent }: Configuration) => {
+export const declareContainer = ({ providers, modules, parent }: Configuration) => {
   const container = createBaseContainer(parent);
   const resolvingTokens = new Set<Token<TodoAny>>(); // for cycle dep check
   const traverseProviders = (provider: InjectableDeclaration<TodoAny>, stack: Token<TodoAny>[]) => {
@@ -80,7 +99,9 @@ export const declareContainer = ({ providers, parent }: Configuration) => {
       }).get(childProvider.provide);
   });
 
-  providers.forEach((injectableDep) => {
+  const allProviders = [...orderModuleProviders(modules), ...providers];
+
+  allProviders.forEach((injectableDep) => {
     const { inject, provide, useFactory, useValue, scope } = injectableDep;
 
     if (typeof useFactory !== 'undefined') {

@@ -1,15 +1,41 @@
-import { createToken, declareContainer } from '../../index'; // di entry
-import { CHILD_DI_FACTORY_TOKEN } from '../modules';
-import { injectable } from '../provider';
+import { createToken, declareContainer, CHILD_DI_FACTORY_TOKEN, injectable } from '../../index'; // di entry
 import type { FactoryOptions } from '../provider.types';
 
 const ROOT_TOKEN = createToken<() => [number, number, number]>('root');
+const V_1_TOKEN = createToken<number>('v-1');
+const V_2_TOKEN = createToken<number>('v-2');
 
-describe('modules', () => {
+describe('container-declaration', () => {
+  describe('errors', () => {
+    it('ResolverError', () => {
+      const container = declareContainer({
+        providers: [
+          injectable({ provide: ROOT_TOKEN, useFactory: (v1) => () => [v1, 10, 10], inject: [V_1_TOKEN] }),
+          injectable({ provide: V_1_TOKEN, useFactory: (v2) => 10 + v2, inject: [V_2_TOKEN] }),
+        ],
+      });
+      expect(() => {
+        container.get(ROOT_TOKEN);
+      }).toThrowError('Token "v-2" is not provided, stack: v-1 -> v-2');
+    });
+
+    it('CyclicDepError', () => {
+      const container = declareContainer({
+        providers: [
+          injectable({ provide: ROOT_TOKEN, useFactory: (v1) => () => [v1, 10, 10], inject: [V_1_TOKEN] }),
+          injectable({ provide: V_1_TOKEN, useFactory: (v2) => 10 + v2, inject: [V_2_TOKEN] }),
+          injectable({ provide: V_2_TOKEN, useFactory: (rootFn) => rootFn()[0], inject: [ROOT_TOKEN] }),
+        ],
+      });
+      expect(() => {
+        container.get(ROOT_TOKEN);
+      }).toThrowError('Cyclic dependency for token: root, stack: root -> v-2 -> v-1 -> root');
+    });
+  });
+
   describe('child-di-factory', () => {
     const CHILD_TOKEN = createToken<[number, number, number]>('child-token');
-    const V_1_TOKEN = createToken<number>('v-1');
-    const V_2_TOKEN = createToken<number>('v-2');
+
     const createProviders = ([v1scope, v2scope]: [FactoryOptions['scope'], FactoryOptions['scope']]) => {
       const childProvider = injectable({
         provide: CHILD_TOKEN,

@@ -1,6 +1,7 @@
-import { createToken, multi } from '../base/token';
-import { injectable } from '../module/provider';
-import { declareContainer, CHILD_DI_FACTORY_TOKEN } from '../module/modules';
+import { createToken, modifyToken } from '../base/token';
+import { injectable } from '../module/provider-declaration';
+import { declareContainer, CHILD_DI_FACTORY_TOKEN } from '../module/container-declaration';
+const { multi } = modifyToken;
 
 describe('declareContainer', () => {
   it('simple chain', () => {

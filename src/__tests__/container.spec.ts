@@ -1,5 +1,6 @@
-import { createToken, multi, optionalValue } from '../base/token';
+import { createToken, modifyToken } from '../base/token';
 import { createBaseContainer } from '../base/container';
+const { optionalValue, multi } = modifyToken;
 
 const createGetString = (prefix: string) => {
   let counter = 0;

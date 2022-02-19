@@ -1,5 +1,5 @@
 import { createToken } from '../base/token';
-import { injectable } from '../module/provider';
+import { injectable } from '../module/provider-declaration';
 type Num = number;
 
 const numberToken = createToken<Num>('token');

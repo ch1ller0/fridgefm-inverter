@@ -1,4 +1,4 @@
-export { declareContainer, CHILD_DI_FACTORY_TOKEN } from './module/modules';
-export { createToken, multi, optionalValue } from './base/token';
-export { injectable } from './module/provider';
+export { declareContainer, CHILD_DI_FACTORY_TOKEN } from './module/container-declaration';
+export { injectable } from './module/provider-declaration';
+export { createToken, modifyToken } from './base/token';
 export type { Token, TokenProvide, TokenDecProvide, TokensDeclarationProvide } from './base/token.types';

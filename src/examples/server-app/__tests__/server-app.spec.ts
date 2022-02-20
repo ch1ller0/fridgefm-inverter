@@ -1,5 +1,6 @@
 import { createToken, declareContainer, injectable, TokenProvide } from '../../../index';
-import { CONTROLLER_TOKEN, LOGGER_TOKEN, ServerModule } from '../server.module';
+import { CONTROLLER_TOKEN, ServerModule } from '../server.module';
+import { LOGGER_TOKEN, LoggerModule } from '../logger.module';
 import { ClientModule } from '../client.module';
 
 const FAKE_ROOT_TOKEN = createToken<TokenProvide<typeof CONTROLLER_TOKEN>>('fake-root');
@@ -33,9 +34,9 @@ describe('integration:server-app', () => {
     expect(log.mock.calls.length).toEqual(0);
   });
 
-  it('works with added ClientModule', async () => {
+  it('works with added ClientModule+LoggerModule', async () => {
     const container = declareContainer({
-      modules: [ClientModule, ServerModule],
+      modules: [ClientModule, ServerModule, LoggerModule],
       providers: createTestProviders(),
     });
     const emulateRequest = container.get(FAKE_ROOT_TOKEN);

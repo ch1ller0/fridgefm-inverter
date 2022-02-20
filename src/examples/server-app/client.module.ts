@@ -1,6 +1,7 @@
 import { declareModule, injectable, CHILD_DI_FACTORY_TOKEN, createToken, modifyToken } from '../../index';
 import { randomString } from '../utils';
-import { STORE_TOKEN, LOGGER_TOKEN, CONTROLLER_TOKEN } from './server.module';
+import { STORE_TOKEN, CONTROLLER_TOKEN } from './server.module';
+import { LOGGER_TOKEN } from './logger.module';
 
 const CLIENT_ROOT_TOKEN = createToken<{ id: string }>('client-root');
 const CLIENT_LOGGER_TOKEN = createToken<(message: string) => void>('client-logger');
@@ -10,8 +11,7 @@ const ON_REQUEST_TOKEN = modifyToken.multi(
   createToken<(info: { id: string; count: number }) => number>('on-request-multi'),
 );
 
-// this provider is exported separately because it is used within the child di on a server
-export const clientRootProvider = injectable({
+const clientRootProvider = injectable({
   provide: CLIENT_ROOT_TOKEN,
   useFactory: (store, id, logger, onRequest) => {
     store.increaseFor(id, 1);

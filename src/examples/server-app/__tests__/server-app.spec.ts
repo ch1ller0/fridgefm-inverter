@@ -1,16 +1,14 @@
 import { createToken, declareContainer, injectable, TokenProvide } from '../../../index';
-import { serverModule } from '../server';
-import { clientModule } from '../client';
-import { CONTROLLER_TOKEN, LOGGER_TOKEN } from '../tokens';
+import { CONTROLLER_TOKEN, LOGGER_TOKEN } from '../server.module';
+import { config } from '../index';
 
 const FAKE_ROOT_TOKEN = createToken<TokenProvide<typeof CONTROLLER_TOKEN>>('fake-root');
 
 describe('integration:server-app', () => {
   it('change root and logger provider', async () => {
     const container = declareContainer({
+      ...config,
       providers: [
-        ...serverModule,
-        ...clientModule,
         injectable({
           provide: FAKE_ROOT_TOKEN,
           inject: [CONTROLLER_TOKEN] as const,

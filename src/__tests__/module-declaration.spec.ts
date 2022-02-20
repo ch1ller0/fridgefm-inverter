@@ -1,7 +1,5 @@
-import { declareContainer, createToken } from '../../index';
-import { declareModule } from '../module-declaration';
-import { injectable } from '../provider-declaration';
-import type { ModuleDeclaration } from '../module.types';
+import { declareContainer, createToken, declareModule, injectable } from '../index';
+import type { ModuleDeclaration } from '../module/module.types';
 // [ModuleN, TokenN, ProviderInModuleN]
 const V1_TOKEN = createToken<readonly [number, 1, number]>('value1');
 const V2_TOKEN = createToken<readonly [number, 2, number]>('value2');
@@ -45,9 +43,6 @@ describe('module-declaration', () => {
     });
 
     it.todo('dynamic modules via forRootFn');
-    it.todo('import providers resolve first');
-    it.todo('import providers do not resolve if resolved earlier');
-    // it.todo('module with provider')
   });
 
   // declaring a module into a container basically means to create a correct order of providers
@@ -72,12 +67,56 @@ describe('module-declaration', () => {
       expect(container.get(V2_TOKEN)).toEqual([1, 2, 3]);
     });
 
+    it('duped module injects if added later', () => {
+      let timesV1Called = 0;
+      const dupModule = declareModule({
+        name: 'Module',
+        providers: [
+          injectable({
+            provide: V1_TOKEN,
+            useFactory: () => {
+              timesV1Called += 1;
+              return [1, 1, 0] as const;
+            },
+          }),
+        ],
+      });
+      const container = declareContainer({
+        modules: [createFakeModule(1, [dupModule]), dupModule],
+        providers: [],
+      });
+      expect(container.get(V1_TOKEN)).toEqual([1, 1, 0]);
+      expect(timesV1Called).toEqual(1);
+    });
+
+    it('duped module wont inject if added earlier', () => {
+      let timesV1Called = 0;
+      const dupModule = declareModule({
+        name: 'Module',
+        providers: [
+          injectable({
+            provide: V1_TOKEN,
+            useFactory: () => {
+              timesV1Called += 1;
+              return [1, 1, 0] as const;
+            },
+          }),
+        ],
+      });
+      const container = declareContainer({
+        modules: [dupModule, createFakeModule(1, [dupModule])],
+        providers: [],
+      });
+      expect(container.get(V1_TOKEN)).toEqual([1, 1, 2]);
+      expect(timesV1Called).toEqual(0);
+    });
+
     it('first registered module is shadowed by next modules imports', () => {
       const container = declareContainer({
         modules: [createFakeModule(0), createFakeModule(1, [createFakeModule(2)])],
         providers: [],
       });
-      // resole order: module-0, module-2, module-1 - the latter wins
+      // resolve order: module-0, module-2, module-1 - the latter wins
       expect(container.get(V1_TOKEN)).toEqual([1, 1, 2]);
       expect(container.get(V2_TOKEN)).toEqual([1, 2, 3]);
     });

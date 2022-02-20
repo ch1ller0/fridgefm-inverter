@@ -39,20 +39,20 @@ const extractDeclaration = <T>(
 };
 
 const orderModuleProviders = (modules?: ModuleDeclaration[]): InjectableDeclaration[] => {
-  const uniqProviders = new Set<InjectableDeclaration>();
+  const innerProviders: InjectableDeclaration[] = [];
   const traverseModules = (importedModules?: ModuleDeclaration[]) => {
     importedModules?.forEach((moduleDec) => {
       const { providers, imports = [] } = moduleDec;
       traverseModules(imports);
       providers.forEach((providerDec) => {
-        uniqProviders.add(providerDec);
+        innerProviders.push(providerDec);
       });
       // console.log(`resolved module: ${name}`);
     });
   };
   traverseModules(modules);
 
-  return Array.from(uniqProviders);
+  return innerProviders;
 };
 
 /**

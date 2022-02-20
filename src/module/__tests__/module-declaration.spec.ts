@@ -1,12 +1,12 @@
 import { declareContainer, createToken } from '../../index';
 import { declareModule } from '../module-declaration';
 import { injectable } from '../provider-declaration';
-import type { ModuleDeclaration } from '../module.types';
+import type { Module } from '../module.types';
 // [ModuleN, TokenN, ProviderInModuleN]
 const V1_TOKEN = createToken<readonly [number, 1, number]>('value1');
 const V2_TOKEN = createToken<readonly [number, 2, number]>('value2');
 
-const createFakeModule = (count: number, imports?: ModuleDeclaration[]) =>
+const createFakeModule = (count: number, imports?: Module[]) =>
   declareModule({
     name: `module-${count}`,
     providers: [
@@ -77,8 +77,9 @@ describe('module-declaration', () => {
         modules: [createFakeModule(0), createFakeModule(1, [createFakeModule(2)])],
         providers: [],
       });
-      expect(container.get(V1_TOKEN)).toEqual([2, 1, 2]);
-      expect(container.get(V2_TOKEN)).toEqual([2, 2, 3]);
+      // resole order: module-0, module-2, module-1 - the latter wins
+      expect(container.get(V1_TOKEN)).toEqual([1, 1, 2]);
+      expect(container.get(V2_TOKEN)).toEqual([1, 2, 3]);
     });
   });
 });

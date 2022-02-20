@@ -41,4 +41,16 @@ export type ProviderDeclaration<P = unknown, DepToks extends TokenDecTuple = Tok
 export type InjectableDeclaration<P = unknown, DepToks extends TokenDecTuple = TokenDecTuple> = ProviderDeclaration<
   P,
   DepToks
-> & { _brand: 'injectable' };
+> & {
+  /**
+   * Provider creation is available only via "injectable" function
+   * @example
+   * import { injectable } from '@fridgefm/inverter';
+   * import { MY_TOKEN } from '../tokens':
+   * const myAwesomeProvider = injectable({
+   *   provide: MY_TOKEN,
+   *   useValue: ['a', 'b'],
+   * });
+   */
+  _brand: 'injectable';
+};

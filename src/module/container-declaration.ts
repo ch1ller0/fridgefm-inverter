@@ -4,17 +4,17 @@ import { CyclicDepError, ResolverError } from '../base/errors';
 import { createToken } from '../base/token';
 import { NOT_FOUND_SYMBOL } from '../base/internals';
 
-import type { InjectableDeclaration, ProviderDeclaration } from './provider.types';
+import type { InjectableDeclaration } from './provider.types';
 import type { TodoAny } from '../base/util.types';
 import type { Container } from '../base/container.types';
 import type { Token, TokenDec } from '../base/token.types';
-import type { ModuleDeclaration } from './module.types';
+import type { Module } from './module.types';
 
 type Configuration = {
   /**
    * @todo
    */
-  modules?: ModuleDeclaration[];
+  modules?: Module[];
   providers: InjectableDeclaration<TodoAny>[];
   parent?: Container;
 };
@@ -41,15 +41,15 @@ const extractDeclaration = <T>(
   };
 };
 
-const orderModuleProviders = (modules?: ModuleDeclaration[]): ProviderDeclaration[] => {
-  const uniqProviders = new Set<ProviderDeclaration>();
-  const traverseModules = (importedModules?: ModuleDeclaration[]) => {
+const orderModuleProviders = (modules?: Module[]): InjectableDeclaration[] => {
+  const uniqProviders = new Set<InjectableDeclaration>();
+  const traverseModules = (importedModules?: Module[]) => {
     importedModules?.forEach((moduleDeclaration) => {
       const { providers, imports = [], name } = moduleDeclaration;
+      traverseModules(imports);
       providers.forEach((providerDec) => {
         uniqProviders.add(providerDec);
       });
-      traverseModules(imports);
       // console.log(`resolved module: ${name}`);
     });
   };

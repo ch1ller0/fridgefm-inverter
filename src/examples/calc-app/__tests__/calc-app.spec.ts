@@ -1,10 +1,12 @@
 import { declareContainer, injectable } from '../../../index';
-import { providers, ROOT_TOKEN, HADNLER_TOKEN } from '../index';
+import { config } from '../index';
+import { ROOT_TOKEN, HADNLER_TOKEN } from '../calc-root.module';
 
 describe('integration:calc-app', () => {
   const createHandlerInstance = () =>
     declareContainer({
-      providers: [...providers, injectable({ provide: ROOT_TOKEN, useFactory: () => {} })],
+      providers: [...config.providers, injectable({ provide: ROOT_TOKEN, useFactory: () => {} })],
+      modules: config.modules,
     }).get(HADNLER_TOKEN);
 
   it('basic command chain', () => {

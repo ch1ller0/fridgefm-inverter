@@ -93,7 +93,6 @@ describe('declareContainer', () => {
       try {
         container.get(f1token);
       } catch (e) {
-        // @TODO does not take root into account, should fix this
         expect(e.message).toEqual('Token "3" is not provided, stack: 2 -> 3');
         expect(e.depStack).toEqual([f2token, f3token]);
       }

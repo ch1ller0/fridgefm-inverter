@@ -11,7 +11,7 @@ export type FactoryOptions = {
   scope?: 'singleton' | 'scoped' | 'transient';
 };
 
-export type ProviderDeclaration<P = unknown, DepToks extends TokenDecTuple = TokenDecTuple> =
+export type ProviderConfig<P = unknown, DepToks extends TokenDecTuple = TokenDecTuple> =
   | {
       provide: Token<P>;
     } & (
@@ -38,7 +38,19 @@ export type ProviderDeclaration<P = unknown, DepToks extends TokenDecTuple = Tok
 /**
  * Helper type to force the use of injectable method
  */
-export type InjectableDeclaration<P = unknown, DepToks extends TokenDecTuple = TokenDecTuple> = ProviderDeclaration<
+export type InjectableDeclaration<P = unknown, DepToks extends TokenDecTuple = TokenDecTuple> = ProviderConfig<
   P,
   DepToks
-> & { _brand: 'injectable' };
+> & {
+  /**
+   * Provider creation is available only via "injectable" function
+   * @example
+   * import { injectable } from '@fridgefm/inverter';
+   * import { MY_TOKEN } from '../tokens':
+   * const myAwesomeProvider = injectable({
+   *   provide: MY_TOKEN,
+   *   useValue: ['a', 'b'],
+   * });
+   */
+  _brand: 'injectable';
+};

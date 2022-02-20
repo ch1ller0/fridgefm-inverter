@@ -1,11 +1,11 @@
 import { declareContainer } from '../../index';
-import { serverModule } from './server';
-import { clientModule } from './client';
-import { ROOT_TOKEN } from './tokens';
+import { ServerModule, ROOT_TOKEN } from './server.module';
+import { ClientModule } from './client.module';
+import type { ContainerConfiguration } from '../../index';
 
-const providers = [...serverModule, ...clientModule];
-// curl --header "x-client-id: 1" "localhost:3000/"
+export const config: ContainerConfiguration = { providers: [], modules: [ServerModule, ClientModule] };
 
+// curl "localhost:3000/"
 if (process.env.NODE_ENV !== 'test') {
-  declareContainer({ providers }).get(ROOT_TOKEN);
+  declareContainer(config).get(ROOT_TOKEN);
 }

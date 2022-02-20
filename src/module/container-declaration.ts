@@ -8,13 +8,13 @@ import type { InjectableDeclaration } from './provider.types';
 import type { TodoAny } from '../base/util.types';
 import type { Container } from '../base/container.types';
 import type { Token, TokenDec } from '../base/token.types';
-import type { Module } from './module.types';
+import type { ModuleDeclaration } from './module.types';
 
 type Configuration = {
   /**
    * @todo
    */
-  modules?: Module[];
+  modules?: ModuleDeclaration[];
   providers: InjectableDeclaration<TodoAny>[];
   parent?: Container;
 };
@@ -41,11 +41,11 @@ const extractDeclaration = <T>(
   };
 };
 
-const orderModuleProviders = (modules?: Module[]): InjectableDeclaration[] => {
+const orderModuleProviders = (modules?: ModuleDeclaration[]): InjectableDeclaration[] => {
   const uniqProviders = new Set<InjectableDeclaration>();
-  const traverseModules = (importedModules?: Module[]) => {
-    importedModules?.forEach((moduleDeclaration) => {
-      const { providers, imports = [], name } = moduleDeclaration;
+  const traverseModules = (importedModules?: ModuleDeclaration[]) => {
+    importedModules?.forEach((moduleDec) => {
+      const { providers, imports = [], name } = moduleDec;
       traverseModules(imports);
       providers.forEach((providerDec) => {
         uniqProviders.add(providerDec);

@@ -1,11 +1,12 @@
 import type { InjectableDeclaration } from './provider.types';
-export type ModuleDeclaration = {
+
+export type ModuleConfig = {
   name: string;
   providers: InjectableDeclaration[];
-  imports?: Module[];
+  imports?: ModuleDeclaration[];
 };
 
-export type Module = ModuleDeclaration & {
+export type ModuleDeclaration = ModuleConfig & {
   symbol: symbol;
   /**
    * Module creation is available only via "declareModule" function

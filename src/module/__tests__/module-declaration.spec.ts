@@ -1,12 +1,12 @@
 import { declareContainer, createToken } from '../../index';
 import { declareModule } from '../module-declaration';
 import { injectable } from '../provider-declaration';
-import type { Module } from '../module.types';
+import type { ModuleDeclaration } from '../module.types';
 // [ModuleN, TokenN, ProviderInModuleN]
 const V1_TOKEN = createToken<readonly [number, 1, number]>('value1');
 const V2_TOKEN = createToken<readonly [number, 2, number]>('value2');
 
-const createFakeModule = (count: number, imports?: Module[]) =>
+const createFakeModule = (count: number, imports?: ModuleDeclaration[]) =>
   declareModule({
     name: `module-${count}`,
     providers: [

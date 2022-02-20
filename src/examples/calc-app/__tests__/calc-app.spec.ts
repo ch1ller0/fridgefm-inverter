@@ -1,16 +1,34 @@
 import { declareContainer, injectable } from '../../../index';
-import { config } from '../index';
-import { ROOT_TOKEN, HADNLER_TOKEN } from '../calc-root.module';
+import { ROOT_TOKEN, HANDLER_TOKEN } from '../calc-root.module';
+import { RootModule } from '../calc-root.module';
+import { OperationsModule } from '../operations.module';
+
+const createTestProviders = () => [
+  injectable({
+    provide: ROOT_TOKEN,
+    useFactory: () => {},
+  }),
+];
 
 describe('integration:calc-app', () => {
-  const createHandlerInstance = () =>
-    declareContainer({
-      providers: [...config.providers, injectable({ provide: ROOT_TOKEN, useFactory: () => {} })],
-      modules: config.modules,
-    }).get(HADNLER_TOKEN);
+  it('works alone with RootModule', () => {
+    const container = declareContainer({
+      modules: [RootModule],
+      providers: createTestProviders(),
+    });
+    const handler = container.get(HANDLER_TOKEN);
+    expect(() => handler('plus', [])).toThrowError('Command plus not found, use one of: "current,clear"');
+    expect(handler('current', [1, 2])).toEqual(0);
+    expect(handler('clear', [1, 2])).toEqual(0);
+  });
 
-  it('basic command chain', () => {
-    const handler = createHandlerInstance();
+  it('OperationsModule adds operations as expected', () => {
+    const container = declareContainer({
+      modules: [OperationsModule, RootModule],
+      providers: createTestProviders(),
+    });
+    const handler = container.get(HANDLER_TOKEN);
+
     expect(handler('current', [])).toEqual(0);
     expect(handler('multiply', [17, 27])).toEqual(0);
     expect(handler('plus', [2]));

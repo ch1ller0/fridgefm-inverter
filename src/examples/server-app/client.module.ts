@@ -2,11 +2,11 @@ import { declareModule, injectable, CHILD_DI_FACTORY_TOKEN, createToken, modifyT
 import { randomString } from '../utils';
 import { STORE_TOKEN, LOGGER_TOKEN, CONTROLLER_TOKEN } from './server.module';
 
-export const CLIENT_ROOT_TOKEN = createToken<{ id: string }>('client-root');
-export const CLIENT_LOGGER_TOKEN = createToken<(message: string) => void>('client-logger');
-export const GET_ID_TOKEN = createToken<string>('get-id');
-export const ID_LENGTH_TOKEN = createToken<number>('id-length');
-export const ON_REQUEST_TOKEN = modifyToken.multi(
+const CLIENT_ROOT_TOKEN = createToken<{ id: string }>('client-root');
+const CLIENT_LOGGER_TOKEN = createToken<(message: string) => void>('client-logger');
+const GET_ID_TOKEN = createToken<string>('get-id');
+const ID_LENGTH_TOKEN = createToken<number>('id-length');
+const ON_REQUEST_TOKEN = modifyToken.multi(
   createToken<(info: { id: string; count: number }) => number>('on-request-multi'),
 );
 

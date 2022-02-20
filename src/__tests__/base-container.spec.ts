@@ -201,4 +201,14 @@ describe('createBaseContainer', () => {
       expect(parent.get(token)).toEqual(['p1', 'pa1', 'pb10', 'pc8']);
     });
   });
+
+  describe('other mechanics', () => {
+    it('Trying to resolve non-provided token', () => {
+      const container = createBaseContainer();
+      const token = createToken<number>('value');
+      expect(() => {
+        container.get(token);
+      }).toThrowError('Token "value" is not provided, stack: value');
+    });
+  });
 });

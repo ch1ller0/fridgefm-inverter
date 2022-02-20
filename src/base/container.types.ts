@@ -20,11 +20,11 @@ export type Container = {
    */
   hasToken(token: Token<unknown>): boolean;
   /**
-   * Returns a resolved value by the token, or returns `undefined` in case the token is not found.
+   * Returns a resolved value by the token, or throws a ResolverError if token not provided.
    */
-  get<T>(token: Token<T>): T | undefined;
+  get<T>(token: Token<T>): T;
   /**
-   * Returns a resolved value by the token, or return NOT_FOUND_SYMBOL in case the token is not found.
+   * Returns a resolved value by the token, or return NOT_FOUND_SYMBOL in case the token is not provided.
    */
   resolve<T>(token: Token<T>): T | typeof NOT_FOUND_SYMBOL;
 };

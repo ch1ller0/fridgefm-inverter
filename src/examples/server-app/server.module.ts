@@ -12,7 +12,6 @@ export const CONTROLLER_TOKEN = modifyToken.optionalValue(
   createToken<() => Promise<{ id: string; count: number }>>('controller'),
   () => Promise.resolve({ id: 'ok', count: 0 }),
 );
-export const LOGGER_TOKEN = createToken<{ log: (...messages: any[]) => void }>('logger');
 
 export const ServerModule = declareModule({
   name: 'ServerModule',

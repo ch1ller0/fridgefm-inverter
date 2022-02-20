@@ -1,5 +1,5 @@
-import { createToken, declareContainer, CHILD_DI_FACTORY_TOKEN, injectable } from '../../index'; // di entry
-import type { FactoryOptions } from '../provider.types';
+import { createToken, declareContainer, CHILD_DI_FACTORY_TOKEN, injectable } from '../index'; // di entry
+import type { FactoryOptions } from '../module/provider.types';
 
 const ROOT_TOKEN = createToken<() => [number, number, number]>('root');
 const V_1_TOKEN = createToken<number>('v-1');

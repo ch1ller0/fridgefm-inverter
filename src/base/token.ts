@@ -8,6 +8,9 @@ import type { TodoAny } from './util.types';
  */
 export const createToken = <T>(description: string): Token<T> => ({ symbol: Symbol(description) });
 
+/**
+ * Set of token modifier functions
+ */
 export const modifyToken = {
   /**
    * Modifier for providing value that will be used as default if not provided

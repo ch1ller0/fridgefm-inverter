@@ -5,7 +5,7 @@ import { createToken, modifyToken, declareModule, injectable } from '../../index
 type NVal = number;
 type CalcCommand = (cur: NVal, inputVals: number[]) => NVal;
 export const REGISTER_COMMAND_TOKEN = modifyToken.multi(createToken<[string, CalcCommand]>('register-command'));
-export const HADNLER_TOKEN = createToken<(command: string, values: number[]) => NVal>('command-map');
+export const HANDLER_TOKEN = createToken<(command: string, values: number[]) => NVal>('command-handler');
 export const ROOT_TOKEN = createToken<void>('root');
 
 export const RootModule = declareModule({
@@ -34,10 +34,10 @@ export const RootModule = declareModule({
 
         recurseAsk();
       },
-      inject: [HADNLER_TOKEN],
+      inject: [HANDLER_TOKEN],
     }),
     injectable({
-      provide: HADNLER_TOKEN,
+      provide: HANDLER_TOKEN,
       useFactory: (registerCommands) => {
         const commandsMap = registerCommands.reduce((acc, cur) => ({ ...acc, [cur[0]]: cur[1] }), {}) as Record<
           string,
@@ -57,6 +57,14 @@ export const RootModule = declareModule({
         };
       },
       inject: [REGISTER_COMMAND_TOKEN],
+    }),
+    injectable({
+      provide: REGISTER_COMMAND_TOKEN,
+      useValue: ['current', (cur) => cur],
+    }),
+    injectable({
+      provide: REGISTER_COMMAND_TOKEN,
+      useValue: ['clear', () => 0],
     }),
   ],
 });

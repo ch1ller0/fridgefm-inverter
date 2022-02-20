@@ -6,14 +6,6 @@ export const OperationsModule = declareModule({
   providers: [
     injectable({
       provide: REGISTER_COMMAND_TOKEN,
-      useValue: ['current', (cur) => cur],
-    }),
-    injectable({
-      provide: REGISTER_COMMAND_TOKEN,
-      useValue: ['clear', () => 0],
-    }),
-    injectable({
-      provide: REGISTER_COMMAND_TOKEN,
       useValue: ['plus', (cur, inputVals) => inputVals.reduce((acc, val) => acc + val, cur)],
     }),
     injectable({

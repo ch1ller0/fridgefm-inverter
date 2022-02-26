@@ -1,13 +1,19 @@
+import type { TodoAny } from '../base/util.types';
 import type { InjectableDeclaration } from './provider.types';
 
-export type ModuleConfig = {
+export type Extension = (...args: TodoAny) => InjectableDeclaration[];
+export type ExtensionMap = Record<string, Extension>;
+
+export type ModuleConfig<E extends ExtensionMap> = {
   name: string;
   providers: InjectableDeclaration[];
   imports?: ModuleDeclaration[];
+  extend?: E;
 };
 
-export type ModuleDeclaration = ModuleConfig & {
-  symbol: symbol;
+export type ModuleDeclaration<E extends ExtensionMap = {}> = {
+  _config: ModuleConfig<E>;
+  _symbol: symbol;
   /**
    * Module creation is available only via "declareModule" function
    * @example
@@ -20,4 +26,6 @@ export type ModuleDeclaration = ModuleConfig & {
    * });
    */
   _brand: 'declareModule';
+} & {
+  +readonly [Index in keyof E]: (...args: Parameters<E[Index]>) => ModuleDeclaration<E>;
 };

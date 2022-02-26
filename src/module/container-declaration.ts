@@ -42,7 +42,7 @@ const orderModuleProviders = (modules?: ModuleDeclaration[]): InjectableDeclarat
   const innerProviders: InjectableDeclaration[] = [];
   const traverseModules = (importedModules?: ModuleDeclaration[]) => {
     importedModules?.forEach((moduleDec) => {
-      const { providers, imports = [] } = moduleDec;
+      const { providers, imports = [] } = moduleDec._config;
       traverseModules(imports);
       providers.forEach((providerDec) => {
         innerProviders.push(providerDec);

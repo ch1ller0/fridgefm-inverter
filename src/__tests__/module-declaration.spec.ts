@@ -1,10 +1,14 @@
 import { declareContainer, createToken, declareModule, injectable } from '../index';
-import type { ModuleDeclaration } from '../module/module.types';
+import type { ModuleDeclaration, ExtensionMap } from '../module/module.types';
 // [ModuleN, TokenN, ProviderInModuleN]
 const V1_TOKEN = createToken<readonly [number, 1, number]>('value1');
 const V2_TOKEN = createToken<readonly [number, 2, number]>('value2');
 
-const createFakeModule = (count: number, imports?: ModuleDeclaration[]) =>
+const createFakeModule = (
+  count: number,
+  imports?: ModuleDeclaration[],
+  extend?: ExtensionMap,
+): ModuleDeclaration<ExtensionMap> =>
   declareModule({
     name: `module-${count}`,
     providers: [
@@ -13,9 +17,42 @@ const createFakeModule = (count: number, imports?: ModuleDeclaration[]) =>
       injectable({ provide: V2_TOKEN, useValue: [count, 2, 3] }),
     ],
     imports: imports || [],
+    extend,
   });
 
 describe('module-declaration', () => {
+  describe('dynamic modules', () => {
+    it('dynamic module basic config', () => {
+      const module1 = createFakeModule(0, [], {
+        biba1: (val: number) => [injectable({ provide: V1_TOKEN, useValue: [val, 1, 11] })],
+      });
+
+      const container = declareContainer({
+        modules: [module1.biba1(99)],
+        providers: [],
+      });
+
+      expect(container.get(V1_TOKEN)).toEqual([99, 1, 11]);
+      expect(container.get(V2_TOKEN)).toEqual([0, 2, 3]);
+    });
+
+    it('dynamic module methods add providers', () => {
+      const module1 = createFakeModule(0, [], {
+        biba1: (val: number) => [injectable({ provide: V1_TOKEN, useValue: [val, 1, 11] })],
+        biba2: (val: number) => [injectable({ provide: V2_TOKEN, useValue: [val, 2, 12] })],
+        biba3: (val: number) => [injectable({ provide: V1_TOKEN, useValue: [val, 1, 13] })],
+      });
+
+      const container = declareContainer({
+        modules: [module1.biba1(99).biba2(98).biba3(97)],
+        providers: [],
+      });
+
+      expect(container.get(V1_TOKEN)).toEqual([97, 1, 13]);
+      expect(container.get(V2_TOKEN)).toEqual([98, 2, 12]);
+    });
+  });
+
   describe('base mechanics', () => {
     it('modules declare self providers', () => {
       const container = declareContainer({
@@ -41,8 +78,6 @@ describe('module-declaration', () => {
       expect(container.get(V1_TOKEN)).toEqual([0, 1, 2]);
       expect(container.get(V2_TOKEN)).toEqual([100, 2, 100]);
     });
-
-    it.todo('dynamic modules via forRootFn');
   });
 
   // declaring a module into a container basically means to create a correct order of providers

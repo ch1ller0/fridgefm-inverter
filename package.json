@@ -19,6 +19,7 @@
   "engines": {
     "node": ">=14.0"
   },
+  "sideEffects": false,
   "devDependencies": {
     "@types/debug": "^4.1.7",
     "@types/jest": "^27.4.0",

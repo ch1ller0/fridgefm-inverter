@@ -49,7 +49,7 @@ export const RootModule = declareModule({
         return (command, values) => {
           const commandFn = commandsMap[command];
           if (!commandFn) {
-            throw new Error(`Command ${command} not found, use one of: "${Object.keys(commandsMap)}"`);
+            throw new Error(`Command "${command}" not found, use one of: "${Object.keys(commandsMap)}"`);
           }
           currentVal = commandFn(currentVal, values);
 
@@ -58,13 +58,17 @@ export const RootModule = declareModule({
       },
       inject: [REGISTER_COMMAND_TOKEN],
     }),
-    injectable({
-      provide: REGISTER_COMMAND_TOKEN,
-      useValue: ['current', (cur) => cur],
-    }),
-    injectable({
-      provide: REGISTER_COMMAND_TOKEN,
-      useValue: ['clear', () => 0],
-    }),
   ],
+  extend: {
+    withBasicCommands: () => [
+      injectable({
+        provide: REGISTER_COMMAND_TOKEN,
+        useValue: ['current', (cur) => cur],
+      }),
+      injectable({
+        provide: REGISTER_COMMAND_TOKEN,
+        useValue: ['clear', () => 0],
+      }),
+    ],
+  },
 });

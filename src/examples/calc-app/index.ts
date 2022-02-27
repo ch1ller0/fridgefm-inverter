@@ -5,6 +5,6 @@ import { OperationsModule } from './operations.module';
 if (process.env.NODE_ENV !== 'test') {
   declareContainer({
     providers: [],
-    modules: [RootModule, OperationsModule],
+    modules: [RootModule.withBasicCommands(), OperationsModule],
   }).get(ROOT_TOKEN);
 }

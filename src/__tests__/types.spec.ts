@@ -85,4 +85,17 @@ describe('types are sound', () => {
       ],
     });
   });
+
+  it('module.type', async () => {
+    const res = await runTypeTest('src/__tests__/module.spec-d.ts');
+    expect(res).toEqual({
+      suite1: [],
+      suite2: [
+        expect.objectContaining({
+          message: "Cannot invoke an object which is possibly 'undefined'.",
+          severity: 'error',
+        }),
+      ],
+    });
+  });
 });

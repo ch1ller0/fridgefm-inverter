@@ -109,10 +109,11 @@ export const declareContainer = ({ providers, modules, parent }: ContainerConfig
           });
           const resolvedDeps = inject?.map((tokenDeclaration) => {
             const { token, optional } = extractDeclaration(tokenDeclaration);
-
-            // mark current reesolving dep
+            // mark current resolving dep
             resolvingTokens.add(token);
             const resolvedValue = ctx.resolve(token);
+            // delete it after it is resolved
+            resolvingTokens.delete(token);
 
             if (resolvedValue === NOT_FOUND_SYMBOL) {
               if (optional) {
@@ -122,10 +123,6 @@ export const declareContainer = ({ providers, modules, parent }: ContainerConfig
             }
 
             return resolvedValue;
-          });
-          // unmark injected deps
-          inject?.forEach((tokenDeclaration) => {
-            resolvingTokens.delete(extractDeclaration(tokenDeclaration).token);
           });
           logger.resolvedToken(provide);
 

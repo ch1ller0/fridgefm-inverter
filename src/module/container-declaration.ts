@@ -59,7 +59,7 @@ const orderModuleProviders = (modules?: ModuleDeclaration[]): InjectableDeclarat
  * Token for creating child containers, an injectable should be passed as the root of this container
  */
 export const CHILD_DI_FACTORY_TOKEN =
-  createToken<<A>(childProvider: InjectableDeclaration<A>) => () => A>('inverter:child-di-factory');
+  createToken<<A>(childProvider: InjectableDeclaration<Token<A>>) => () => A>('inverter:child-di-factory');
 
 export const declareContainer = ({ providers, modules, parent }: ContainerConfiguration) => {
   const container = createBaseContainer(parent);

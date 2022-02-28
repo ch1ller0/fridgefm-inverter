@@ -54,7 +54,6 @@ describe('types are sound', () => {
       suite2: [
         expect.objectContaining({
           message: "Type '(x: 1) => 1' is not assignable to type 'Fn'.",
-          severity: 'error',
         }),
       ],
     });
@@ -64,23 +63,18 @@ describe('types are sound', () => {
     const res = await runTypeTest('src/__tests__/provider.spec-d.ts');
     expect(res).toEqual({
       suite1: [],
-      suite2: [],
-      suite3: [],
-      suite4: [],
-      suite5: [
-        expect.objectContaining({
-          message: expect.stringContaining('is not assignable to parameter of type'),
-          severity: 'error',
-        }),
+      suite2: [
+        expect.objectContaining({ message: expect.stringContaining('is not assignable to parameter of type') }),
+        expect.objectContaining({ message: expect.stringContaining('is not assignable to parameter of type') }),
+        expect.objectContaining({ message: "Parameter 'a' implicitly has an 'any' type." }),
       ],
-      suite6: [
+      suite3: [
+        expect.objectContaining({ message: expect.stringContaining("Property 'b' is missing in type") }),
         expect.objectContaining({
-          message: expect.stringContaining('is not assignable to parameter of type'),
-          severity: 'error',
+          message: expect.stringContaining("{ a: () => number; }' is not assignable to type"),
         }),
         expect.objectContaining({
-          message: "Parameter 'a' implicitly has an 'any' type.",
-          severity: 'error',
+          message: expect.stringContaining("{ a: () => number; c: () => number; }' is not assignable to type"),
         }),
       ],
     });
@@ -93,7 +87,6 @@ describe('types are sound', () => {
       suite2: [
         expect.objectContaining({
           message: "Cannot invoke an object which is possibly 'undefined'.",
-          severity: 'error',
         }),
       ],
     });

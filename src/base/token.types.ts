@@ -6,7 +6,7 @@ export type Token<T> = { symbol: symbol; type?: T; optionalValue?: T; multi?: tr
 /**
  * Regular token provided value type
  */
-export type TokenProvide<T> = T extends Token<infer A> ? A : unknown;
+export type TokenProvide<T> = T extends Token<infer A> ? A : never;
 /**
  * Token declaration type. This is the interface tokens are declared in inject field
  */

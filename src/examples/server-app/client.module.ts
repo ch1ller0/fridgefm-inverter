@@ -3,13 +3,13 @@ import { randomString } from '../utils';
 import { STORE_TOKEN, CONTROLLER_TOKEN } from './server.module';
 import { LOGGER_TOKEN } from './logger.module';
 
-const CLIENT_ROOT_TOKEN = createToken<{ id: string }>('client-root');
+type UserInfo = { id: string; count: number };
+
+const CLIENT_ROOT_TOKEN = createToken<UserInfo>('client-root');
 const CLIENT_LOGGER_TOKEN = createToken<(message: string) => void>('client-logger');
 const GET_ID_TOKEN = createToken<string>('get-id');
 const ID_LENGTH_TOKEN = createToken<number>('id-length');
-const ON_REQUEST_TOKEN = modifyToken.multi(
-  createToken<(info: { id: string; count: number }) => number>('on-request-multi'),
-);
+const ON_REQUEST_TOKEN = modifyToken.multi(createToken<(info: UserInfo) => number>('on-request-multi'));
 
 const clientRootProvider = injectable({
   provide: CLIENT_ROOT_TOKEN,

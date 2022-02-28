@@ -46,7 +46,7 @@ export const ServerModule = declareModule({
         const state = new Map<string, number>();
 
         return {
-          getStateFor: (key: string) => state.get(key),
+          getStateFor: (key: string) => state.get(key) || 0,
           increaseFor: (key: string, count: number) => {
             const prevState = state.get(key) || 0;
             const newState = prevState + count;

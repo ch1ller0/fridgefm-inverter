@@ -66,8 +66,8 @@ describe('declareContainer', () => {
     try {
       container.get(f3token);
     } catch (e) {
-      expect(e.message).toEqual('Cyclic dependency for token: 3, stack: 3 -> 2 -> 1 -> 3');
-      expect(e.depStack).toEqual([f3token, f2token, f1token, f3token]);
+      expect(e.message).toEqual('Cyclic dependency for token: 3, stack: 3 -> 1 -> 2 -> 3');
+      expect(e.depStack).toEqual([f3token, f1token, f2token, f3token]);
     }
   });
 

@@ -104,7 +104,7 @@ export const declareContainer = ({ providers, modules, parent }: ContainerConfig
           inject?.forEach((tokenDeclaration) => {
             // check if there is a cycle
             if (resolvingTokens.has(extractDeclaration(tokenDeclaration).token)) {
-              throw new CyclicDepError([...Array.from(resolvingTokens).reverse(), provide]);
+              throw new CyclicDepError([provide, ...Array.from(resolvingTokens)]);
             }
           });
           const resolvedDeps = inject?.map((tokenDeclaration) => {
@@ -119,7 +119,7 @@ export const declareContainer = ({ providers, modules, parent }: ContainerConfig
               if (optional) {
                 return undefined;
               }
-              traverseProviders(injectableDep, [injectableDep.provide]);
+              traverseProviders(injectableDep, [provide]);
             }
 
             return resolvedValue;

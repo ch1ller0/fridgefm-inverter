@@ -30,7 +30,32 @@ describe('container-declaration', () => {
         });
         expect(() => {
           container.get(ROOT_TOKEN);
-        }).toThrowError('Cyclic dependency for token: root, stack: root -> v-2 -> v-1 -> root');
+        }).toThrowError('Cyclic dependency for token: root, stack: root -> v-1 -> v-2 -> root');
+      });
+
+      it('long cycle', () => {
+        const tokens = Array(100)
+          .fill(undefined)
+          .map((s, i) => createToken<unknown>(`t-${i}`));
+
+        const container = declareContainer({
+          providers: tokens.map((token, index) =>
+            injectable({
+              provide: token,
+              useFactory: (v) => v,
+              // each token depends on the next one except for the last - it depends on first one, making a cycle
+              inject: [tokens[index + 1] ? tokens[index + 1] : tokens[0]],
+            }),
+          ),
+        });
+
+        expect(() => {
+          container.get(tokens[0]);
+        }).toThrowError(
+          `Cyclic dependency for token: t-0, stack: ${[...tokens, tokens[0]]
+            .map((s) => s.symbol.description)
+            .join(' -> ')}`,
+        );
       });
 
       it('should not throw for edge case', () => {

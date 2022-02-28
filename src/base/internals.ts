@@ -1,5 +1,5 @@
 import { createToken } from './token';
-import type { Container, Resolver, FactoriesMap } from './container.types';
+import type { Container, Resolver, FactoriesMap } from './base-container.types';
 import type { Token } from './token.types';
 
 /** @internal */

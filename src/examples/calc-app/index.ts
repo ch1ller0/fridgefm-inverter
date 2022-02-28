@@ -1,10 +1,15 @@
-import { declareContainer } from '../../index';
+import { ContainerConfiguration, debugContainer, declareContainer } from '../../index';
 import { RootModule, ROOT_TOKEN } from './calc-root.module';
 import { OperationsModule } from './operations.module';
 
 if (process.env.NODE_ENV !== 'test') {
-  declareContainer({
+  const config: ContainerConfiguration = {
     providers: [],
     modules: [RootModule.withBasicCommands(), OperationsModule],
-  }).get(ROOT_TOKEN);
+  };
+  if (process.env.INVERTER_DEBUG === 'true') {
+    debugContainer(config).container.get(ROOT_TOKEN);
+  } else {
+    declareContainer(config).get(ROOT_TOKEN);
+  }
 }

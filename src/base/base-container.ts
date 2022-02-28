@@ -2,7 +2,7 @@
 import { isInternalToken, INTERNAL_TOKENS, NOT_FOUND_SYMBOL, DEFAULT_SCOPE } from './internals';
 import { ResolverError } from './errors';
 
-import type { Container, ValuesMap, FactoriesMap, MultiesMap, FactoryContext } from './container.types';
+import type { Container, ValuesMap, FactoriesMap, MultiesMap, FactoryContext } from './base-container.types';
 import type { Token, TokenProvide } from './token.types';
 import type { FactoryOptions } from '../module/provider.types';
 import type { TodoAny } from './util.types';

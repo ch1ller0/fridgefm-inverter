@@ -1,27 +1,13 @@
-import debug from 'debug';
-import { createBaseContainer } from '../base/container';
+import { createBaseContainer } from '../base/base-container';
 import { CyclicDepError, ResolverError } from '../base/errors';
 import { createToken } from '../base/token';
 import { NOT_FOUND_SYMBOL } from '../base/internals';
 
+import type { ContainerConfiguration, ContainerEvents } from './container.types';
 import type { InjectableDeclaration } from './provider.types';
 import type { TodoAny } from '../base/util.types';
-import type { Container } from '../base/container.types';
 import type { Token, TokenDec } from '../base/token.types';
 import type { ModuleDeclaration } from './module.types';
-
-export type ContainerConfiguration = {
-  modules?: ModuleDeclaration[];
-  providers: InjectableDeclaration<TodoAny>[];
-  parent?: Container;
-};
-
-// @TODO move it to debug package for tree shaking and ability to add to a bundle only on-demand
-const logger = {
-  resolvedToken: (token: Token<TodoAny>) => {
-    debug('fridgefm-inverter')('Resolved token', token.symbol.description);
-  },
-};
 
 const extractDeclaration = <T>(
   tokenDeclaration: TokenDec<Token<T>>,
@@ -38,16 +24,17 @@ const extractDeclaration = <T>(
   };
 };
 
-const orderModuleProviders = (modules?: ModuleDeclaration[]): InjectableDeclaration[] => {
+const orderModuleProviders = (modules?: ModuleDeclaration[], events?: ContainerEvents): InjectableDeclaration[] => {
   const innerProviders: InjectableDeclaration[] = [];
   const traverseModules = (importedModules?: ModuleDeclaration[]) => {
     importedModules?.forEach((moduleDec) => {
       const { providers, imports = [] } = moduleDec.__internals;
       traverseModules(imports);
+      events?.regModule?.(moduleDec);
       providers.forEach((providerDec) => {
         innerProviders.push(providerDec);
+        events?.regProvider?.(providerDec);
       });
-      // console.log(`resolved module: ${name}`);
     });
   };
   traverseModules(modules);
@@ -61,10 +48,10 @@ const orderModuleProviders = (modules?: ModuleDeclaration[]): InjectableDeclarat
 export const CHILD_DI_FACTORY_TOKEN =
   createToken<<A>(childProvider: InjectableDeclaration<Token<A>>) => () => A>('inverter:child-di-factory');
 
-export const declareContainer = ({ providers, modules, parent }: ContainerConfiguration) => {
+export const declareContainer = ({ providers, modules, parent, events }: ContainerConfiguration) => {
   const container = createBaseContainer(parent);
   const resolvingTokens = new Set<Token<TodoAny>>(); // for cycle dep check
-  const allProviders = [...orderModuleProviders(modules), ...providers];
+  const allProviders = [...orderModuleProviders(modules, events), ...providers];
   const traverseProviders = (provider: InjectableDeclaration<TodoAny>, stack: Token<TodoAny>[]) => {
     provider.inject?.forEach((dec) => {
       const { token, optional } = extractDeclaration(dec);
@@ -91,6 +78,7 @@ export const declareContainer = ({ providers, modules, parent }: ContainerConfig
       declareContainer({
         parent: container,
         providers: [childProvider],
+        events,
       }).get(childProvider.provide);
   });
 
@@ -124,18 +112,18 @@ export const declareContainer = ({ providers, modules, parent }: ContainerConfig
 
             return resolvedValue;
           });
-          logger.resolvedToken(provide);
-
+          events?.resolvedProvider?.(injectableDep);
           return useFactory(...(resolvedDeps || []));
         },
         { scope },
       );
     } else {
-      logger.resolvedToken(provide);
-
+      events?.resolvedProvider?.(injectableDep);
       container.bindValue(provide, useValue);
     }
   });
+
+  events?.containerReady?.();
 
   return container;
 };

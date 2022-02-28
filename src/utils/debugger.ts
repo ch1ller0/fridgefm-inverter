@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { declareContainer } from '../module/container-declaration';
 import type { ContainerConfiguration } from '../module/container.types';
 import type { InjectableDeclaration } from '../module/provider.types';

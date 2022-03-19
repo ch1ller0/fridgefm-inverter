@@ -4,27 +4,40 @@ import type { ContainerConfiguration } from '../module/container.types';
 import type { InjectableDeclaration } from '../module/provider.types';
 import type { ModuleDeclaration } from '../module/module.types';
 
+/**
+ * This is a basic wrapper to debug the resolving process of your cointainer
+ */
 export const debugContainer = (containerCfg: ContainerConfiguration) => {
+  const timings = { containerStart: 0, containerReady: 0 };
   const container = declareContainer({
     ...containerCfg,
     events: {
-      resolvedProvider: (provider: InjectableDeclaration) => {
-        console.log('resolved-token', {
+      providerResolveEnd: (provider: InjectableDeclaration) => {
+        console.log('Token resolved', {
           desc: provider.provide.symbol.description,
           type: provider.useFactory ? 'factory' : 'value',
         });
+        containerCfg.events?.providerResolveEnd?.(provider);
       },
-      regProvider: (provider: InjectableDeclaration) => {
-        console.log('reg-provider', {
+      providerRegistered: (provider: InjectableDeclaration) => {
+        console.log('Provider registered', {
           desc: provider.provide.symbol.description,
           type: provider.useFactory ? 'factory' : 'value',
         });
+        containerCfg.events?.providerRegistered?.(provider);
       },
-      regModule: (mod: ModuleDeclaration) => {
-        console.log('reg-module', { desc: mod.__internals.name });
+      moduleRegistered: (mod: ModuleDeclaration, parent: string) => {
+        console.log('Module Registered', { desc: mod.__internals.name, parent });
+        containerCfg.events?.moduleRegistered?.(mod, parent);
       },
       containerReady: () => {
-        console.log('container-ready');
+        timings.containerReady = Date.now();
+        const durationMs = timings.containerReady - timings.containerStart;
+        console.log(`Container is ready in ${durationMs}ms`);
+        containerCfg.events?.containerReady?.();
+      },
+      containerStart: () => {
+        timings.containerStart = Date.now();
       },
     },
   });

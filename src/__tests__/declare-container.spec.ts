@@ -163,7 +163,6 @@ describe('declareContainer', () => {
       try {
         container.get(rootToken);
       } catch (e) {
-        // @TODO does not take root into account, should fix this
         expect(e.message).toEqual('Token "parent:dep" is not provided, stack: child -> child:inner -> parent:dep');
         expect(e.depStack).toEqual([childToken, childInnerToken, parentDepToken]);
       }

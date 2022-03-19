@@ -11,8 +11,24 @@ export type ContainerConfiguration = {
 };
 
 export type ContainerEvents = {
-  resolvedProvider?: (provider: InjectableDeclaration) => void;
-  regProvider?: (provider: InjectableDeclaration) => void;
-  regModule?: (mod: ModuleDeclaration) => void;
+  /**
+   * Event for when provider is resolved
+   */
+  providerResolveEnd?: (provider: InjectableDeclaration) => void;
+  /**
+   * Event for when provider is been registered
+   */
+  providerRegistered?: (provider: InjectableDeclaration) => void;
+  /**
+   * Event for when module is been registered
+   */
+  moduleRegistered?: (mod: ModuleDeclaration, parent: string) => void;
+  /**
+   * Event for when the container has started
+   */
+  containerStart?: () => void;
+  /**
+   * Event for when container is ready
+   */
   containerReady?: () => void;
 };

@@ -1,8 +1,9 @@
-import { declareContainer, createToken, declareModule, injectable } from '../index';
+import { declareContainer, createToken, declareModule, injectable, modifyToken } from '../index';
 import type { ModuleDeclaration, ExtensionMap } from '../module/module.types';
 // [ModuleN, TokenN, ProviderInModuleN]
 const V1_TOKEN = createToken<readonly [number, 1, number]>('value1');
 const V2_TOKEN = createToken<readonly [number, 2, number]>('value2');
+const V3_MULTI_TOKEN = modifyToken.multi(createToken<readonly [number, 3]>('multi-value3'));
 
 const createFakeModule = (
   count: number,
@@ -154,6 +155,30 @@ describe('module-declaration', () => {
       // resolve order: module-0, module-2, module-1 - the latter wins
       expect(container.get(V1_TOKEN)).toEqual([1, 1, 2]);
       expect(container.get(V2_TOKEN)).toEqual([1, 2, 3]);
+    });
+
+    // @TODO fix this logic
+    it.skip('multi providers are not added repeatedly if module added repeatedly', () => {
+      let timesV3Called = 0;
+      const dupModule = declareModule({
+        name: 'Module',
+        providers: [
+          injectable({
+            provide: V3_MULTI_TOKEN,
+            useFactory: () => {
+              timesV3Called += 1;
+              return [timesV3Called, 3] as const;
+            },
+          }),
+        ],
+      });
+
+      const container = declareContainer({
+        modules: [dupModule, createFakeModule(1, [dupModule])],
+        providers: [],
+      });
+      expect(container.get(V3_MULTI_TOKEN)).toEqual([1, 3]);
+      expect(timesV3Called).toEqual(1);
     });
   });
 });

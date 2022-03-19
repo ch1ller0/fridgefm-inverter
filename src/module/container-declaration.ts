@@ -24,20 +24,20 @@ const extractDeclaration = <T>(
   };
 };
 
-const orderModuleProviders = (modules?: ModuleDeclaration[], events?: ContainerEvents): InjectableDeclaration[] => {
+const orderModuleProviders = (modules: ModuleDeclaration[], events?: ContainerEvents): InjectableDeclaration[] => {
   const innerProviders: InjectableDeclaration[] = [];
-  const traverseModules = (importedModules?: ModuleDeclaration[]) => {
+  const traverseModules = (importedModules: ModuleDeclaration[], parentName: string) => {
     importedModules?.forEach((moduleDec) => {
-      const { providers, imports = [] } = moduleDec.__internals;
-      traverseModules(imports);
-      events?.regModule?.(moduleDec);
+      const { providers, imports = [], name } = moduleDec.__internals;
+      traverseModules(imports, name);
+      events?.moduleRegistered?.(moduleDec, parentName);
       providers.forEach((providerDec) => {
         innerProviders.push(providerDec);
-        events?.regProvider?.(providerDec);
+        events?.providerRegistered?.(providerDec);
       });
     });
   };
-  traverseModules(modules);
+  traverseModules(modules, 'Container');
 
   return innerProviders;
 };
@@ -48,7 +48,9 @@ const orderModuleProviders = (modules?: ModuleDeclaration[], events?: ContainerE
 export const CHILD_DI_FACTORY_TOKEN =
   createToken<<A>(childProvider: InjectableDeclaration<Token<A>>) => () => A>('inverter:child-di-factory');
 
-export const declareContainer = ({ providers, modules, parent, events }: ContainerConfiguration) => {
+export const declareContainer = ({ providers = [], modules = [], parent, events }: ContainerConfiguration) => {
+  events?.containerStart?.();
+
   const container = createBaseContainer(parent);
   const resolvingTokens = new Set<Token<TodoAny>>(); // for cycle dep check
   const allProviders = [...orderModuleProviders(modules, events), ...providers];
@@ -112,13 +114,13 @@ export const declareContainer = ({ providers, modules, parent, events }: Contain
 
             return resolvedValue;
           });
-          events?.resolvedProvider?.(injectableDep);
+          events?.providerResolveEnd?.(injectableDep);
           return useFactory(...(resolvedDeps || []));
         },
         { scope },
       );
     } else {
-      events?.resolvedProvider?.(injectableDep);
+      events?.providerResolveEnd?.(injectableDep);
       container.bindValue(provide, useValue);
     }
   });

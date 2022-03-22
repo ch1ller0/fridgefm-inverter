@@ -6,7 +6,7 @@ export type ExtensionMap = Record<string, Extension>;
 
 export type ModuleConfig<E extends ExtensionMap> = {
   name: string;
-  providers: InjectableDeclaration[];
+  providers: InjectableDeclaration<TodoAny, TodoAny>[];
   imports?: ModuleDeclaration[];
   extend?: E;
 };

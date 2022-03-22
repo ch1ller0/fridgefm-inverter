@@ -1,4 +1,4 @@
-import type { Token, TokenDecTuple, TokensDeclarationProvide, TokenProvide } from '../base/token.types';
+import type { Token, ProviderDepsDec, TokensDeclarationProvide, TokenProvide } from '../base/token.types';
 
 export type FactoryOptions = {
   /**
@@ -11,37 +11,39 @@ export type FactoryOptions = {
   scope?: 'singleton' | 'scoped' | 'transient';
 };
 
-export type ProviderConfig<T extends Token<unknown> = Token<unknown>, DepToks extends TokenDecTuple = TokenDecTuple> =
+export type ProviderConfig<
+  T extends Token<unknown> = Token<unknown>,
+  DepToks extends ProviderDepsDec = ProviderDepsDec,
+> = {
+  provide: T;
+} & (
   | {
-      provide: T;
-    } & (
-      | {
-          useFactory: (...deps: TokensDeclarationProvide<DepToks>) => TokenProvide<T>;
-          scope?: FactoryOptions['scope'];
-          inject: DepToks;
-          useValue?: never;
-        }
-      | {
-          useFactory: () => TokenProvide<T>;
-          scope?: FactoryOptions['scope'];
-          inject?: never;
-          useValue?: never;
-        }
-      | {
-          useFactory?: never;
-          scope?: never;
-          inject?: never;
-          useValue: TokenProvide<T>;
-        }
-    );
+      useFactory: (inject: TokensDeclarationProvide<DepToks>) => TokenProvide<T>;
+      scope?: FactoryOptions['scope'];
+      deps: DepToks;
+      useValue?: never;
+    }
+  | {
+      useFactory: () => TokenProvide<T>;
+      scope?: FactoryOptions['scope'];
+      deps?: never;
+      useValue?: never;
+    }
+  | {
+      useFactory?: never;
+      scope?: never;
+      deps?: never;
+      useValue: TokenProvide<T>;
+    }
+);
 
 /**
  * Helper type to force the use of injectable method
  */
 export type InjectableDeclaration<
   T extends Token<unknown> = Token<unknown>,
-  DepToks extends TokenDecTuple = TokenDecTuple,
-> = ProviderConfig<Token<T>, DepToks> & {
+  DepToks extends ProviderDepsDec = ProviderDepsDec,
+> = ProviderConfig<T, DepToks> & {
   /**
    * Provider creation is available only via "injectable" function
    * @example

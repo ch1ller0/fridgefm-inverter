@@ -6,11 +6,11 @@ export type Token<T> = { symbol: symbol; type?: T; optionalValue?: T; multi?: tr
 /**
  * Regular token provided value type
  */
-export type TokenProvide<T> = T extends Token<infer A> ? A : never;
+export type TokenProvide<T extends Token<TodoAny>> = T extends Token<infer A> ? A : never;
 /**
- * Token declaration type. This is the interface tokens are declared in inject field
+ * Token declaration type. This is the interface tokens are declared in deps field
  */
-export type TokenDec<T> = T | { token: T; optional: true };
+export type TokenDec<T extends Token<TodoAny>> = T | { token: T; optional: true };
 /**
  * Token declaration provided value type. It takes into account the optionality and multiness of a token
  */
@@ -28,12 +28,13 @@ export type TokenDecProvide<T> = T extends TokenDec<infer A> & { optional: true 
     : never
   : never;
 /**
- * Tuple of token declarations.
+ * Record of token declarations.
  */
-export type TokenDecTuple = readonly [...ReadonlyArray<TokenDec<Token<TodoAny>>>];
+export type ProviderDepsDec = Record<string, TokenDec<Token<TodoAny>>>;
+
 /**
- * Tuple of token declaration provided value types
+ * Record of token declaration provided value types
  */
-export type TokensDeclarationProvide<DepToks extends TokenDecTuple> = {
-  +readonly [Index in keyof DepToks]: TokenDecProvide<DepToks[Index]>;
+export type TokensDeclarationProvide<DepToks extends ProviderDepsDec> = {
+  readonly [Key in keyof DepToks]: TokenDecProvide<DepToks[Key]>;
 };

@@ -5,7 +5,7 @@ import type { ModuleDeclaration } from './module.types';
 
 export type ContainerConfiguration = {
   modules?: ModuleDeclaration[];
-  providers: InjectableDeclaration<TodoAny>[];
+  providers: InjectableDeclaration<TodoAny, TodoAny>[];
   parent?: Container;
   events?: ContainerEvents;
 };

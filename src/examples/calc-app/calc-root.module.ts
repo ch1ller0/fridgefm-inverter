@@ -1,10 +1,10 @@
 import rl from 'readline';
 import { stdin as input, stdout as output } from 'process';
-import { createToken, modifyToken, declareModule, injectable } from '../../index';
+import { createToken, createMultiToken, declareModule, injectable } from '../../index';
 
 type NVal = number;
 type CalcCommand = (cur: NVal, inputVals: number[]) => NVal;
-export const REGISTER_COMMAND_TOKEN = modifyToken.multi(createToken<[string, CalcCommand]>('register-command'));
+export const REGISTER_COMMAND_TOKEN = createMultiToken<[string, CalcCommand]>('register-command');
 export const HANDLER_TOKEN = createToken<(command: string, values: number[]) => NVal>('command-handler');
 export const ROOT_TOKEN = createToken<void>('root');
 
@@ -13,7 +13,7 @@ export const RootModule = declareModule({
   providers: [
     injectable({
       provide: ROOT_TOKEN,
-      useFactory: (handler) => {
+      useFactory: ({ handler }) => {
         const readline = rl.createInterface({ input, output });
         const recurseAsk = () => {
           readline.question('', (answer) => {
@@ -34,11 +34,13 @@ export const RootModule = declareModule({
 
         recurseAsk();
       },
-      inject: [HANDLER_TOKEN],
+      deps: {
+        handler: { token: HANDLER_TOKEN, optional: true },
+      },
     }),
     injectable({
       provide: HANDLER_TOKEN,
-      useFactory: (registerCommands) => {
+      useFactory: ({ registerCommands }) => {
         const commandsMap = registerCommands.reduce((acc, cur) => ({ ...acc, [cur[0]]: cur[1] }), {}) as Record<
           string,
           CalcCommand
@@ -56,7 +58,9 @@ export const RootModule = declareModule({
           return currentVal;
         };
       },
-      inject: [REGISTER_COMMAND_TOKEN],
+      deps: {
+        registerCommands: REGISTER_COMMAND_TOKEN,
+      } as const,
     }),
   ],
   extend: {

@@ -10,8 +10,15 @@ describe('container-declaration', () => {
     it('ResolverError', () => {
       const container = declareContainer({
         providers: [
-          injectable({ provide: ROOT_TOKEN, useFactory: (v1) => () => [v1, 10, 10], inject: [V_1_TOKEN] }),
-          injectable({ provide: V_1_TOKEN, useFactory: (v2) => 10 + v2, inject: [V_2_TOKEN] }),
+          injectable({
+            provide: ROOT_TOKEN,
+            useFactory:
+              ({ v1 }) =>
+              () =>
+                [v1, 10, 10],
+            deps: { v1: V_1_TOKEN },
+          }),
+          injectable({ provide: V_1_TOKEN, useFactory: ({ v2 }) => 10 + v2, deps: { v2: V_2_TOKEN } }),
         ],
       });
       expect(() => {
@@ -23,9 +30,16 @@ describe('container-declaration', () => {
       it('basic cycle', () => {
         const container = declareContainer({
           providers: [
-            injectable({ provide: ROOT_TOKEN, useFactory: (v1) => () => [v1, 10, 10], inject: [V_1_TOKEN] }),
-            injectable({ provide: V_1_TOKEN, useFactory: (v2) => 10 + v2, inject: [V_2_TOKEN] }),
-            injectable({ provide: V_2_TOKEN, useFactory: (rootFn) => rootFn()[0], inject: [ROOT_TOKEN] }),
+            injectable({
+              provide: ROOT_TOKEN,
+              useFactory:
+                ({ v1 }) =>
+                () =>
+                  [v1, 10, 10],
+              deps: { v1: V_1_TOKEN },
+            }),
+            injectable({ provide: V_1_TOKEN, useFactory: ({ v2 }) => 10 + v2, deps: { v2: V_2_TOKEN } }),
+            injectable({ provide: V_2_TOKEN, useFactory: ({ rootFn }) => rootFn()[0], deps: { rootFn: ROOT_TOKEN } }),
           ],
         });
         expect(() => {
@@ -42,9 +56,11 @@ describe('container-declaration', () => {
           providers: tokens.map((token, index) =>
             injectable({
               provide: token,
-              useFactory: (v) => v,
+              useFactory: ({ v }) => v,
               // each token depends on the next one except for the last - it depends on first one, making a cycle
-              inject: [tokens[index + 1] ? tokens[index + 1] : tokens[0]],
+              deps: {
+                v: tokens[index + 1] ? tokens[index + 1] : tokens[0],
+              },
             }),
           ),
         });
@@ -63,11 +79,14 @@ describe('container-declaration', () => {
           providers: [
             injectable({
               provide: ROOT_TOKEN,
-              useFactory: (v1, v2) => () => [10, v1, v2],
-              inject: [V_1_TOKEN, V_2_TOKEN],
+              useFactory:
+                ({ v1, v2 }) =>
+                () =>
+                  [10, v1, v2],
+              deps: { v1: V_1_TOKEN, v2: V_2_TOKEN },
             }),
             injectable({ provide: V_1_TOKEN, useFactory: () => 10 }),
-            injectable({ provide: V_2_TOKEN, useFactory: (v1) => v1 + 5, inject: [V_1_TOKEN] }),
+            injectable({ provide: V_2_TOKEN, useFactory: ({ v1 }) => v1 + 5, deps: { v1: V_1_TOKEN } }),
           ],
         });
         expect(() => {
@@ -83,17 +102,17 @@ describe('container-declaration', () => {
     const createProviders = ([v1scope, v2scope]: [FactoryOptions['scope'], FactoryOptions['scope']]) => {
       const childProvider = injectable({
         provide: CHILD_TOKEN,
-        inject: [V_1_TOKEN, V_2_TOKEN, V_2_TOKEN],
-        useFactory: (v1, v2, v2next) => [v1, v2, v2next] as const,
+        deps: { v1: V_1_TOKEN, v2: V_2_TOKEN, v2next: V_2_TOKEN },
+        useFactory: ({ v1, v2, v2next }) => [v1, v2, v2next] as const,
       });
 
       const rootProvider = injectable({
         provide: ROOT_TOKEN,
-        useFactory: (childDiFactory) => {
+        useFactory: ({ childDiFactory }) => {
           const childDi = childDiFactory(childProvider);
           return childDi;
         },
-        inject: [CHILD_DI_FACTORY_TOKEN] as const,
+        deps: { childDiFactory: CHILD_DI_FACTORY_TOKEN } as const,
       });
 
       const createGetNumber = () => {
@@ -112,8 +131,8 @@ describe('container-declaration', () => {
 
       const dep2provider = injectable({
         provide: V_2_TOKEN,
-        useFactory: (v1) => v1 + 50,
-        inject: [V_1_TOKEN] as const,
+        useFactory: ({ v1 }) => v1 + 50,
+        deps: { v1: V_1_TOKEN } as const,
         scope: v2scope,
       });
 
@@ -206,9 +225,9 @@ describe('container-declaration', () => {
 
       const dep1provider = injectable({
         provide: V_1_TOKEN,
-        useFactory: (nothing) => nothing,
+        useFactory: ({ nothing }) => nothing,
         scope: 'scoped',
-        inject: [NEVER_TOKEN],
+        deps: { nothing: NEVER_TOKEN },
       });
 
       const container = declareContainer({

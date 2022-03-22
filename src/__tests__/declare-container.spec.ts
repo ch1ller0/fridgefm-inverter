@@ -13,8 +13,8 @@ describe('declareContainer', () => {
     const v2provider = injectable({ provide: v2token, useValue: { a: 2, c: 3 } });
     const f1provider = injectable({
       provide: f1token,
-      inject: [v1token, v2token] as const,
-      useFactory: (v1, v2) => ({
+      deps: { v1: v1token, v2: v2token } as const,
+      useFactory: ({ v1, v2 }) => ({
         a: v1.a + v2.a,
         b: v1.b + 10,
         c: v2.c + 20,
@@ -22,8 +22,8 @@ describe('declareContainer', () => {
     });
     const f2provider = injectable({
       provide: f2token,
-      inject: [f1token] as const,
-      useFactory: (v1) => ({
+      deps: { v1: f1token } as const,
+      useFactory: ({ v1 }) => ({
         a: v1.a + 10,
         b: v1.b + 20,
         c: v1.c + 30,
@@ -48,18 +48,18 @@ describe('declareContainer', () => {
 
     const f1prov = injectable({
       provide: f1token,
-      inject: [f2token] as const,
-      useFactory: (value) => ({ a: value.a }),
+      deps: { value: f2token } as const,
+      useFactory: ({ value }) => ({ a: value.a }),
     });
     const f2prov = injectable({
       provide: f2token,
-      inject: [f3token] as const,
-      useFactory: (value) => ({ a: value.a }),
+      deps: { value: f3token } as const,
+      useFactory: ({ value }) => ({ a: value.a }),
     });
     const f3prov = injectable({
       provide: f3token,
-      inject: [f1token] as const,
-      useFactory: (value) => ({ a: value.a }),
+      deps: { value: f1token } as const,
+      useFactory: ({ value }) => ({ a: value.a }),
     });
     const container = declareContainer({ providers: [f1prov, f2prov, f3prov] });
 
@@ -80,13 +80,13 @@ describe('declareContainer', () => {
 
       const f1prov = injectable({
         provide: f1token,
-        inject: [f2token] as const,
-        useFactory: (value) => ({ a: value.a }),
+        deps: { value: f2token } as const,
+        useFactory: ({ value }) => ({ a: value.a }),
       });
       const f2prov = injectable({
         provide: f2token,
-        inject: [f3token] as const,
-        useFactory: (value) => ({ a: value.a }),
+        deps: { value: f3token } as const,
+        useFactory: ({ value }) => ({ a: value.a }),
       });
       const container = declareContainer({ providers: [f1prov, f2prov] });
 
@@ -104,8 +104,10 @@ describe('declareContainer', () => {
 
       const rootDep = injectable({
         provide: rootToken,
-        inject: [{ token: optToken, optional: true }] as const,
-        useFactory: (opt) => (opt || 100) + 1,
+        deps: {
+          opt: { token: optToken, optional: true },
+        } as const,
+        useFactory: ({ opt }) => (opt || 100) + 1,
       });
 
       const value = declareContainer({ providers: [rootDep] }).get(rootToken);
@@ -118,8 +120,10 @@ describe('declareContainer', () => {
 
       const rootDep = injectable({
         provide: rootToken,
-        inject: [{ token: multiToken, optional: true }] as const,
-        useFactory: (opt) => opt,
+        deps: {
+          opt: { token: multiToken, optional: true },
+        } as const,
+        useFactory: ({ opt }) => opt,
       });
 
       const value = declareContainer({ providers: [rootDep] }).get(rootToken);
@@ -138,20 +142,20 @@ describe('declareContainer', () => {
 
       const childDep = injectable({
         provide: childToken,
-        inject: [childInnerToken] as const,
-        useFactory: (childInnerDep) => childInnerDep + 1,
+        deps: { childInnerDep: childInnerToken } as const,
+        useFactory: ({ childInnerDep }) => childInnerDep + 1,
       });
 
       const childInner = injectable({
         provide: childInnerToken,
-        inject: [parentDepToken] as const,
-        useFactory: (parentDep) => parentDep + 1,
+        deps: { parentDep: parentDepToken } as const,
+        useFactory: ({ parentDep }) => parentDep + 1,
       });
 
       const rootDep = injectable({
         provide: rootToken,
-        inject: [CHILD_DI_FACTORY_TOKEN] as const,
-        useFactory: (childDiFactory) => {
+        deps: { childDiFactory: CHILD_DI_FACTORY_TOKEN } as const,
+        useFactory: ({ childDiFactory }) => {
           const childScope = childDiFactory(childDep);
           return childScope();
         },

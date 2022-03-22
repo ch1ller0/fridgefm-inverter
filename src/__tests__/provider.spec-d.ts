@@ -29,14 +29,14 @@ export default [
 
       injectable({
         provide: numberToken,
-        useFactory: (a) => a + 1,
-        inject: [helperToken] as const,
+        useFactory: ({ a }) => a + 1,
+        deps: { a: helperToken } as const,
       });
 
       injectable({
         provide: numberToken,
-        useFactory: (a) => a + 1,
-        inject: [helperToken] as const,
+        useFactory: ({ a }) => a + 1,
+        deps: { a: helperToken } as const,
       });
     },
   },
@@ -47,15 +47,15 @@ export default [
       // no inject field
       injectable({
         provide: numberToken,
-        useFactory: (a) => a + 1,
+        useFactory: ({ a }) => a + 1,
       });
 
       // mix of value and factory
       injectable({
         provide: numberToken,
         useValue: 10,
-        useFactory: (a) => a + 1,
-        inject: [helperToken] as const,
+        useFactory: ({ a }) => a + 1,
+        deps: { a: helperToken } as const,
       });
     },
   },
@@ -76,8 +76,8 @@ export default [
 
       injectable({
         provide: classToken,
-        useFactory: (helper) => ({ a: () => helper + 1, c: () => 2 }),
-        inject: [helperToken] as const,
+        useFactory: ({ helper }) => ({ a: () => helper + 1, c: () => 2 }),
+        deps: { helper: helperToken } as const,
       });
 
       injectable({

@@ -21,3 +21,10 @@ export const modifyToken = {
    */
   multi: <A extends Token<TodoAny>>(token: A) => ({ ...token, multi: true as const }),
 } as const;
+
+/**
+ * Method for creating multiple tokens - that means that they dont
+ * shadow each other but instead are passed as an array
+ * @param description string literal describing your tokeen purpose
+ */
+export const createMultiToken = <T>(description: string): Token<T> => modifyToken.multi(createToken<T>(description));

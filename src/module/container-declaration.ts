@@ -25,21 +25,25 @@ const extractDeclaration = <T>(
 };
 
 const orderModuleProviders = (modules: ModuleDeclaration[], events?: ContainerEvents): InjectableDeclaration[] => {
-  const innerProviders: InjectableDeclaration[] = [];
+  const uniqProviders = new Set<InjectableDeclaration>();
   const traverseModules = (importedModules: ModuleDeclaration[], parentName: string) => {
     importedModules?.forEach((moduleDec) => {
       const { providers, imports = [], name } = moduleDec.__internals;
       traverseModules(imports, name);
       events?.moduleRegistered?.(moduleDec, parentName);
       providers.forEach((providerDec) => {
-        innerProviders.push(providerDec);
+        if (uniqProviders.has(providerDec)) {
+          // this ensures the correct resolve order - the latest added provider is set for resolve (see tests for additional info)
+          uniqProviders.delete(providerDec);
+        }
+        uniqProviders.add(providerDec);
         events?.providerRegistered?.(providerDec);
       });
     });
   };
   traverseModules(modules, 'Container');
 
-  return innerProviders;
+  return Array.from(uniqProviders.values());
 };
 
 /**
@@ -54,6 +58,7 @@ export const declareContainer = ({ providers = [], modules = [], parent, events 
   const container = createBaseContainer(parent);
   const resolvingTokens = new Set<Token<TodoAny>>(); // for cycle dep check
   const allProviders = [...orderModuleProviders(modules, events), ...providers];
+
   const traverseProviders = (provider: InjectableDeclaration<TodoAny>, stack: Token<TodoAny>[]) => {
     provider.inject?.forEach((dec) => {
       const { token, optional } = extractDeclaration(dec);

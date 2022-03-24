@@ -106,7 +106,7 @@ describe('module-declaration', () => {
     it('duped module injects if added later', () => {
       let timesV1Called = 0;
       const dupModule = declareModule({
-        name: 'Module',
+        name: 'dup-module',
         providers: [
           injectable({
             provide: V1_TOKEN,
@@ -128,7 +128,7 @@ describe('module-declaration', () => {
     it('duped module wont inject if added earlier', () => {
       let timesV1Called = 0;
       const dupModule = declareModule({
-        name: 'Module',
+        name: 'dup-module',
         providers: [
           injectable({
             provide: V1_TOKEN,
@@ -147,21 +147,20 @@ describe('module-declaration', () => {
       expect(timesV1Called).toEqual(0);
     });
 
-    it('first registered module is shadowed by next modules imports', () => {
+    it('first registered module is shadowed by next module`s imports', () => {
       const container = declareContainer({
         modules: [createFakeModule(0), createFakeModule(1, [createFakeModule(2)])],
         providers: [],
       });
-      // resolve order: module-0, module-2, module-1 - the latter wins
+      // register order: module-0, module-2, module-1 - the latter wins
       expect(container.get(V1_TOKEN)).toEqual([1, 1, 2]);
       expect(container.get(V2_TOKEN)).toEqual([1, 2, 3]);
     });
 
-    // @TODO fix this logic
-    it.skip('multi providers are not added repeatedly if module added repeatedly', () => {
+    it('multi providers are not added repeatedly if module added repeatedly', () => {
       let timesV3Called = 0;
       const dupModule = declareModule({
-        name: 'Module',
+        name: 'dup-module',
         providers: [
           injectable({
             provide: V3_MULTI_TOKEN,
@@ -177,8 +176,14 @@ describe('module-declaration', () => {
         modules: [dupModule, createFakeModule(1, [dupModule])],
         providers: [],
       });
-      expect(container.get(V3_MULTI_TOKEN)).toEqual([1, 3]);
+      const v3Val1 = container.get(V3_MULTI_TOKEN);
+      expect(v3Val1).toHaveLength(1);
+      expect(v3Val1).toEqual([[1, 3]]);
       expect(timesV3Called).toEqual(1);
+
+      const v3Val2 = container.get(V3_MULTI_TOKEN);
+      expect(v3Val2).toEqual([[2, 3]]);
+      expect(timesV3Called).toEqual(2);
     });
   });
 });

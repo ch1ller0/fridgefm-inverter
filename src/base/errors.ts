@@ -7,7 +7,7 @@ export class ResolverError extends Error {
   constructor(depStack: Token<TodoAny>[]) {
     const descriptionStack = depStack.map((s) => s.symbol.description);
     super(
-      `Token "${descriptionStack[descriptionStack.length - 1] ?? ''}" is not provided, stack: ${descriptionStack.join(
+      `Token "${descriptionStack[descriptionStack.length - 1]}" is not provided, stack: ${descriptionStack.join(
         ' -> ',
       )}`,
     );

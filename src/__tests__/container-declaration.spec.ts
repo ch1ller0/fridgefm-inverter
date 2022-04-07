@@ -177,15 +177,15 @@ describe('container-declaration', () => {
   });
 
   describe('child-di-factory', () => {
-    const rootToken = createToken<number>('root');
+    const rootToken = createToken<number[]>('root');
     const parentDepToken = createToken<number>('parent:dep');
     const childToken = createToken<number>('child');
     const childInnerToken = createToken<number>('child:inner');
+    const createChildToken = createToken<() => number>('create-child');
 
     it('child di checks the dep tree once', () => {
       let childDiCalledTimes = 0;
       let innerCalledTimes = 0;
-      const createChildToken = createToken<() => number>('create-child');
 
       const childDep = injectable({
         provide: childToken,
@@ -242,7 +242,7 @@ describe('container-declaration', () => {
             inject: [CHILD_DI_FACTORY_TOKEN] as const,
             useFactory: (childDiFactory) => {
               const childScope = childDiFactory(childDep);
-              return childScope();
+              return [childScope()];
             },
           }),
           injectable({
@@ -261,150 +261,236 @@ describe('container-declaration', () => {
       }
     });
 
-    describe('scopes', () => {
-      const CHILD_TOKEN = createToken<Readonly<[number, number, number]>>('child-token');
+    it('child di in different scopes', () => {
+      const transientDep = createToken<number>('transient');
+      const transientBasedDep = createToken<number>('transient-based');
+      const scopedDep = createToken<number>('scoped');
+      const scopeBasedDep = createToken<number>('scope-based');
+      const singletonDep = createToken<number>('singleton');
+      const singletonBasedDep = createToken<number>('singleton-based');
+      const createDiToken = createToken<() => number[]>('child-di');
+      const childRootToken = createToken<number[]>('child-root');
 
-      const createProviders = ([v1scope, v2scope]: [FactoryOptions['scope'], FactoryOptions['scope']]) => {
-        const childProvider = injectable({
-          provide: CHILD_TOKEN,
-          inject: [V_1_TOKEN, V_2_TOKEN, V_2_TOKEN],
-          useFactory: (v1, v2, v2next) => [v1, v2, v2next] as const,
-        });
+      const childFactoryProvider = injectable({
+        provide: childRootToken,
+        useFactory: (tr, trb, sc, scb, si, sib) => [tr, trb, sc, scb, si, sib],
+        inject: [transientDep, transientBasedDep, scopedDep, scopeBasedDep, singletonDep, singletonBasedDep] as const,
+      });
 
-        const rootProvider = injectable({
-          provide: ROOT_TOKEN,
-          useFactory: (childDiFactory) => {
-            const childDi = childDiFactory(childProvider);
-            return childDi;
-          },
-          inject: [CHILD_DI_FACTORY_TOKEN] as const,
-        });
+      const random8 = () => Math.floor(Math.random() * Math.pow(10, 8));
 
-        const createGetNumber = () => {
-          let counter = 0;
-          return () => {
-            counter++;
-            return counter * 100;
-          };
+      const container = declareContainer({
+        providers: [
+          injectable({
+            provide: transientDep,
+            scope: 'transient',
+            useFactory: random8,
+          }),
+          injectable({
+            provide: transientBasedDep,
+            useFactory: (transientV) => transientV + 1,
+            inject: [transientDep] as const,
+          }),
+          injectable({
+            provide: scopedDep,
+            scope: 'scoped',
+            useFactory: random8,
+          }),
+          injectable({
+            provide: scopeBasedDep,
+            useFactory: (scopedV) => scopedV + 2,
+            inject: [scopedDep] as const,
+          }),
+          injectable({
+            provide: singletonDep,
+            scope: 'singleton',
+            useFactory: random8,
+          }),
+          injectable({
+            provide: singletonBasedDep,
+            useFactory: (singletonV) => singletonV + 3,
+            inject: [singletonDep] as const,
+          }),
+          injectable({
+            provide: createDiToken,
+            useFactory: (childDiFactory) => {
+              // this is a recommended way of creating child di
+              const createDi = childDiFactory(childFactoryProvider);
+              return () => createDi();
+            },
+            inject: [CHILD_DI_FACTORY_TOKEN] as const,
+          }),
+          injectable({
+            provide: rootToken,
+            scope: 'transient', // create new root on each request
+            useFactory: (createDi) => createDi(),
+            inject: [createDiToken],
+          }),
+        ],
+      });
+
+      const [a, b] = [container.get(rootToken), container.get(rootToken)];
+      // check transient values
+      expect(a[0]).not.toEqual(b[0]);
+      expect(a[1]).not.toEqual(b[1]);
+      expect(a[0]).not.toEqual(a[1]);
+      expect(a[0]).not.toEqual(a[1] - 1); // check that transient was called again
+      expect(b[0]).not.toEqual(b[1] - 1);
+      // check scoped values
+      expect(a[2]).not.toEqual(b[2]);
+      expect(a[2]).toEqual(a[3] - 2); // check that scoped was not called again, but was reused
+      expect(b[2]).toEqual(b[3] - 2);
+      // check singleton values - they all have the same values used
+      expect(a[4]).toEqual(b[4]);
+      expect(a[4]).toEqual(a[5] - 3);
+      expect(a[5]).toEqual(b[5]);
+      expect(b[4]).toEqual(b[5] - 3);
+    });
+  });
+
+  describe('scopes', () => {
+    const CHILD_TOKEN = createToken<Readonly<[number, number, number]>>('child-token');
+
+    const createProviders = ([v1scope, v2scope]: [FactoryOptions['scope'], FactoryOptions['scope']]) => {
+      const childProvider = injectable({
+        provide: CHILD_TOKEN,
+        inject: [V_1_TOKEN, V_2_TOKEN, V_2_TOKEN],
+        useFactory: (v1, v2, v2next) => [v1, v2, v2next] as const,
+      });
+
+      const rootProvider = injectable({
+        provide: ROOT_TOKEN,
+        useFactory: (childDiFactory) => {
+          const childDi = childDiFactory(childProvider);
+          return childDi;
+        },
+        inject: [CHILD_DI_FACTORY_TOKEN] as const,
+      });
+
+      const createGetNumber = () => {
+        let counter = 0;
+        return () => {
+          counter++;
+          return counter * 100;
         };
-
-        const dep1provider = injectable({
-          provide: V_1_TOKEN,
-          useFactory: createGetNumber(),
-          scope: v1scope,
-        });
-
-        const dep2provider = injectable({
-          provide: V_2_TOKEN,
-          useFactory: (v1) => v1 + 50,
-          inject: [V_1_TOKEN] as const,
-          scope: v2scope,
-        });
-
-        return [rootProvider, dep1provider, dep2provider];
       };
 
-      it('singleton/singleton', () => {
-        const container = declareContainer({ providers: createProviders(['singleton', 'singleton']) });
-        const values1 = container.get(ROOT_TOKEN)();
-        const values2 = container.get(ROOT_TOKEN)();
-        // v1 and v2 is the same for both calls
-        expect(values1).toEqual([100, 150, 150]);
-        expect(values2).toEqual([100, 150, 150]);
+      const dep1provider = injectable({
+        provide: V_1_TOKEN,
+        useFactory: createGetNumber(),
+        scope: v1scope,
       });
 
-      it('singleton/scoped', () => {
-        const container = declareContainer({ providers: createProviders(['singleton', 'scoped']) });
-        const values1 = container.get(ROOT_TOKEN)();
-        const values2 = container.get(ROOT_TOKEN)();
-        // v1 and v2 is the same for both calls
-        expect(values1).toEqual([100, 150, 150]);
-        expect(values2).toEqual([100, 150, 150]);
+      const dep2provider = injectable({
+        provide: V_2_TOKEN,
+        useFactory: (v1) => v1 + 50,
+        inject: [V_1_TOKEN] as const,
+        scope: v2scope,
       });
 
-      it('singleton/transient', () => {
-        const container = declareContainer({ providers: createProviders(['singleton', 'transient']) });
-        const values1 = container.get(ROOT_TOKEN)();
-        const values2 = container.get(ROOT_TOKEN)();
-        // v1 and v2 is the same for both calls
-        expect(values1).toEqual([100, 150, 150]);
-        expect(values2).toEqual([100, 150, 150]);
+      return [rootProvider, dep1provider, dep2provider];
+    };
+
+    it('singleton/singleton', () => {
+      const container = declareContainer({ providers: createProviders(['singleton', 'singleton']) });
+      const values1 = container.get(ROOT_TOKEN)();
+      const values2 = container.get(ROOT_TOKEN)();
+      // v1 and v2 is the same for both calls
+      expect(values1).toEqual([100, 150, 150]);
+      expect(values2).toEqual([100, 150, 150]);
+    });
+
+    it('singleton/scoped', () => {
+      const container = declareContainer({ providers: createProviders(['singleton', 'scoped']) });
+      const values1 = container.get(ROOT_TOKEN)();
+      const values2 = container.get(ROOT_TOKEN)();
+      // v1 and v2 is the same for both calls
+      expect(values1).toEqual([100, 150, 150]);
+      expect(values2).toEqual([100, 150, 150]);
+    });
+
+    it('singleton/transient', () => {
+      const container = declareContainer({ providers: createProviders(['singleton', 'transient']) });
+      const values1 = container.get(ROOT_TOKEN)();
+      const values2 = container.get(ROOT_TOKEN)();
+      // v1 and v2 is the same for both calls
+      expect(values1).toEqual([100, 150, 150]);
+      expect(values2).toEqual([100, 150, 150]);
+    });
+
+    it('scoped/singleton', () => {
+      const container = declareContainer({ providers: createProviders(['scoped', 'singleton']) });
+      const values1 = container.get(ROOT_TOKEN)();
+      const values2 = container.get(ROOT_TOKEN)();
+      // this time v2 is the same for both but v1 is different
+      expect(values1).toEqual([100, 250, 250]);
+      expect(values2).toEqual([200, 250, 250]);
+    });
+
+    it('scoped/scoped', () => {
+      const container = declareContainer({ providers: createProviders(['scoped', 'scoped']) });
+      const values1 = container.get(ROOT_TOKEN)();
+      const values2 = container.get(ROOT_TOKEN)();
+      // v1 is cached between root calls
+      expect(values1).toEqual([100, 150, 150]);
+      expect(values2).toEqual([200, 250, 250]);
+    });
+
+    it('scoped/transient', () => {
+      const container = declareContainer({ providers: createProviders(['scoped', 'transient']) });
+      const values1 = container.get(ROOT_TOKEN)();
+      const values2 = container.get(ROOT_TOKEN)();
+      // v1 is cached between root calls
+      expect(values1).toEqual([100, 150, 150]);
+      expect(values2).toEqual([200, 250, 250]);
+    });
+
+    it('transient/singleton', () => {
+      const container = declareContainer({ providers: createProviders(['transient', 'singleton']) });
+      const values1 = container.get(ROOT_TOKEN)();
+      const values2 = container.get(ROOT_TOKEN)();
+      // v2 is the same, but v1 gets called 4 times
+      expect(values1).toEqual([100, 250, 250]);
+      expect(values2).toEqual([300, 250, 250]);
+    });
+
+    it('transient/scoped', () => {
+      const container = declareContainer({ providers: createProviders(['transient', 'scoped']) });
+      const values1 = container.get(ROOT_TOKEN)();
+      const values2 = container.get(ROOT_TOKEN)();
+      // v1 gets called 4 times instead of 2
+      expect(values1).toEqual([100, 250, 250]);
+      expect(values2).toEqual([300, 450, 450]);
+    });
+
+    it('transient/transient', () => {
+      const container = declareContainer({ providers: createProviders(['transient', 'transient']) });
+      const values1 = container.get(ROOT_TOKEN)();
+      const values2 = container.get(ROOT_TOKEN)();
+      // this time v2 gets called 4 times
+      expect(values1).toEqual([100, 250, 350]);
+      expect(values2).toEqual([400, 550, 650]);
+    });
+
+    it('checks if dependencies are all resolved', () => {
+      const NEVER_TOKEN = createToken<number>('nothing');
+
+      const dep1provider = injectable({
+        provide: V_1_TOKEN,
+        useFactory: (nothing) => nothing,
+        scope: 'scoped',
+        inject: [NEVER_TOKEN],
       });
 
-      it('scoped/singleton', () => {
-        const container = declareContainer({ providers: createProviders(['scoped', 'singleton']) });
-        const values1 = container.get(ROOT_TOKEN)();
-        const values2 = container.get(ROOT_TOKEN)();
-        // this time v2 is the same for both but v1 is different
-        expect(values1).toEqual([100, 250, 250]);
-        expect(values2).toEqual([200, 250, 250]);
+      const container = declareContainer({
+        providers: [...createProviders(['scoped', 'scoped']), dep1provider],
       });
-
-      it('scoped/scoped', () => {
-        const container = declareContainer({ providers: createProviders(['scoped', 'scoped']) });
-        const values1 = container.get(ROOT_TOKEN)();
-        const values2 = container.get(ROOT_TOKEN)();
-        // v1 is cached between root calls
-        expect(values1).toEqual([100, 150, 150]);
-        expect(values2).toEqual([200, 250, 250]);
-      });
-
-      it('scoped/transient', () => {
-        const container = declareContainer({ providers: createProviders(['scoped', 'transient']) });
-        const values1 = container.get(ROOT_TOKEN)();
-        const values2 = container.get(ROOT_TOKEN)();
-        // v1 is cached between root calls
-        expect(values1).toEqual([100, 150, 150]);
-        expect(values2).toEqual([200, 250, 250]);
-      });
-
-      it('transient/singleton', () => {
-        const container = declareContainer({ providers: createProviders(['transient', 'singleton']) });
-        const values1 = container.get(ROOT_TOKEN)();
-        const values2 = container.get(ROOT_TOKEN)();
-        // v2 is the same, but v1 gets called 4 times
-        expect(values1).toEqual([100, 250, 250]);
-        expect(values2).toEqual([300, 250, 250]);
-      });
-
-      it('transient/scoped', () => {
-        const container = declareContainer({ providers: createProviders(['transient', 'scoped']) });
-        const values1 = container.get(ROOT_TOKEN)();
-        const values2 = container.get(ROOT_TOKEN)();
-        // v1 gets called 4 times instead of 2
-        expect(values1).toEqual([100, 250, 250]);
-        expect(values2).toEqual([300, 450, 450]);
-      });
-
-      it('transient/transient', () => {
-        const container = declareContainer({ providers: createProviders(['transient', 'transient']) });
-        const values1 = container.get(ROOT_TOKEN)();
-        const values2 = container.get(ROOT_TOKEN)();
-        // this time v2 gets called 4 times
-        expect(values1).toEqual([100, 250, 350]);
-        expect(values2).toEqual([400, 550, 650]);
-      });
-
-      it('checks if dependencies are all resolved', () => {
-        const NEVER_TOKEN = createToken<number>('nothing');
-
-        const dep1provider = injectable({
-          provide: V_1_TOKEN,
-          useFactory: (nothing) => nothing,
-          scope: 'scoped',
-          inject: [NEVER_TOKEN],
-        });
-
-        const container = declareContainer({
-          providers: [...createProviders(['scoped', 'scoped']), dep1provider],
-        });
-        try {
-          container.get(ROOT_TOKEN)();
-        } catch (e) {
-          expect(e.message).toEqual('Token "nothing" is not provided, stack: v-1 -> nothing');
-          expect(e.depStack).toEqual([V_1_TOKEN, NEVER_TOKEN]);
-        }
-      });
+      try {
+        container.get(ROOT_TOKEN)();
+      } catch (e) {
+        expect(e.message).toEqual('Token "nothing" is not provided, stack: v-1 -> nothing');
+        expect(e.depStack).toEqual([V_1_TOKEN, NEVER_TOKEN]);
+      }
     });
   });
 });

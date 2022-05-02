@@ -1,5 +1,5 @@
 import type { NOT_FOUND_SYMBOL } from './internals';
-import type { Token, TokenProvide } from './token.types';
+import type { Token, TokenDecProvide } from './token.types';
 import type { TodoAny } from './util.types';
 import type { FactoryOptions } from '../module/provider.types';
 
@@ -22,11 +22,11 @@ export type Container = {
   /**
    * Returns a resolved value by the token, or throws a ResolverError if token not provided.
    */
-  get<A extends Token<TodoAny>>(token: A): TokenProvide<A>;
+  get<A extends Token<TodoAny>>(token: A): TokenDecProvide<A>;
   /**
    * Returns a resolved value by the token, or return NOT_FOUND_SYMBOL in case the token is not provided.
    */
-  resolve<A extends Token<TodoAny>>(token: A): TokenProvide<A> | typeof NOT_FOUND_SYMBOL;
+  resolve<A extends Token<TodoAny>>(token: A): TokenDecProvide<A> | typeof NOT_FOUND_SYMBOL;
 };
 
 /** @internal */

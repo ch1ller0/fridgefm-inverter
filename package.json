@@ -12,6 +12,7 @@
     "example": "tsnd",
     "example:debug": "INVERTER_DEBUG=true tsnd",
     "watch": "tsc -w",
+    "test": "yarn test:types && yarn test:lint && yarn test:unit",
     "test:lint": "eslint --ext .js,.ts ./src",
     "test:types": "tsc -p tsconfig.json --noEmit",
     "test:unit": "jest",

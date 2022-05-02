@@ -32,8 +32,8 @@
     "lib": ["es2020"],
     "typeRoots": ["node_modules/@types", "src/types"]
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules/**", "**/__tests__/", "src/examples/"],
+  "files": ["src/index.ts"],
+  "exclude": ["node_modules/**", "**/__tests__/"],
   "compileOnSave": false,
   "ts-node": {
     "transpileOnly": true

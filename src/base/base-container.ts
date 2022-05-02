@@ -3,7 +3,7 @@ import { isInternalToken, INTERNAL_TOKENS, NOT_FOUND_SYMBOL, DEFAULT_SCOPE } fro
 import { ResolverError } from './errors';
 
 import type { Container, ValuesMap, FactoriesMap, MultiesMap, FactoryContext } from './base-container.types';
-import type { Token, TokenProvide } from './token.types';
+import type { Token, TokenDecProvide } from './token.types';
 import type { FactoryOptions } from '../module/provider.types';
 import type { TodoAny } from './util.types';
 
@@ -53,7 +53,7 @@ export const createBaseContainer = (parentContainer?: Container): Container => {
     hasToken(token: Token<unknown>): boolean {
       return values.has(token.symbol) || factories.has(token.symbol) || (parentContainer?.hasToken(token) ?? false);
     },
-    get<A extends Token<TodoAny>>(token: A): TokenProvide<A> {
+    get<A extends Token<TodoAny>>(token: A): TokenDecProvide<A> {
       const value = resolver(token, container);
       if (value !== NOT_FOUND_SYMBOL) {
         return value;
@@ -65,7 +65,7 @@ export const createBaseContainer = (parentContainer?: Container): Container => {
 
       throw new ResolverError([token]);
     },
-    resolve<A extends Token<TodoAny>>(token: A): TokenProvide<A> | typeof NOT_FOUND_SYMBOL {
+    resolve<A extends Token<TodoAny>>(token: A): TokenDecProvide<A> | typeof NOT_FOUND_SYMBOL {
       const value = resolver(token, container);
       if (value !== NOT_FOUND_SYMBOL) {
         return value;

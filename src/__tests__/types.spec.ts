@@ -91,4 +91,12 @@ describe('types are sound', () => {
       ],
     });
   });
+
+  it('container.type', async () => {
+    const res = await runTypeTest('src/__tests__/container.spec-d.ts');
+    expect(res).toEqual({
+      suite1: [],
+      suite2: [],
+    });
+  });
 });

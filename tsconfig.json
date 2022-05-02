@@ -32,7 +32,7 @@
     "lib": ["es2020"],
     "typeRoots": ["node_modules/@types", "src/types"]
   },
-  "include": ["src/**/*"],
+  "files": ["src/index.ts"],
   "exclude": ["node_modules/**", "**/__tests__/"],
   "compileOnSave": false,
   "ts-node": {

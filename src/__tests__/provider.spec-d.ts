@@ -92,17 +92,28 @@ export default [
     __test_anchor: true,
     // provide wrong indexed type
     fn: () => {
+      // this one works ok
       injectable({
         provide: fnToken,
         useFactory: (num) => (a) => a + num,
-        inject: [numberToken],
+        inject: [numberToken] as const,
       });
 
       injectable({
         provide: fnToken,
         useFactory: () => {
-          // @TODO it infers to any for some reason
-          return (a) => a + 5;
+          const num = 5;
+          // casts to any - really bad but there is a workaround
+          return (implicitN) => implicitN + num;
+        },
+      });
+
+      // @TODO add this workaround in the doc -> provide explicit dependencies
+      injectable<typeof fnToken, []>({
+        provide: fnToken,
+        useFactory: () => {
+          const num = 5;
+          return (explicitN) => explicitN + num;
         },
       });
     },

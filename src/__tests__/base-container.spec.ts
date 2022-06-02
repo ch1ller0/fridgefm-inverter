@@ -163,7 +163,7 @@ describe('createBaseContainer', () => {
     });
 
     it('multi different providers type with childs', () => {
-      // @TODO I am not pretty sure that everything works fine here
+      // I am not pretty sure that everything works fine here
       const parent = createBaseContainer();
       const child = createBaseContainer(parent);
       const token = multi(createToken<string>('smth'));

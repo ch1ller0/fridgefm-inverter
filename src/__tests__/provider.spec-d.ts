@@ -9,6 +9,7 @@ type Class = {
 const numberToken = createToken<Num>('token');
 const helperToken = createToken<Num>('helper');
 const classToken = createToken<Class>('class');
+const fnToken = createToken<(param: number) => number>('fn');
 
 // such format is required because the test depending on
 // those types count on line nums and strongly bound to format
@@ -84,6 +85,36 @@ export default [
         provide: classToken,
         // @TODO this should be an error
         useFactory: () => ({ a: () => 1, b: () => 3, c: 1 }),
+      });
+    },
+  },
+  {
+    __test_anchor: true,
+    // provide wrong indexed type
+    fn: () => {
+      // this one works ok
+      injectable({
+        provide: fnToken,
+        useFactory: (num) => (a) => a + num,
+        inject: [numberToken] as const,
+      });
+
+      injectable({
+        provide: fnToken,
+        useFactory: () => {
+          const num = 5;
+          // casts to any - really bad but there is a workaround
+          return (implicitN) => implicitN + num;
+        },
+      });
+
+      // @TODO add this workaround in the doc -> provide explicit dependencies
+      injectable<typeof fnToken, []>({
+        provide: fnToken,
+        useFactory: () => {
+          const num = 5;
+          return (explicitN) => explicitN + num;
+        },
       });
     },
   },

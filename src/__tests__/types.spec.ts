@@ -77,6 +77,11 @@ describe('types are sound', () => {
           message: expect.stringContaining("{ a: () => number; c: () => number; }' is not assignable to type"),
         }),
       ],
+      suite4: [
+        expect.objectContaining({
+          message: expect.stringContaining("Parameter 'implicitN' implicitly has an 'any' type."),
+        }),
+      ],
     });
   });
 

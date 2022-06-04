@@ -1,4 +1,4 @@
-import { ContainerConfiguration, debugContainer, declareContainer } from '../../index';
+import { ContainerConfiguration, debugContainer, declareContainer } from '@fridgefm/inverter';
 import { ServerModule, ROOT_TOKEN } from './server.module';
 import { ClientModule } from './client.module';
 import { LoggerModule } from './logger.module';

@@ -1,41 +1,10 @@
 {
+  "extends": "./tsconfig.build.json",
   "compilerOptions": {
-    "target": "es2017",
-    "outDir": "lib",
-    "rootDir": "src",
-    "moduleResolution": "node",
-    "module": "commonjs",
-    "declaration": true,
-    "inlineSourceMap": true,
-    "esModuleInterop": true,
-    "strict": true,
-
-    /* Additional Checks */
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
-    "importsNotUsedAsValues": "error",
-    "noUncheckedIndexedAccess": true,
-
-    /* Debugging Options */
-    "traceResolution": false,
-    "listEmittedFiles": true,
-    "listFiles": false,
-    "pretty": true,
-
-    /* Experimental Options */
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "incremental": true,
-
-    "lib": ["es2020"],
-    "typeRoots": ["node_modules/@types", "packages/**/src/types"]
-  },
-  "files": ["packages/**/src/index.ts"],
-  "exclude": ["node_modules/**", "**/__tests__/"],
-  "compileOnSave": false,
-  "ts-node": {
-    "transpileOnly": true
+    "baseUrl": ".",
+    "paths": {
+      "@fridgefm/*": ["packages/*/package.json"]
+    },
+    "noEmit": true
   }
 }

@@ -1,4 +1,4 @@
-import { declareModule, createToken, injectable } from '../index';
+import { declareModule, createToken, injectable } from '../src/index';
 type Num = number;
 
 const numberToken = createToken<Num>('token');

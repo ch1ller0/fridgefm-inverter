@@ -1,0 +1,14 @@
+{
+  "name": "@fridgefm/inverter",
+  "version": "0.0.0-stub",
+  "description": "Inversion of control library",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "module": "lib/index.js",
+  "license": "MIT",
+  "keywords": [],
+  "engines": {
+    "node": ">=12.0"
+  },
+  "sideEffects": false
+}

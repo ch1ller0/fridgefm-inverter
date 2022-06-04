@@ -1,6 +1,6 @@
 import rl from 'readline';
 import { stdin as input, stdout as output } from 'process';
-import { createToken, modifyToken, declareModule, injectable } from '../../index';
+import { createToken, modifyToken, declareModule, injectable } from '../../src/index';
 
 type NVal = number;
 type CalcCommand = (cur: NVal, inputVals: number[]) => NVal;

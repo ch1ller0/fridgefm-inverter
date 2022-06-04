@@ -1,4 +1,4 @@
-import { declareModule, injectable } from '../../index';
+import { declareModule, injectable } from '../../src/index';
 import { RootModule, REGISTER_COMMAND_TOKEN } from './calc-root.module';
 
 export const OperationsModule = declareModule({

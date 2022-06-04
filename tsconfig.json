@@ -20,7 +20,7 @@
 
     /* Debugging Options */
     "traceResolution": false,
-    "listEmittedFiles": false,
+    "listEmittedFiles": true,
     "listFiles": false,
     "pretty": true,
 
@@ -30,9 +30,9 @@
     "incremental": true,
 
     "lib": ["es2020"],
-    "typeRoots": ["node_modules/@types", "src/types"]
+    "typeRoots": ["node_modules/@types", "packages/**/src/types"]
   },
-  "files": ["src/index.ts"],
+  "files": ["packages/**/src/index.ts"],
   "exclude": ["node_modules/**", "**/__tests__/"],
   "compileOnSave": false,
   "ts-node": {

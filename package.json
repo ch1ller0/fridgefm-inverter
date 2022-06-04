@@ -1,12 +1,10 @@
 {
-  "name": "@fridgefm/inverter",
+  "name": "@fridgefm/inverter-monorepo",
+  "private": true,
   "version": "0.0.0-stub",
-  "description": "Inversion of control library",
-  "main": "lib/index.js",
-  "typings": "lib/index.d.ts",
-  "module": "lib/index.js",
+  "description": "Inversion of control library monorepo",
   "license": "MIT",
-  "keywords": [],
+  "workspaces": ["packages/**/*"],
   "scripts": {
     "build": "tsc -p tsconfig.json --listEmittedFiles",
     "example": "tsnd",
@@ -18,10 +16,6 @@
     "test:unit": "jest",
     "test:unit:cov": "jest --collectCoverage=true"
   },
-  "engines": {
-    "node": ">=14.0"
-  },
-  "sideEffects": false,
   "devDependencies": {
     "@types/jest": "^27.4.0",
     "@types/node": "^17.0.10",

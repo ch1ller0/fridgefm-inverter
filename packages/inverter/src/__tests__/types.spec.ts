@@ -14,7 +14,9 @@ type TestTypeRes = {
 };
 
 const runTypeTest = async (testFile: string): Promise<TestTypeRes> => {
-  const testFileContents = await fs.readFile(path.resolve(process.cwd(), testFile), { encoding: 'utf-8' });
+  const cwd = process.cwd();
+  const resolvedPath = path.resolve(__dirname, testFile).replace(`${cwd}/`, '');
+  const testFileContents = await fs.readFile(path.resolve(process.cwd(), resolvedPath), { encoding: 'utf-8' });
   const suiteBounds = testFileContents.split('\n').reduce((acc, cur, index) => {
     if (cur.trim().includes('_test_anchor')) {
       acc.push(index);
@@ -23,13 +25,13 @@ const runTypeTest = async (testFile: string): Promise<TestTypeRes> => {
   }, [] as number[]);
 
   const diagnostics = await tsd({
-    cwd: process.cwd(),
-    testFiles: [testFile],
-    typingsFile: testFile, // fake
+    cwd,
+    testFiles: [resolvedPath],
+    typingsFile: resolvedPath, // fake
   });
 
   return diagnostics
-    .filter((x) => x.fileName.includes(testFile))
+    .filter((x) => x.fileName.includes(resolvedPath))
     .reduce((acc, cur) => {
       const index = suiteBounds.findIndex((s, i) => cur.line > s && cur.line < (suiteBounds[i + 1] || +Infinity));
       const key = `suite${index + 1}`;
@@ -48,7 +50,7 @@ const runTypeTest = async (testFile: string): Promise<TestTypeRes> => {
 
 describe('types are sound', () => {
   it('token.type', async () => {
-    const res = await runTypeTest('src/__tests__/token.spec-d.ts');
+    const res = await runTypeTest('./token.spec-d.ts');
     expect(res).toEqual({
       suite1: [],
       suite2: [
@@ -60,7 +62,7 @@ describe('types are sound', () => {
   });
 
   it('provider.type', async () => {
-    const res = await runTypeTest('src/__tests__/provider.spec-d.ts');
+    const res = await runTypeTest('./provider.spec-d.ts');
     expect(res).toEqual({
       suite1: [],
       suite2: [
@@ -86,7 +88,7 @@ describe('types are sound', () => {
   });
 
   it('module.type', async () => {
-    const res = await runTypeTest('src/__tests__/module.spec-d.ts');
+    const res = await runTypeTest('./module.spec-d.ts');
     expect(res).toEqual({
       suite1: [],
       suite2: [
@@ -98,7 +100,7 @@ describe('types are sound', () => {
   });
 
   it('container.type', async () => {
-    const res = await runTypeTest('src/__tests__/container.spec-d.ts');
+    const res = await runTypeTest('./container.spec-d.ts');
     expect(res).toEqual({
       suite1: [],
       suite2: [],

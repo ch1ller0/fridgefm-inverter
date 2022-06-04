@@ -4,5 +4,8 @@
   "version": "0.0.0-stub",
   "description": "Inversion of control library examples",
   "license": "MIT",
-  "keywords": []
+  "keywords": [],
+  "dependencies": {
+      "@fridgefm/inverter": "0.0.0-stub"
+  }
 }

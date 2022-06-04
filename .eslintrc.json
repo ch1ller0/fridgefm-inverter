@@ -8,10 +8,11 @@
     "project": "./tsconfig.dev.json"
   },
   "overrides": [{
-    "files": ["**/*.spec.ts"],
+    "files": ["**/*.spec.ts", "examples/**/*"],
     "rules": {
       "@typescript-eslint/no-explicit-any": 0,
-      "no-console": 0
+      "no-console": 0,
+      "import/no-extraneous-dependencies": 0
     }
   }],
   "rules": {

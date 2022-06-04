@@ -6,7 +6,7 @@
     "module": "commonjs",
     "declaration": true,
     "declarationMap": true,
-    "inlineSourceMap": true,
+    "sourceMap": true,
     "esModuleInterop": true,
     "strict": true,
     "noEmitOnError": true,
@@ -30,20 +30,11 @@
     "emitDecoratorMetadata": true,
     "incremental": true,
 
-    /* Monorepo options */
-    "composite": true,
-
     "lib": ["es2020"],
     "typeRoots": ["node_modules/@types", "packages/**/src/types"]
   },
-  "include": ["packages/**/*"],
-  "exclude": ["node_modules/**", "**/__tests__/", "lib"],
+  "references": [{ "path": "./packages/inverter/tsconfig.json" }],
   "compileOnSave": false,
-  "references": [
-    {
-      "@fridgefm/*": "packages/*/package.json"
-    },
-  ],
   "ts-node": {
     "transpileOnly": true
   }

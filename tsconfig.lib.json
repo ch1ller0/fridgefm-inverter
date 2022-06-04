@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "include": ["./packages/**/*"],
+  "compilerOptions": {
+    "composite": true
+  },
+  "exclude": [
+    "lib",
+    "**/__tests__/**",
+    "**/__integration__/**"
+  ]
+}

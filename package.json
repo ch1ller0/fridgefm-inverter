@@ -6,13 +6,13 @@
   "license": "MIT",
   "workspaces": ["packages/**/*"],
   "scripts": {
-    "build": "tsc -p tsconfig.json --listEmittedFiles",
+    "build": "tsc -p tsconfig.lib.json --listEmittedFiles",
     "example": "tsnd",
     "example:debug": "INVERTER_DEBUG=true tsnd",
     "watch": "tsc -w",
     "test": "yarn test:types && yarn test:lint && yarn test:unit",
-    "test:lint": "eslint --ext .js,.ts ./src",
-    "test:types": "tsc -p tsconfig.json --noEmit",
+    "test:lint": "eslint --ext .js,.ts ./examples ./packages",
+    "test:types": "tsc -p tsconfig.lib.json --noEmit",
     "test:unit": "jest",
     "test:unit:cov": "jest --collectCoverage=true"
   },

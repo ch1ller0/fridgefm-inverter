@@ -1,20 +1,25 @@
 {
   "roots": [
-    "<rootDir>/src"
+    "<rootDir>/packages",
+    "<rootDir>/examples"
   ],
   "transform": {
     "^.+\\.ts$": "ts-jest"
   },
   "testRegex": "(test|spec)\\.[jt]sx?$",
   "collectCoverageFrom": [
-    "src/**/*.ts"
+    "packages/**/*.ts",
+    "examples/**/*.ts"
   ],
   "globals": {
     "ts-jest": {
       "isolatedModules": true,
-      "tsconfig": "tsconfig.dev.json",
+      "tsconfig": "./tsconfig.dev.json",
       "diagnostics": false
     }
+  },
+  "moduleNameMapper": {
+    "^@fridgefm/(.*)$": "<rootDir>/packages/$1/src/index.ts"
   },
   "verbose": true
 }

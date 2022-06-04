@@ -6,7 +6,7 @@
   "license": "MIT",
   "workspaces": ["packages/**/*"],
   "scripts": {
-    "build": "tsc -p tsconfig.build.json --listEmittedFiles",
+    "build": "tsc -p tsconfig.json --listEmittedFiles",
     "example": "tsnd",
     "example:debug": "INVERTER_DEBUG=true tsnd",
     "watch": "tsc -w",

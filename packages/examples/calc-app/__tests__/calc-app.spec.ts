@@ -1,4 +1,4 @@
-import { declareContainer, injectable } from '../../../index';
+import { declareContainer, injectable } from '@fridgefm/inverter';
 import { ROOT_TOKEN, HANDLER_TOKEN } from '../calc-root.module';
 import { RootModule } from '../calc-root.module';
 import { OperationsModule } from '../operations.module';

@@ -1,0 +1,8 @@
+{
+  "name": "@fridgefm/inverter-examples",
+  "private": true,
+  "version": "0.0.0-stub",
+  "description": "Inversion of control library examples",
+  "license": "MIT",
+  "keywords": []
+}

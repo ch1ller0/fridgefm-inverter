@@ -1,4 +1,4 @@
-import { createToken, declareModule, injectable } from '../../index';
+import { createToken, declareModule, injectable } from '@fridgefm/inverter';
 
 export const LOGGER_TOKEN = createToken<{ log: (...messages: any[]) => void }>('logger');
 

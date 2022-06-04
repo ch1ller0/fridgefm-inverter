@@ -1,6 +1,6 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import fastify from 'fastify';
-import { declareModule, createToken, injectable, modifyToken } from '../../index';
+import { declareModule, createToken, injectable, modifyToken } from '@fridgefm/inverter';
 
 export const PORT_TOKEN = createToken<number>('port');
 export const ROOT_TOKEN = createToken<void>('root');

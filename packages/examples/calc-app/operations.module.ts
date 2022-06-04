@@ -1,4 +1,4 @@
-import { declareModule, injectable } from '../../src/index';
+import { declareModule, injectable } from '@fridgefm/inverter';
 import { RootModule, REGISTER_COMMAND_TOKEN } from './calc-root.module';
 
 export const OperationsModule = declareModule({

@@ -1,4 +1,4 @@
-import { declareModule, injectable, CHILD_DI_FACTORY_TOKEN, createToken, modifyToken } from '../../index';
+import { declareModule, injectable, CHILD_DI_FACTORY_TOKEN, createToken, modifyToken } from '@fridgefm/inverter';
 import { randomString } from '../utils';
 import { STORE_TOKEN, CONTROLLER_TOKEN } from './server.module';
 import { LOGGER_TOKEN } from './logger.module';

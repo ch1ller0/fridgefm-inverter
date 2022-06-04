@@ -1,10 +1,50 @@
 {
-  "extends": "./tsconfig.build.json",
   "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@fridgefm/*": ["packages/*/package.json"]
+    "target": "es2017",
+    "outDir": "lib",
+    "moduleResolution": "node",
+    "module": "commonjs",
+    "declaration": true,
+    "declarationMap": true,
+    "inlineSourceMap": true,
+    "esModuleInterop": true,
+    "strict": true,
+    "noEmitOnError": true,
+
+    /* Additional Checks */
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "importsNotUsedAsValues": "error",
+    "noUncheckedIndexedAccess": true,
+
+    /* Debugging Options */
+    "traceResolution": false,
+    "listEmittedFiles": true,
+    "listFiles": false,
+    "pretty": true,
+
+    /* Experimental Options */
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "incremental": true,
+
+    /* Monorepo options */
+    "composite": true,
+
+    "lib": ["es2020"],
+    "typeRoots": ["node_modules/@types", "packages/**/src/types"]
+  },
+  "include": ["packages/**/*"],
+  "exclude": ["node_modules/**", "**/__tests__/", "lib"],
+  "compileOnSave": false,
+  "references": [
+    {
+      "@fridgefm/*": "packages/*/package.json"
     },
-    "noEmit": true
+  ],
+  "ts-node": {
+    "transpileOnly": true
   }
 }

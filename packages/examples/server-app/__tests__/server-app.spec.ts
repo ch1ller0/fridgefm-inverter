@@ -1,4 +1,4 @@
-import { createToken, declareContainer, injectable, TokenProvide } from '../../../index';
+import { createToken, declareContainer, injectable, TokenProvide } from '@fridgefm/inverter';
 import { CONTROLLER_TOKEN, ServerModule } from '../server.module';
 import { LOGGER_TOKEN, LoggerModule } from '../logger.module';
 import { ClientModule } from '../client.module';

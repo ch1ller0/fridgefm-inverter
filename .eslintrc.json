@@ -25,6 +25,7 @@
     }],
     "import/extensions": 0,
     "@typescript-eslint/no-explicit-any": 2,
+    "@typescript-eslint/consistent-type-imports": 2,
     "no-underscore-dangle": 0,
     "no-console": 2,
     "no-param-reassign": 0,

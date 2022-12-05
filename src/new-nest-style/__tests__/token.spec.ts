@@ -14,37 +14,50 @@ describe('tokens', () => {
     const name = Math.random().toString().slice(2);
     const token = createToken<number>(name);
 
-    it('optionalValue', () => {
-      const optionalToken = modifyToken.optionalValue(token, 1);
-      expect(optionalToken).toEqual({ symbol: expect.any(Symbol), optionalValue: 1 });
-      expect(optionalToken.symbol).toEqual(token.symbol);
-      expect(optionalToken.symbol.description).toEqual(name);
+    it('basic defaultValue -> has corresponding fields', () => {
+      const tokenWithDefault = modifyToken.defaultValue(token, 1);
+      expect(tokenWithDefault).toEqual({ symbol: expect.any(Symbol), defaultValue: 1 });
+      expect(tokenWithDefault.symbol).not.toEqual(token.symbol);
+      expect(tokenWithDefault.symbol.description).toEqual(`${name}:__default__`);
     });
 
-    it('multi', () => {
+    it('basic multi -> has corresponding fields', () => {
       const multiToken = modifyToken.multi(token);
-      expect(multiToken).toEqual({ symbol: expect.any(Symbol), multi: true });
-      expect(multiToken.symbol).toEqual(token.symbol);
-      expect(multiToken.symbol.description).toEqual(name);
+      expect(multiToken).toEqual({ symbol: expect.any(Symbol), multi: true, defaultValue: [] });
+      expect(multiToken.symbol).not.toEqual(token.symbol);
+      expect(multiToken.symbol.description).toEqual(`${name}:__multi__`);
     });
 
-    it('combination', () => {
-      const TIMES = 100;
-      const modifiedToken = new Array(TIMES)
-        .fill(undefined)
-        .map((_, i) => i)
-        .reduce((acc, cur) => {
-          const MODIFIERS = [(t) => modifyToken.multi(t), (t) => modifyToken.optionalValue(t, cur)];
-          const modifierIndex = cur % MODIFIERS.length;
-          return MODIFIERS[modifierIndex](acc);
-        }, token);
-      expect(modifiedToken).toEqual({
-        symbol: expect.any(Symbol),
-        multi: true,
-        optionalValue: TIMES - 1,
+    describe('combination', () => {
+      it('double default -> fails', () => {
+        const tokenWithDefault = modifyToken.defaultValue(token, 2);
+        expect(() => {
+          const tokenWithDoubleDefault = modifyToken.defaultValue(tokenWithDefault, 1);
+          console.log(tokenWithDoubleDefault);
+        }).toThrowError('already has default value');
       });
-      expect(modifiedToken.symbol).toEqual(token.symbol);
-      expect(modifiedToken.symbol.description).toEqual(name);
+
+      it('double multi -> fails', () => {
+        const multiToken = modifyToken.multi(token);
+        expect(() => {
+          const multiDoubleToken = modifyToken.multi(multiToken);
+          console.log(multiDoubleToken);
+        }).toThrowError('is already multi');
+      });
+
+      it('making multi token default -> fails', () => {
+        const multiToken = modifyToken.multi(token);
+        expect(() => {
+          const multiTokenWithDefault = modifyToken.defaultValue(multiToken, 1);
+          console.log(multiTokenWithDefault);
+        }).toThrowError('already has default value');
+      });
+
+      it('making default token multi -> does not fail', () => {
+        const tokenWithDefault = modifyToken.defaultValue(token, 5);
+        const multiTokenWithDefault = modifyToken.multi(tokenWithDefault);
+        expect(multiTokenWithDefault).toEqual({ symbol: expect.any(Symbol), defaultValue: [5], multi: true });
+      });
     });
   });
 });

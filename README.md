@@ -38,3 +38,78 @@ yarn example src/examples/server-app/
 # or its debug version
 yarn example:debug src/examples/server-app/
 ```
+
+## Basic features
+### Injection types
+There are several methods to provide a value for injectables.
+1. `useValue`
+    ```typescript
+    const myProvider = injectable({
+        provide: someToken, 
+        useValue: { a: 1 }
+    })
+    ```
+1. `useFactory`
+    ```typescript
+    const myProvider = injectable({
+        provide: someToken, 
+        useFactory: () => ({ a: 1 })
+    })
+    ```
+    or
+    ```typescript
+    const myProvider = injectable({
+        provide: someToken, 
+        useFactory: (num) => num + 10, // type is automatically inferred from the all the tokens your provided depends on
+        inject: [numberToken] as const
+    })
+    ```
+    For more examples refer to [container hierarchy]
+### Token modifications
+Set of modificators that allow you to modify your tokens.
+```typescript
+import { modifyToken, createToken } from '@fridgefm/inverter'
+
+const baseToken = createToken<number>('num')
+const multiToken = modifyToken.multi(baseToken)
+const defaultToken = modifyToken.defaultValue(baseToken, 5)
+```
+1. `defaultValue`
+    ```typescript
+    const defaultToken = modifyToken(createToken<number>('num'), 5)
+    const myProvider = injectable({
+        provide: someToken,
+        useFactory: (num) => num * 10, // if the token is not registered in the container, you still get the default value for `num`
+        inject: [defaultToken] as const
+    })
+    const finalValue = await container.resolve(someToken) // 50 (it is a result of 5*10)
+    ```
+1. `multi`
+    ```typescript
+    const multiNumToken = modifyToken(createToken<number>('num'))
+    const myProvider = injectable({
+        provide: someToken,
+        useFactory: (nums) => nums.reduce((acc, cur) => acc + cur, 0), // here `nums` is a an array of numbers
+        inject: [multiNumToken] as const
+    })
+    const num1Provider = injectable({ provide: multiNumToken, useValue: 15 })
+    const num2Provider = injectable({ provide: multiNumToken, useValue: 25 })
+    const num3Provider = injectable({ provide: multiNumToken, useValue: 35 })
+
+    const finalValue = await container.resolve(someToken) // 75 (it is a sum of all the multiNums)
+    ```
+### Container hierarchy and injection scopes
+    ```typescript
+    const globalContainer = declareContainer({ providers: [] })
+    const childContainer = declareContainer({ parent: globalContainer, providers: [] })
+    ```
+1. `singleton`
+1. `scoped`
+1. `transient`
+### Different inject tuples
+TODO
+
+# TODO
+- Track for cyclic deps
+- Add modules support
+- Add dep stack

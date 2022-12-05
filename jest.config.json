@@ -16,5 +16,6 @@
       "diagnostics": false
     }
   },
-  "verbose": true
+  "verbose": true,
+  "clearMocks": true
 }

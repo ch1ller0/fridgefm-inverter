@@ -1,3 +1,4 @@
+import { TokenViolationError } from './errors';
 import type { Token } from './token.types';
 import type { TodoAny } from './util.types';
 
@@ -12,12 +13,33 @@ export const createToken = <T>(description: string): Token.Instance<T> => ({ sym
  */
 export const modifyToken = {
   /**
-   * Modifier for providing value that will be used as default if not provided
+   * Modifier for providing value that will be used as default if not provided.
    */
-  optionalValue: <T, A extends Token.Instance<T>>(token: A, value: T) => ({ ...token, optionalValue: value }),
+  defaultValue: <T, A extends Token.Instance<T>>(token: A, value: T) => {
+    if (typeof token.defaultValue !== 'undefined') {
+      throw new TokenViolationError(`Token "${token.symbol.description}" already has default value`, token);
+    }
+
+    return {
+      ...token,
+      symbol: Symbol(`${token.symbol.description}:__default__`),
+      defaultValue: value,
+    } as const;
+  },
   /**
-   * Modifier for making a token multiple - that means that they dont
-   * shadow each other but instead are passed as an array
+   * Modifier for making a token multiple. That means that they dont shadow each other but instead are passed as an array of `A[]`.
+   * However they still need to be provided in a single manner as just `A`.
    */
-  multi: <A extends Token.Instance<TodoAny>>(token: A) => ({ ...token, multi: true as const }),
+  multi: <T extends Token.Instance<TodoAny>>(token: T) => {
+    if (token.multi) {
+      throw new TokenViolationError(`Token "${token.symbol.description}" is already multi`, token);
+    }
+
+    return {
+      ...token,
+      symbol: Symbol(`${token.symbol.description}:__multi__`),
+      multi: true as const,
+      defaultValue: (typeof token.defaultValue === 'undefined' ? [] : [token.defaultValue]) as Token.Provide<T>[],
+    } as const;
+  },
 } as const;

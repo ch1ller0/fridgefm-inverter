@@ -1,5 +1,5 @@
 import { createToken } from './token';
-import type { Container, Resolver } from './base-container.types';
+import type { Container, Resolver, FactoriesMap } from './base-container.types';
 import type { Token } from './token.types';
 
 /** @internal */
@@ -7,6 +7,7 @@ export const INTERNAL_TOKENS = {
   CONTAINER: createToken<Container>('inverter:container'),
   PARENT_CONTAINER: createToken<Container>('inverter:parent-container'),
   RESOLVER: createToken<Resolver>('inverter:resolver'),
+  FACTORIES_MAP: createToken<FactoriesMap>('inverter:factories-map'),
 };
 /** @internal */
 export const NOT_FOUND_SYMBOL = Symbol();

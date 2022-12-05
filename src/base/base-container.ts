@@ -3,7 +3,8 @@ import { isInternalToken, INTERNAL_TOKENS, NOT_FOUND_SYMBOL, DEFAULT_SCOPE } fro
 import { ResolverError } from './errors';
 
 import type { Container, ValuesMap, FactoriesMap, MultiesMap, FactoryContext } from './base-container.types';
-import type { Token } from './token.types';
+import type { Token, TokenDecProvide } from './token.types';
+import type { FactoryOptions } from '../module/provider.types';
 import type { TodoAny } from './util.types';
 
 /**
@@ -15,7 +16,7 @@ export const createBaseContainer = (parentContainer?: Container): Container => {
   const multies: MultiesMap = new Map<symbol, FactoryContext<TodoAny>[]>();
 
   const container: Container = {
-    bindValue(token, value) {
+    bindValue<T>(token: Token<T>, value: T): void {
       if (isInternalToken(token)) {
         return;
       }
@@ -32,7 +33,7 @@ export const createBaseContainer = (parentContainer?: Container): Container => {
 
       values.set(token.symbol, value);
     },
-    bindFactory(token, factory, options) {
+    bindFactory<T>(token: Token<T>, factory: (container: Container) => T, options?: FactoryOptions): void {
       if (isInternalToken(token)) {
         return;
       }
@@ -49,28 +50,11 @@ export const createBaseContainer = (parentContainer?: Container): Container => {
 
       factories.set(token.symbol, { factory, options });
     },
-    bindAsyncFactory(token, factory) {
-      if (isInternalToken(token)) {
-        return;
-      }
-
-      if (values.has(token.symbol)) {
-        values.delete(token.symbol);
-      }
-
-      if (token.multi) {
-        const prevMulties = multies.get(token.symbol) || [];
-        multies.set(token.symbol, [...prevMulties, { factory, scope: 'singleton' }]);
-        return;
-      }
-
-      factories.set(token.symbol, { factory, options: { scope: 'singleton' } });
-    },
-    hasToken(token) {
+    hasToken(token: Token<unknown>): boolean {
       return values.has(token.symbol) || factories.has(token.symbol) || (parentContainer?.hasToken(token) ?? false);
     },
-    async get(token) {
-      const value = await resolver(token, container);
+    get<A extends Token<TodoAny>>(token: A): TokenDecProvide<A> {
+      const value = resolver(token, container);
       if (value !== NOT_FOUND_SYMBOL) {
         return value;
       }
@@ -81,8 +65,8 @@ export const createBaseContainer = (parentContainer?: Container): Container => {
 
       throw new ResolverError([token]);
     },
-    async resolve(token) {
-      const value = await resolver(token, container);
+    resolve<A extends Token<TodoAny>>(token: A): TokenDecProvide<A> | typeof NOT_FOUND_SYMBOL {
+      const value = resolver(token, container);
       if (value !== NOT_FOUND_SYMBOL) {
         return value;
       }
@@ -95,12 +79,12 @@ export const createBaseContainer = (parentContainer?: Container): Container => {
     },
   };
 
-  async function resolver<T>(token: Token<T>, origin: Container): Promise<T | T[] | typeof NOT_FOUND_SYMBOL> {
+  function resolver<T>(token: Token<T>, origin: Container): T | T[] | typeof NOT_FOUND_SYMBOL {
     if (token.multi) {
-      const findInParent = async () => {
-        const parentResolver = await parentContainer?.get(INTERNAL_TOKENS.RESOLVER);
+      const findInParent = () => {
+        const parentResolver = parentContainer?.get(INTERNAL_TOKENS.RESOLVER);
         if (parentResolver) {
-          const resolved = await parentResolver(token, origin);
+          const resolved = parentResolver(token, origin);
           return Array.isArray(resolved) ? resolved : ([] as T[]);
         }
         return [] as T[];
@@ -127,7 +111,7 @@ export const createBaseContainer = (parentContainer?: Container): Container => {
         return multiRecord.factory(container);
       });
 
-      return findInParent().then((resolvedFromParent) => [...resolved, ...resolvedFromParent]);
+      return [...resolved, ...findInParent()];
     }
 
     const arrivedValue = values.get(token.symbol);
@@ -175,17 +159,18 @@ export const createBaseContainer = (parentContainer?: Container): Container => {
       return arrivedValue;
     }
 
-    const parentResolver = await parentContainer?.get(INTERNAL_TOKENS.RESOLVER);
+    const parentResolver = parentContainer?.get(INTERNAL_TOKENS.RESOLVER);
     if (parentResolver) {
       return parentResolver(token, origin);
     }
 
-    return Promise.resolve(NOT_FOUND_SYMBOL);
+    return NOT_FOUND_SYMBOL;
   }
 
   const bindInternalTokens = () => {
     values.set(INTERNAL_TOKENS.CONTAINER.symbol, container);
     values.set(INTERNAL_TOKENS.RESOLVER.symbol, resolver);
+    values.set(INTERNAL_TOKENS.FACTORIES_MAP.symbol, factories);
 
     if (parentContainer) {
       values.set(INTERNAL_TOKENS.PARENT_CONTAINER.symbol, parentContainer);

@@ -1,5 +1,5 @@
 import type { NOT_FOUND_SYMBOL } from './internals';
-import type { Token, TokenDecProvide, TokenProvide } from './token.types';
+import type { Token, TokenDecProvide } from './token.types';
 import type { TodoAny } from './util.types';
 import type { FactoryOptions } from '../module/provider.types';
 
@@ -10,22 +10,11 @@ export type Container = {
   /**
    * Binds a value for the token
    */
-  bindValue<T extends Token<unknown> = Token<unknown>>(token: T, value: TokenProvide<T>): void;
+  bindValue<T>(token: Token<T>, value: T): void;
   /**
    * Binds a factory for the token.
    */
-  bindFactory<T extends Token<unknown> = Token<unknown>>(
-    token: T,
-    factory: (container: Container) => TokenProvide<T>,
-    options?: FactoryOptions,
-  ): void;
-  /**
-   * Binds an async factory for the token. It always has a 'singleton' scope.
-   */
-  bindAsyncFactory<T extends Token<unknown> = Token<unknown>>(
-    token: T,
-    factory: (container: Container) => Promise<TokenProvide<T>>,
-  ): void;
+  bindFactory<T>(token: Token<T>, factory: (container: Container) => T, options?: FactoryOptions): void;
   /**
    * Checks if the token is registered in the container hierarchy.
    */
@@ -33,11 +22,11 @@ export type Container = {
   /**
    * Returns a resolved value by the token, or throws a ResolverError if token not provided.
    */
-  get<A extends Token<TodoAny>>(token: A): Promise<TokenProvide<A>>;
+  get<A extends Token<TodoAny>>(token: A): TokenDecProvide<A>;
   /**
    * Returns a resolved value by the token, or return NOT_FOUND_SYMBOL in case the token is not provided.
    */
-  resolve<A extends Token<TodoAny>>(token: A): Promise<TokenDecProvide<A>> | typeof NOT_FOUND_SYMBOL;
+  resolve<A extends Token<TodoAny>>(token: A): TokenDecProvide<A> | typeof NOT_FOUND_SYMBOL;
 };
 
 /** @internal */

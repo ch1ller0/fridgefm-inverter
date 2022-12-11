@@ -51,16 +51,16 @@ describe('e2e', () => {
       const [container] = createFakeContainers();
       fakeInjectables[0].value(container)();
 
-      const res = await container.resolveBatch([t1exp]);
-      expect(res).toEqual(['[1](value)']);
+      const res = await container.resolveSingle(t1exp);
+      expect(res).toEqual('[1](value)');
     });
 
     it('empty factory', async () => {
       const [container] = createFakeContainers();
       fakeInjectables[0].factory(container)();
 
-      const res = await container.resolveBatch([t1exp]);
-      expect(res).toEqual(['[1](factory)']);
+      const res = await container.resolveSingle(t1exp);
+      expect(res).toEqual('[1](factory)');
     });
   });
 
@@ -70,16 +70,16 @@ describe('e2e', () => {
       fakeInjectables[0].depfactory(container)();
       fakeInjectables[1].value(container)();
 
-      const res = await container.resolveBatch([t1exp]);
-      expect(res).toEqual(['[2](value)+[1](depfactory)']);
+      const res = await container.resolveSingle(t1exp);
+      expect(res).toEqual('[2](value)+[1](depfactory)');
     });
 
     it('on default', async () => {
       const [container] = createFakeContainers();
       fakeInjectables[0].depdeffactory(container)();
 
-      const res = await container.resolveBatch([t1exp]);
-      expect(res).toEqual(['[2](default)+[1](depdeffactory)']);
+      const res = await container.resolveSingle(t1exp);
+      expect(res).toEqual('[2](default)+[1](depdeffactory)');
     });
 
     it('on factory', async () => {
@@ -87,8 +87,8 @@ describe('e2e', () => {
       fakeInjectables[0].depfactory(container)();
       fakeInjectables[1].factory(container)();
 
-      const res = await container.resolveBatch([t1exp]);
-      expect(res).toEqual(['[2](factory)+[1](depfactory)']);
+      const res = await container.resolveSingle(t1exp);
+      expect(res).toEqual('[2](factory)+[1](depfactory)');
     });
 
     it('on multi provider', async () => {
@@ -98,8 +98,8 @@ describe('e2e', () => {
       fakeInjectables[1].factoryMulti(container)();
       fakeInjectables[1].valueMulti(container)();
 
-      const res = await container.resolveBatch([t1exp]);
-      expect(res).toEqual(['[2](value)+[2](factory)+[2](value)+[1](dep-factory)']);
+      const res = await container.resolveSingle(t1exp);
+      expect(res).toEqual('[2](value)+[2](factory)+[2](value)+[1](dep-factory)');
     });
   });
 
@@ -114,9 +114,9 @@ describe('e2e', () => {
         useFactory: (a) => delay(10).then(() => a + 1),
         inject: [t1],
       })(container)();
-      injectable({ provide: t1, useValue: delay(10).then(() => 100) })(container)();
+      injectable({ provide: t1, useValue: delay(50).then(() => 100) })(container)();
 
-      const res = await container.resolveBatch([t1, t2]); // should be numbers array here, not promises
+      const res = Promise.all([container.resolveSingle(t1), container.resolveSingle(t1)]); // should be numbers array here, not promises
       expect(res).toEqual([100, 101]);
     });
   });

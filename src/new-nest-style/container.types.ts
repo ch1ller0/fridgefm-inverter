@@ -2,6 +2,7 @@ import type { Helper } from './injectable.types';
 import type { Token } from './token.types';
 
 export namespace Container {
+  export type Stack = Set<Token.AnyInstance>;
   /**
    * This is a public interface of the container
    */
@@ -20,11 +21,28 @@ export namespace Container {
     /**
      * Binds a factory which is run on each token injection
      */
-    bindFactory: <T extends Token.Instance<unknown>>(token: T, fn: () => Promise<Token.Provide<T>>) => void;
+    bindFactory: <T extends Token.Instance<unknown>>(
+      token: T,
+      fn: (stack: Set<Token.AnyInstance>) => Promise<Token.Provide<T>>,
+    ) => void;
     /**
      * Method to retrieve resolved dependencies. By deafult also searches for implementation in parents
      */
-    resolveBatch: <I extends Helper.CfgTuple>(tokens?: I) => Promise<Helper.ResolvedDeps<I>>;
+    // resolveBatch: <I extends Helper.CfgTuple>(
+    //   tokens?: I,
+    //   /**
+    //    * @internal
+    //    */
+    //   _requestChain?: Token.AnyInstance[],
+    // ) => Promise<Helper.ResolvedDeps<I>>;
+    /**
+     * collectDependencies
+     */
+    _resolveMany: <I extends Helper.CfgTuple>(cfgs?: I, stack?: Stack) => Promise<Helper.ResolvedDepTuple<I>>;
+    /**
+     * Returns resolved value.
+     */
+    resolveSingle: <I extends Helper.CfgElement>(cfg: I, stack?: Stack) => Promise<Helper.ResolvedDepSingle<I>>;
     /**
      * The referral to the parent container if any
      */

@@ -1,16 +1,11 @@
 import { NOT_FOUND_SYMBOL } from './injectable';
-import { ResolverError } from './errors';
+import { TokenNotProvidedError, CyclicDepError } from './errors';
 import type { TodoAny } from './util.types';
 import type { Container } from './container.types';
 import type { Helper } from './injectable.types';
 import type { Token } from './token.types';
 
-const unwrapCfg = <T>(
-  cfg: Helper.CfgTuple[0],
-): {
-  token: Token.Instance<T>;
-  optional: boolean;
-} => {
+const unwrapCfg = <T>(cfg: Helper.CfgElement): { token: Token.Instance<T>; optional: boolean } => {
   if ('token' in cfg) {
     return cfg;
   }
@@ -18,77 +13,104 @@ const unwrapCfg = <T>(
 };
 
 export const createContainer = (parent?: Container.Constructor): Container.Constructor => {
-  const values = new Map<symbol, unknown>();
-  const factories = new Map<symbol, () => Promise<unknown>>();
-  const multiFactories = new Map<symbol, (() => Promise<unknown>)[]>();
+  const singleValues = new Map<symbol, TodoAny>();
+  const singleFactories = new Map<symbol, (stack: Container.Stack) => Promise<TodoAny>>();
+  const multiValues = new Map<symbol, TodoAny[]>();
+  const multiFactories = new Map<symbol, ((stack: Container.Stack) => Promise<TodoAny>)[]>();
 
-  const resolveSingle = (token: Token.AnyInstance) => {
-    if (token.multi) {
-      const multies = multiFactories.get(token.symbol);
-      if (!!multies) {
-        return Promise.all(multies.map((s) => s())) as Promise<Token.Provide<TodoAny>>;
-      }
-    }
-
-    const valueRecord = values.get(token.symbol) as Token.Provide<TodoAny>;
+  const runRecord = <T extends TodoAny>(
+    token: Token.Instance<T>,
+    stack: Container.Stack,
+  ): Promise<T> | typeof NOT_FOUND_SYMBOL => {
+    // if (token.multi) {
+    //   const multies = multiFactories.get(token.symbol);
+    //   if (!!multies) {
+    //     return Promise.all(multies.map((s) => s()));
+    //   }
+    // }
+    const valueRecord = singleValues.get(token.symbol);
     if (!!valueRecord) {
-      return Promise.resolve(values.get(token.symbol));
+      return Promise.resolve(valueRecord);
     }
-    const factoryRecord = factories.get(token.symbol);
+
+    const factoryRecord = singleFactories.get(token.symbol);
     if (typeof factoryRecord !== 'undefined') {
-      return factoryRecord();
-    }
-    if (token.defaultValue) {
-      return Promise.resolve(token.defaultValue);
+      return factoryRecord(stack);
     }
 
     return NOT_FOUND_SYMBOL;
   };
 
-  return {
-    resolveBatch: <I extends Helper.CfgTuple>(tokens?: I): Promise<Helper.ResolvedDeps<I>> => {
-      if (typeof tokens === 'undefined') {
-        // @ts-ignore
-        return Promise.resolve([]);
+  const instance: Container.Constructor = {
+    // setDependencies: (forToken: Token.AnyInstance, cfgs?: Helper.CfgTuple = []) => {
+    //   dependencyTree.set(
+    //     forToken.symbol,
+    //     cfgs?.reduce((acc, cur) => {
+    //       const { token, optional } = unwrapCfg(cur);
+    //       return optional ? acc : acc.add(token.symbol);
+    //     }, new Set<symbol>()),
+    //   );
+    // },
+    resolveSingle: <I extends Helper.CfgElement>(
+      cfg: I,
+      stack: Container.Stack = new Set(),
+    ): Promise<Helper.ResolvedDepSingle<I>> => {
+      const { token, optional } = unwrapCfg(cfg);
+      if (stack.has(token)) {
+        throw new CyclicDepError([...stack, token].map((s) => s.symbol));
       }
 
-      // @ts-ignore
-      return Promise.all(
-        tokens.map((cfg) => {
-          const { token, optional } = unwrapCfg(cfg);
-          const promiseFound = resolveSingle(token);
-          if (promiseFound === NOT_FOUND_SYMBOL) {
-            if (!!parent) {
-              return parent.resolveBatch([token]);
-            }
-            if (optional) {
-              return Promise.resolve(undefined);
-            }
-            throw new ResolverError(`Token not registered: "${token.symbol.description}"`, []);
-          }
-          return promiseFound;
-        }),
-      );
+      const promiseFound = runRecord(token, stack);
+
+      if (promiseFound === NOT_FOUND_SYMBOL) {
+        if (typeof parent !== 'undefined') {
+          // always search in the parent container, it is an expected behaviour by definition
+          return parent.resolveSingle(cfg, stack);
+        }
+      } else {
+        return promiseFound;
+      }
+
+      if (typeof token.defaultValue !== 'undefined') {
+        // @ts-ignore
+        return Promise.resolve(token.defaultValue);
+      }
+      if (optional) {
+        // @ts-ignore
+        return Promise.resolve(undefined);
+      }
+
+      return Promise.reject(new TokenNotProvidedError([...stack, token].map((s) => s.symbol)));
+    },
+    _resolveMany: (cfgs, stack) => {
+      if (typeof cfgs === 'undefined') {
+        return Promise.resolve([]);
+      }
+      return Promise.all(cfgs.map((cfg) => instance.resolveSingle(cfg, stack)));
     },
     bindValue: ({ symbol, multi }, value) => {
       if (!!multi) {
-        multiFactories.set(
-          symbol,
-          (multiFactories.get(symbol) || []).concat(() => Promise.resolve(value)),
-        );
+        const prevValues = multiValues.get(symbol) || [];
+        multiValues.set(symbol, prevValues.concat(value));
+        // multiFactories.set(
+        //   symbol,
+        //   prevValues.concat(() => Promise.resolve(value)),
+        // );
       } else {
-        values.set(symbol, value);
+        singleValues.set(symbol, value);
+        singleFactories.delete(symbol);
       }
-      factories.delete(symbol);
     },
     bindFactory: ({ symbol, multi }, fn) => {
       if (!!multi) {
         multiFactories.set(symbol, (multiFactories.get(symbol) || []).concat(fn));
       } else {
-        factories.set(symbol, fn);
+        singleFactories.set(symbol, fn);
+        singleValues.delete(symbol);
       }
-      values.delete(symbol);
     },
     parent,
   };
+
+  return instance;
 };

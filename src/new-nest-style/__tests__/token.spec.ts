@@ -32,24 +32,21 @@ describe('tokens', () => {
       it('double default -> fails', () => {
         const tokenWithDefault = modifyToken.defaultValue(token, 2);
         expect(() => {
-          const tokenWithDoubleDefault = modifyToken.defaultValue(tokenWithDefault, 1);
-          console.log(tokenWithDoubleDefault);
+          modifyToken.defaultValue(tokenWithDefault, 1);
         }).toThrowError('already has default value');
       });
 
       it('double multi -> fails', () => {
         const multiToken = modifyToken.multi(token);
         expect(() => {
-          const multiDoubleToken = modifyToken.multi(multiToken);
-          console.log(multiDoubleToken);
+          modifyToken.multi(multiToken);
         }).toThrowError('is already multi');
       });
 
       it('making multi token default -> fails', () => {
         const multiToken = modifyToken.multi(token);
         expect(() => {
-          const multiTokenWithDefault = modifyToken.defaultValue(multiToken, 1);
-          console.log(multiTokenWithDefault);
+          modifyToken.defaultValue(multiToken, 1);
         }).toThrowError('already has default value');
       });
 

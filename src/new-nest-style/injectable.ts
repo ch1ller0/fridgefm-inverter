@@ -20,27 +20,31 @@ export const injectable =
       const binderContainer = (
         {
           singleton: container.parent || container,
-          scoped: container,
           transient: container.parent || container,
+          scoped: container,
         } as const
       )[scope];
 
       if (scope === 'transient') {
         return () => {
           // run factory on each injection and recollect deps on global level
-          binderContainer.bindFactory(provide, async () => {
-            const resolvedDeps = await container.resolveBatch(inject);
-            return useFactory(...resolvedDeps);
+          binderContainer.bindFactory(provide, (stack) => {
+            stack.add(provide);
+            return container._resolveMany(inject, stack).then((resolvedDeps) => useFactory(...resolvedDeps));
           });
         };
       }
 
       return () => {
-        binderContainer.bindFactory(provide, async () => {
-          const resolvedDeps = await container.resolveBatch(inject);
-          const cached = useFactory(...resolvedDeps);
-          binderContainer.bindValue(provide, cached);
-          return cached;
+        binderContainer.bindFactory(provide, (stack) => {
+          stack.add(provide);
+
+          return container._resolveMany(inject, stack).then((resolvedDeps) => {
+            const cachedValue = useFactory(...resolvedDeps);
+            // @ts-ignore
+            binderContainer.bindValue(provide, cachedValue);
+            return cachedValue;
+          });
         });
       };
     }

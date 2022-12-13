@@ -17,14 +17,15 @@ export namespace Container {
     /**
      * Caches the provided value inside the container
      */
-    bindValue: <T extends Token.Instance<unknown>>(token: T, value: Token.Provide<T>) => void;
+    bindValue: <T extends Token.Instance<unknown>>(a: { token: T; value: Token.Provide<T>; injKey: symbol }) => void;
     /**
      * Binds a factory which is run on each token injection
      */
-    bindFactory: <T extends Token.Instance<unknown>>(
-      token: T,
-      fn: (stack: Set<Token.AnyInstance>) => Promise<Token.Provide<T>>,
-    ) => void;
+    bindFactory: <T extends Token.Instance<unknown>>(a: {
+      token: T;
+      func: (stack: Set<Token.AnyInstance>) => Promise<Token.Provide<T>>;
+      injKey: symbol;
+    }) => void;
     /**
      * Method to retrieve resolved dependencies. By deafult also searches for implementation in parents
      */
@@ -38,7 +39,7 @@ export namespace Container {
     /**
      * collectDependencies
      */
-    _resolveMany: <I extends Helper.CfgTuple>(cfgs?: I, stack?: Stack) => Promise<Helper.ResolvedDepTuple<I>>;
+    resolveMany: <I extends Helper.CfgTuple>(cfgs?: I, stack?: Stack) => Promise<Helper.ResolvedDepTuple<I>>;
     /**
      * Returns resolved value.
      */

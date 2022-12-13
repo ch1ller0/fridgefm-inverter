@@ -45,7 +45,7 @@ const fakeInjectables = [
   },
 ] as const;
 
-describe('e2e', () => {
+describe('injection-methods', () => {
   describe('basic', () => {
     it('basic value', async () => {
       const [container] = createFakeContainers();
@@ -107,7 +107,7 @@ describe('e2e', () => {
     it('type is correct when resolveing promises', async () => {
       const [container] = createFakeContainers();
       const t1 = createToken<Promise<number>>('tok:1:promise');
-      const t2 = createToken<Promise<number>>('tok:2:promise');
+      const t2 = createToken<number>('tok:2:promise');
 
       injectable({
         provide: t2,
@@ -116,7 +116,9 @@ describe('e2e', () => {
       })(container)();
       injectable({ provide: t1, useValue: delay(50).then(() => 100) })(container)();
 
-      const res = Promise.all([container.resolveSingle(t1), container.resolveSingle(t1)]); // should be numbers array here, not promises
+      // should be numbers array here, not promises
+      // @TODO add type chceking here
+      const res = await Promise.all([container.resolveSingle(t1), container.resolveSingle(t2)]);
       expect(res).toEqual([100, 101]);
     });
   });

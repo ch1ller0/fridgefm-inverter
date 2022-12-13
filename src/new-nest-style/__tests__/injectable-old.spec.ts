@@ -9,7 +9,7 @@ const childContainer = createContainer(rootContainer);
 const token1 = createToken<number>('num-1');
 const token2 = createToken<number>('num-2');
 
-describe('injectable', () => {
+describe.skip('injectable', () => {
   describe('type/useValue', () => {
     it('container/root', async () => {
       injectable({ provide: token1, useValue: 99 })(rootContainer)();

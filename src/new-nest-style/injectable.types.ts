@@ -23,7 +23,7 @@ export namespace Helper {
   /**
    * Tuple of passed config deps for a provider
    */
-  export type CfgElement = CfgSingleAll<Token.Instance<TodoAny>>;
+  export type CfgElement<A = TodoAny> = CfgSingleAll<Token.Instance<A>>;
   export type CfgTuple = readonly [...ReadonlyArray<CfgElement>];
   /**
    * Tuple of token declaration provided value types

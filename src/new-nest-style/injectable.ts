@@ -3,15 +3,17 @@ import type { Injectable, Helper } from './injectable.types';
 
 export const NOT_FOUND_SYMBOL = Symbol('__NOT_FOUND_SYMBOL__');
 
-export const injectable =
-  <T extends Token.Instance<unknown>, D extends Helper.CfgTuple>(
-    args: Injectable.SyncArgs<T, D>,
-  ): Injectable.Instance =>
-  (container) => {
+export const injectable = <T extends Token.Instance<unknown>, D extends Helper.CfgTuple>(
+  args: Injectable.SyncArgs<T, D>,
+): Injectable.Instance => {
+  // unique injection key which is used to separate different providers in the container
+  const injKey = Symbol(Math.random().toString().slice(2));
+
+  return (container) => {
     if (typeof args.useValue !== 'undefined') {
       const { useValue, provide } = args;
       return () => {
-        container.bindValue(provide, useValue);
+        container.bindValue({ token: provide, value: useValue, injKey });
       };
     }
 
@@ -28,26 +30,34 @@ export const injectable =
       if (scope === 'transient') {
         return () => {
           // run factory on each injection and recollect deps on global level
-          binderContainer.bindFactory(provide, (stack) => {
-            stack.add(provide);
-            return container._resolveMany(inject, stack).then((resolvedDeps) => useFactory(...resolvedDeps));
+          binderContainer.bindFactory({
+            token: provide,
+            func: (stack) => {
+              stack.add(provide);
+              return container.resolveMany(inject, stack).then((resolvedDeps) => useFactory(...resolvedDeps));
+            },
+            injKey,
           });
         };
       }
 
       return () => {
-        binderContainer.bindFactory(provide, (stack) => {
-          stack.add(provide);
+        binderContainer.bindFactory({
+          token: provide,
+          func: (stack) => {
+            stack.add(provide);
 
-          return container._resolveMany(inject, stack).then((resolvedDeps) => {
-            const cachedValue = useFactory(...resolvedDeps);
-            // @ts-ignore
-            binderContainer.bindValue(provide, cachedValue);
-            return cachedValue;
-          });
+            return container.resolveMany(inject, stack).then(async (resolvedDeps) => {
+              const cachedValue = await useFactory(...resolvedDeps);
+              binderContainer.bindValue({ token: provide, value: cachedValue, injKey });
+              return cachedValue;
+            });
+          },
+          injKey,
         });
       };
     }
 
     throw new Error('How did you get here');
   };
+};

@@ -29,7 +29,7 @@ export class CyclicDepError extends Error {
 }
 
 export class TokenViolationError extends Error {
-  constructor(readonly message: string, private readonly originalToken: Token.Instance<TodoAny>) {
+  constructor(readonly message: string, readonly originalToken: Token.Instance<TodoAny>) {
     super(message);
     this.name = 'TokenViolationError';
   }

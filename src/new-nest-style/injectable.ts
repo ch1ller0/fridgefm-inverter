@@ -7,7 +7,7 @@ export const injectable = <T extends Token.Instance<unknown>, D extends Helper.C
   args: Injectable.SyncArgs<T, D>,
 ): Injectable.Instance => {
   // unique injection key which is used to separate different providers in the container
-  const injKey = Symbol(Math.random().toString().slice(2));
+  const injKey = Symbol();
 
   return (container) => {
     if (typeof args.useValue !== 'undefined') {
@@ -32,11 +32,11 @@ export const injectable = <T extends Token.Instance<unknown>, D extends Helper.C
           // run factory on each injection and recollect deps on global level
           binderContainer.bindFactory({
             token: provide,
+            injKey,
             func: (stack) => {
               stack.add(provide);
               return container.resolveMany(inject, stack).then((resolvedDeps) => useFactory(...resolvedDeps));
             },
-            injKey,
           });
         };
       }
@@ -44,6 +44,7 @@ export const injectable = <T extends Token.Instance<unknown>, D extends Helper.C
       return () => {
         binderContainer.bindFactory({
           token: provide,
+          injKey,
           func: (stack) => {
             stack.add(provide);
 
@@ -53,7 +54,6 @@ export const injectable = <T extends Token.Instance<unknown>, D extends Helper.C
               return cachedValue;
             });
           },
-          injKey,
         });
       };
     }

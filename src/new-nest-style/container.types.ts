@@ -2,14 +2,14 @@ import type { Helper } from './injectable.types';
 import type { Token } from './token.types';
 
 export namespace Container {
+  /**
+   * Stackof tokens which is passed while resolving the dependant factories
+   */
   export type Stack = Set<Token.AnyInstance>;
   /**
-   * This is a public interface of the container
+   * This is used to separate different implementations on the same token
    */
-  // export type Instance = {
-  //   resolve: <A extends Token.Instance<TodoAny>>(token: A) => Promise<Token.Provide<A>> | typeof NOT_FOUND_SYMBOL;
-  // };
-
+  export type InjectionKey = symbol;
   /**
    * This type is used to pass it to the injectable instance
    */
@@ -24,26 +24,16 @@ export namespace Container {
     bindFactory: <T extends Token.Instance<unknown>>(a: {
       token: T;
       func: (stack: Set<Token.AnyInstance>) => Promise<Token.Provide<T>>;
-      injKey: symbol;
+      injKey: InjectionKey;
     }) => void;
     /**
-     * Method to retrieve resolved dependencies. By deafult also searches for implementation in parents
+     * Returns resolved value associated with a token
      */
-    // resolveBatch: <I extends Helper.CfgTuple>(
-    //   tokens?: I,
-    //   /**
-    //    * @internal
-    //    */
-    //   _requestChain?: Token.AnyInstance[],
-    // ) => Promise<Helper.ResolvedDeps<I>>;
+    resolveSingle: <I extends Helper.CfgElement>(cfg: I, stack?: Stack) => Promise<Helper.ResolvedDepSingle<I>>;
     /**
      * collectDependencies
      */
     resolveMany: <I extends Helper.CfgTuple>(cfgs?: I, stack?: Stack) => Promise<Helper.ResolvedDepTuple<I>>;
-    /**
-     * Returns resolved value.
-     */
-    resolveSingle: <I extends Helper.CfgElement>(cfg: I, stack?: Stack) => Promise<Helper.ResolvedDepSingle<I>>;
     /**
      * The referral to the parent container if any
      */

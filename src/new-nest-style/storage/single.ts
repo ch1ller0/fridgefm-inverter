@@ -4,27 +4,27 @@ import type { TodoAny } from '../util.types';
 import type { Container } from '../container.types';
 
 export const singleStorageFactory = (): Storage => {
-  const singleValues = new Map<symbol, TodoAny>();
-  const singleFactories = new Map<symbol, (stack: Container.Stack) => Promise<TodoAny>>();
+  const values = new Map<symbol, TodoAny>();
+  const factories = new Map<symbol, (stack: Container.Stack) => Promise<TodoAny>>();
 
   return {
     bindValue: ({ token, value }) => {
-      singleValues.set(token.symbol, value);
-      singleFactories.delete(token.symbol);
+      values.set(token.symbol, value);
+      factories.delete(token.symbol);
     },
     bindFactory: ({ token, func }) => {
-      singleFactories.set(token.symbol, func);
-      singleValues.delete(token.symbol);
+      factories.set(token.symbol, func);
+      values.delete(token.symbol);
     },
     get: (token, stack) => {
-      const hasValueRecord = singleValues.has(token.symbol);
-      const valueRecord = singleValues.get(token.symbol);
+      const hasValueRecord = values.has(token.symbol);
+      const valueRecord = values.get(token.symbol);
       if (hasValueRecord && typeof valueRecord !== 'undefined') {
         return Promise.resolve(valueRecord);
       }
 
-      const hasFactoryRecord = singleFactories.has(token.symbol);
-      const factoryRecord = singleFactories.get(token.symbol);
+      const hasFactoryRecord = factories.has(token.symbol);
+      const factoryRecord = factories.get(token.symbol);
       if (hasFactoryRecord && typeof factoryRecord !== 'undefined') {
         return factoryRecord(stack);
       }

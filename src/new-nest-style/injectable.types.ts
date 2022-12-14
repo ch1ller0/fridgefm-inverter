@@ -23,12 +23,12 @@ export namespace Helper {
   /**
    * Tuple of passed config deps for a provider
    */
-  export type CfgElement<A = TodoAny> = CfgSingleAll<Token.Instance<A>>;
-  export type CfgTuple = readonly [...ReadonlyArray<CfgElement>];
+  export type CfgTuple = readonly [...ReadonlyArray<CfgSingleAll<Token.Instance<TodoAny>>>];
+  export type CfgElement<T extends TodoAny = TodoAny> = CfgSingleAll<Token.Instance<T>>;
   /**
    * Tuple of token declaration provided value types
    */
-  export type ResolvedDepSingle<T extends CfgElement> = Awaited<CfgProvide<T>>;
+  export type ResolvedDepSingle<T extends CfgSingleAll<TodoAny>> = Awaited<CfgProvide<T>>;
   export type ResolvedDepTuple<T extends CfgTuple> = {
     +readonly [Index in keyof T]: ResolvedDepSingle<T[Index]>;
   };
@@ -77,7 +77,6 @@ namespace ProviderConfig {
   };
   export type AsyncEmptyFactory<T extends Token.Instance<unknown>> = {
     useFactory: () => Promise<Token.Provide<T>>;
-    // scope?: Exclude<Factory.Options['scope'], 'transient'>;
     scope?: Factory.Options['scope'];
     inject?: never;
     useValue?: never;
@@ -85,7 +84,6 @@ namespace ProviderConfig {
   export type AsyncDependingFactory<T extends Token.Instance<unknown>, D extends Helper.CfgTuple = Helper.CfgTuple> = {
     useFactory: (...deps: Helper.ResolvedDepTuple<D>) => Promise<Token.Provide<T>>;
     scope?: Factory.Options['scope'];
-    // scope?: Exclude<Factory.Options['scope'], 'transient'>;
     inject: D;
     useValue?: never;
   };

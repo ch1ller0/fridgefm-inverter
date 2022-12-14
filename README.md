@@ -1,5 +1,5 @@
 # @fridgefm/inverter
-A powerful and tiny IoC library heavily inspired by [`ditox`](https://github.com/mnasyrov/ditox). Lets you create _highly scalable modular apps and libraries_.
+A powerful and tiny IoC library with Typescript-first support. Lets you create _highly scalable modular apps and libraries_.
 
 [![npm package](https://img.shields.io/npm/v/@fridgefm/inverter?style=flat-square)](https://www.npmjs.com/package/@fridgefm/inverter)
 [![minzipped size](https://img.shields.io/bundlephobia/minzip/@fridgefm/inverter?style=flat-square)](https://bundlephobia.com/package/@fridgefm/inverter)

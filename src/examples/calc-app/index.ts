@@ -1,6 +1,7 @@
-import { ContainerConfiguration, debugContainer, declareContainer } from '../../index';
+import { debugContainer, declareContainer } from '../../index';
 import { RootModule, ROOT_TOKEN } from './calc-root.module';
 import { OperationsModule } from './operations.module';
+import type { ContainerConfiguration } from '../../index';
 
 if (process.env.NODE_ENV !== 'test') {
   const config: ContainerConfiguration = {

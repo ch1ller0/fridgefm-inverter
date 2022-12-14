@@ -6,7 +6,6 @@ const delay = (to: number) => new Promise((resolve) => setTimeout(() => resolve(
 
 const t1exp = createToken<string>('tok:1:expect');
 const t2dep = modifyToken.multi(createToken<string>('tok:2:dependent'));
-// const t3uberdep = createToken<string>('tok:3:dependent');
 
 const createFakeContainers = (withParent?: true) => {
   const parentContainer = createContainer();
@@ -45,9 +44,15 @@ describe('depending', () => {
       expect(res).toEqual(`secondLength:0`);
     });
 
-    it.only('factory implementation -> cached between resolves', async () => {
+    it('factory implementation -> cached between resolves', async () => {
       const [container] = createFakeContainers();
       const providers = [
+        injectable({
+          provide: t1exp,
+          useFactory: (second) => second.join(':'),
+          inject: [t2dep] as const,
+          scope: 'transient',
+        }),
         injectable({ provide: t2dep, useFactory: () => Math.random().toString().slice(2, 8) }),
         injectable({ provide: t2dep, useValue: Math.random().toString().slice(2, 8) }),
       ];
@@ -55,11 +60,11 @@ describe('depending', () => {
 
       const res1 = await container.resolveSingle(t2dep);
       const res2 = await container.resolveSingle(t2dep);
-      console.log({ res1, res2 });
-      // @TODO there is a problem -> after the first resolving bindValue is being called internally
-      // and it leads to a concatenated unintended implementation
-      // { res1: [a, b], res2: [c, b, a] }
       expect(res1).toEqual(res2);
+
+      const res3 = await container.resolveSingle(t1exp);
+      const res4 = await container.resolveSingle(t1exp);
+      expect(res3).toEqual(res4);
     });
 
     it('transient scope -> is not cached', async () => {
@@ -76,6 +81,22 @@ describe('depending', () => {
       expect(res1).toEqual(res2);
     });
 
-    it.todo('combination of child and parent implementation -> TODO');
+    it('combination of child and parent implementation -> TODO', async () => {
+      const [parentC, childC] = createFakeContainers(true);
+      injectable({ provide: t1exp, useFactory: (second) => second.join(':'), inject: [t2dep], scope: 'scoped' })(
+        parentC,
+      )();
+      injectable({ provide: t1exp, useFactory: (second) => second.join(':'), inject: [t2dep], scope: 'scoped' })(
+        childC,
+      )();
+      injectable({ provide: t2dep, useFactory: () => 'from-parent', scope: 'scoped' })(parentC)();
+      injectable({ provide: t2dep, useFactory: () => 'from-children', scope: 'scoped' })(childC)();
+
+      const res1 = await parentC.resolveSingle(t1exp);
+      const res2 = await childC.resolveSingle(t1exp);
+      // gets the implementation from respective containers and does not mix them together
+      expect(res1).toEqual('from-parent');
+      expect(res2).toEqual('from-children');
+    });
   });
 });

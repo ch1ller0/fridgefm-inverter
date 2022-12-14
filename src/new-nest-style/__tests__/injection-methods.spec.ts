@@ -99,6 +99,7 @@ describe('injection-methods', () => {
       fakeInjectables[1].valueMulti(container)();
 
       const res = await container.resolveSingle(t1exp);
+      // value gets deduplicated
       expect(res).toEqual('[2](value)+[2](factory)+[2](value)+[1](dep-factory)');
     });
   });

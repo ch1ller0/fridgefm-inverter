@@ -4,9 +4,8 @@ import { singleStorageFactory } from './storage/single';
 import { multiStorageFactory } from './storage/multi';
 import type { Container } from './container.types';
 import type { Helper } from './injectable.types';
-import type { Token } from './token.types';
 
-const unwrapCfg = <T>(cfg: Helper.CfgElement<T>): { token: Token.Instance<T>; optional: boolean } => {
+const unwrapCfg = <T>(cfg: Helper.CfgElement<T>) => {
   if ('token' in cfg) {
     return cfg;
   }
@@ -58,10 +57,8 @@ export const createContainer = (parent?: Container.Constructor): Container.Const
       // @ts-ignore
       return Promise.all(cfgs.map((cfg) => instance.resolveSingle(cfg, stack)));
     },
-    bindValue: ({ token, value, injKey }) =>
-      (!!token.multi ? multiStorage : singleStorage).bindValue({ token, value, injKey }),
-    bindFactory: ({ token, func, injKey }) =>
-      (!!token.multi ? multiStorage : singleStorage).bindFactory({ token, func, injKey }),
+    bindValue: ({ token, ...rest }) => (!!token.multi ? multiStorage : singleStorage).bindValue({ token, ...rest }),
+    bindFactory: ({ token, ...rest }) => (!!token.multi ? multiStorage : singleStorage).bindFactory({ token, ...rest }),
     parent,
   };
 

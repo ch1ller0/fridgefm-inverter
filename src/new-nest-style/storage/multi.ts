@@ -3,24 +3,41 @@ import type { Storage } from './storage.types';
 import type { TodoAny } from '../util.types';
 import type { Container } from '../container.types';
 
+type Item<T> = { key: symbol } & (
+  | {
+      func: (stack: Container.Stack) => Promise<T>;
+    }
+  | {
+      value: T;
+    }
+);
+
 export const multiStorageFactory = (): Storage => {
-  const multiFactories = new Map<symbol, ((stack: Container.Stack) => Promise<TodoAny>)[]>();
+  const multies = new Map<symbol, Item<TodoAny>[]>();
 
   return {
     bindValue: ({ token, value, injKey }) => {
-      const prevMulti = multiFactories.get(token.symbol) || [];
-      const fn = () => Promise.resolve(value);
-      multiFactories.set(token.symbol, prevMulti.concat(fn));
+      const prevMulti = multies.get(token.symbol) || [];
+      // if we already have the same injection key and it was func before that means,
+      // we should replace it for the sake of caching
+      const alreadyRegistered = prevMulti.findIndex((s) => s.key === injKey && 'func' in s);
+
+      if (alreadyRegistered === -1) {
+        multies.set(token.symbol, prevMulti.concat({ key: injKey, value }));
+      } else {
+        prevMulti[alreadyRegistered] = { key: injKey, value };
+        multies.set(token.symbol, prevMulti);
+      }
     },
     bindFactory: ({ token, func, injKey }) => {
-      const prevMulti = multiFactories.get(token.symbol) || [];
-      multiFactories.set(token.symbol, prevMulti.concat(func));
+      const prevMulti = multies.get(token.symbol) || [];
+      multies.set(token.symbol, prevMulti.concat({ key: injKey, func }));
     },
+    // @ts-ignore
     get: (token, stack) => {
-      const multies = multiFactories.get(token.symbol);
-      if (!!multies) {
-        // @ts-ignore
-        return Promise.all(multies.map((s) => s(stack)));
+      const items = multies.get(token.symbol);
+      if (typeof items !== 'undefined') {
+        return Promise.all(items.map((s) => ('func' in s ? s.func(stack) : Promise.resolve(s.value))));
       }
 
       return NOT_FOUND_SYMBOL;

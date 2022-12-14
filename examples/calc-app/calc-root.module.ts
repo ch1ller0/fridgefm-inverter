@@ -1,6 +1,7 @@
+/* eslint-disable no-console */
 import rl from 'readline';
 import { stdin as input, stdout as output } from 'process';
-import { createToken, modifyToken, declareModule, injectable } from '../../index';
+import { createToken, modifyToken, createModule, injectable } from '../../src/new-nest-style/index';
 
 type NVal = number;
 type CalcCommand = (cur: NVal, inputVals: number[]) => NVal;
@@ -8,7 +9,7 @@ export const REGISTER_COMMAND_TOKEN = modifyToken.multi(createToken<[string, Cal
 export const HANDLER_TOKEN = createToken<(command: string, values: number[]) => NVal>('command-handler');
 export const ROOT_TOKEN = createToken<void>('root');
 
-export const RootModule = declareModule({
+export const RootModule = createModule({
   name: 'RootModule',
   providers: [
     injectable({
@@ -49,7 +50,11 @@ export const RootModule = declareModule({
         return (command, values) => {
           const commandFn = commandsMap[command];
           if (!commandFn) {
-            throw new Error(`Command "${command}" not found, use one of: "${Object.keys(commandsMap)}"`);
+            throw new Error(
+              `Command "${command}" not found, use one of: ${Object.keys(commandsMap)
+                .map((s) => `"${s}"`)
+                .join(', ')}`,
+            );
           }
           currentVal = commandFn(currentVal, values);
 

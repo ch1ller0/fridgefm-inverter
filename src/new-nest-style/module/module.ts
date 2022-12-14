@@ -1,6 +1,6 @@
-import type { ModuleDeclaration, ModuleConfig, ExtensionMap } from './module.types';
+import type { Module } from './module.types';
 
-export const declareModule = <E extends ExtensionMap>(dec: ModuleConfig<E>): ModuleDeclaration<E> => {
+export const createModule = <E extends Module.ExtensionMap>(dec: Module.Config<E>): Module.Instance<E> => {
   const symbol = Symbol(dec.name);
   let allProviders = dec.providers;
   const extensionObject = Object.entries(dec.extend || {}).reduce((acc, cur) => {
@@ -11,12 +11,12 @@ export const declareModule = <E extends ExtensionMap>(dec: ModuleConfig<E>): Mod
         const providers = ext(...args);
         allProviders = allProviders.concat(providers);
         // eslint-disable-next-line @typescript-eslint/no-use-before-define
-        return createModule();
+        return createInternalModule();
       },
     };
   }, {});
 
-  const createModule = () =>
+  const createInternalModule = () =>
     ({
       __internals: {
         name: dec.name,
@@ -26,7 +26,7 @@ export const declareModule = <E extends ExtensionMap>(dec: ModuleConfig<E>): Mod
       },
       // @TODO add check for duplicating modules with different version
       ...extensionObject,
-    } as ModuleDeclaration<E>);
+    } as Module.Instance<E>);
 
-  return createModule();
+  return createInternalModule();
 };

@@ -1,7 +1,7 @@
-import { declareModule, injectable } from '../../index';
+import { createModule, injectable } from '../../src/new-nest-style/index';
 import { RootModule, REGISTER_COMMAND_TOKEN } from './calc-root.module';
 
-export const OperationsModule = declareModule({
+export const OperationsModule = createModule({
   name: 'OperationsModule',
   providers: [
     injectable({

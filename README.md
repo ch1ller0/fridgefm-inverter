@@ -106,10 +106,3 @@ const defaultToken = modifyToken.defaultValue(baseToken, 5)
 1. `singleton`
 1. `scoped`
 1. `transient`
-### Different inject tuples
-TODO
-
-# TODO
-- Track for cyclic deps
-- Add modules support
-- Add dep stack

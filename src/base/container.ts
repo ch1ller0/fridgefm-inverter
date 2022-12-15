@@ -15,7 +15,6 @@ const unwrapCfg = <T>(cfg: Helper.CfgElement<T>) => {
 export const createContainer = (parent?: Container.Constructor): Container.Constructor => {
   const singleStorage = singleStorageFactory();
   const multiStorage = multiStorageFactory();
-
   const instance: Container.Constructor = {
     resolveSingle: <I extends Helper.CfgElement>(
       cfg: I,
@@ -30,9 +29,10 @@ export const createContainer = (parent?: Container.Constructor): Container.Const
       if (promiseFound === NOT_FOUND_SYMBOL) {
         if (typeof parent !== 'undefined') {
           // always search in the parent container, it is an expected behaviour by definition
-          return parent.resolveSingle(cfg, stack);
+          return parent.resolveSingle(cfg);
         }
       } else {
+        stack.delete(token);
         return promiseFound;
       }
 
@@ -45,17 +45,6 @@ export const createContainer = (parent?: Container.Constructor): Container.Const
       }
 
       return Promise.reject(new TokenNotProvidedError([...stack, token].map((s) => s.symbol)));
-    },
-    resolveMany: <I extends Helper.CfgTuple>(
-      cfgs?: I,
-      stack?: Container.Stack,
-    ): Promise<Helper.ResolvedDepTuple<I>> => {
-      if (typeof cfgs === 'undefined') {
-        // @ts-ignore
-        return Promise.resolve([]);
-      }
-      // @ts-ignore
-      return Promise.all(cfgs.map((cfg) => instance.resolveSingle(cfg, stack)));
     },
     bindValue: ({ token, ...rest }) => (!!token.multi ? multiStorage : singleStorage).bindValue({ token, ...rest }),
     bindFactory: ({ token, ...rest }) => (!!token.multi ? multiStorage : singleStorage).bindFactory({ token, ...rest }),

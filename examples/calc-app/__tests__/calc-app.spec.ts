@@ -1,11 +1,11 @@
-import { declareContainer, injectable } from '../../../src/new-nest-style/index';
-import { ROOT_TOKEN, HANDLER_TOKEN } from '../calc-root.module';
+import { declareContainer, injectable } from '../../../src/index';
+import { ROOT, HANDLER } from '../calc-root.module';
 import { RootModule } from '../calc-root.module';
 import { OperationsModule } from '../operations.module';
 
 const createTestProviders = () => [
   injectable({
-    provide: ROOT_TOKEN,
+    provide: ROOT,
     useFactory: () => {},
   }),
 ];
@@ -16,7 +16,7 @@ describe('integration:calc-app', () => {
       modules: [RootModule],
       providers: createTestProviders(),
     });
-    const handler = await container.get(HANDLER_TOKEN);
+    const handler = await container.get(HANDLER);
     expect(() => handler('current', [])).toThrowError('Command "current" not found, use one of:');
     expect(() => handler('clear', [])).toThrowError('Command "clear" not found, use one of:');
     expect(() => handler('plus', [])).toThrowError('Command "plus" not found, use one of:');
@@ -27,7 +27,7 @@ describe('integration:calc-app', () => {
       modules: [RootModule.withBasicCommands()],
       providers: createTestProviders(),
     });
-    const handler = await container.get(HANDLER_TOKEN);
+    const handler = await container.get(HANDLER);
     expect(() => handler('plus', [])).toThrowError('Command "plus" not found, use one of: "current", "clear"');
     expect(handler('current', [1, 2])).toEqual(0);
     expect(handler('clear', [1, 2])).toEqual(0);
@@ -38,7 +38,7 @@ describe('integration:calc-app', () => {
       modules: [OperationsModule, RootModule.withBasicCommands()],
       providers: createTestProviders(),
     });
-    const handler = await container.get(HANDLER_TOKEN);
+    const handler = await container.get(HANDLER);
 
     expect(handler('current', [])).toEqual(0);
     expect(handler('multiply', [17, 27])).toEqual(0);

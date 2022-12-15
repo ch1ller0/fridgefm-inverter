@@ -1,4 +1,5 @@
 import { createContainer } from '../base/container';
+import { bindExposedTokens } from './exposed-tokens';
 
 import type { PublicContainer } from './public-container.types';
 import type { Injectable } from '../base/injectable.types';
@@ -31,6 +32,8 @@ export const declareContainer = ({
   allProviders.forEach((singleP) => {
     singleP(container)();
   });
+
+  bindExposedTokens(container);
 
   events?.containerReady?.();
 

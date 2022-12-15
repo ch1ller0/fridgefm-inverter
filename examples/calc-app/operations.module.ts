@@ -1,23 +1,23 @@
-import { createModule, injectable } from '../../src/new-nest-style/index';
-import { RootModule, REGISTER_COMMAND_TOKEN } from './calc-root.module';
+import { createModule, injectable } from '../../src/index';
+import { RootModule, REGISTER_COMMAND } from './calc-root.module';
 
 export const OperationsModule = createModule({
   name: 'OperationsModule',
   providers: [
     injectable({
-      provide: REGISTER_COMMAND_TOKEN,
+      provide: REGISTER_COMMAND,
       useValue: ['plus', (cur, inputVals) => inputVals.reduce((acc, val) => acc + val, cur)],
     }),
     injectable({
-      provide: REGISTER_COMMAND_TOKEN,
+      provide: REGISTER_COMMAND,
       useValue: ['minus', (cur, inputVals) => inputVals.reduce((acc, val) => acc - val, cur)],
     }),
     injectable({
-      provide: REGISTER_COMMAND_TOKEN,
+      provide: REGISTER_COMMAND,
       useValue: ['multiply', (cur, inputVals) => inputVals.reduce((acc, val) => acc * val, cur)],
     }),
     injectable({
-      provide: REGISTER_COMMAND_TOKEN,
+      provide: REGISTER_COMMAND,
       useValue: ['divide', (cur, inputVals) => inputVals.reduce((acc, val) => acc / val, cur)],
     }),
   ],

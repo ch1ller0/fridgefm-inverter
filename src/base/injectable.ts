@@ -1,3 +1,4 @@
+import type { Container } from './container.types';
 import type { Token } from './token.types';
 import type { Injectable, Helper } from './injectable.types';
 
@@ -27,6 +28,18 @@ export const injectable = <T extends Token.Instance<unknown>, D extends Helper.C
         } as const
       )[scope];
 
+      const resolveMany = <I extends Helper.CfgTuple>(
+        cfgs?: I,
+        stack?: Container.Stack,
+      ): Promise<Helper.ResolvedDepTuple<I>> => {
+        if (typeof cfgs === 'undefined') {
+          // @ts-ignore
+          return Promise.resolve([]);
+        }
+        // @ts-ignore
+        return Promise.all(cfgs.map((cfg) => container.resolveSingle(cfg, stack)));
+      };
+
       if (scope === 'transient') {
         return () => {
           // run factory on each injection and recollect deps on global level
@@ -35,7 +48,7 @@ export const injectable = <T extends Token.Instance<unknown>, D extends Helper.C
             injKey,
             func: (stack) => {
               stack.add(provide);
-              return container.resolveMany(inject, stack).then((resolvedDeps) => useFactory(...resolvedDeps));
+              return resolveMany(inject, stack).then((resolvedDeps) => useFactory(...resolvedDeps));
             },
           });
         };
@@ -47,8 +60,7 @@ export const injectable = <T extends Token.Instance<unknown>, D extends Helper.C
           injKey,
           func: (stack) => {
             stack.add(provide);
-
-            return container.resolveMany(inject, stack).then(async (resolvedDeps) => {
+            return resolveMany(inject, stack).then(async (resolvedDeps) => {
               const cachedValue = await useFactory(...resolvedDeps);
               binderContainer.bindValue({ token: provide, value: cachedValue, injKey });
               return cachedValue;

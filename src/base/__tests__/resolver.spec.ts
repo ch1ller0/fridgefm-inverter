@@ -47,6 +47,43 @@ describe('resolver', () => {
     }
   });
 
+  describe('different trees', () => {
+    describe('diamonds', () => {
+      const troot = createToken<number>('tok-root');
+      const t1 = createToken<number>('tok1');
+      const t2 = createToken<number>('tok2');
+      const t3 = createToken<number>('tok3');
+
+      it('diamond dependency', async () => {
+        const container = createContainer();
+        injectable({ provide: troot, useFactory: (v1, v2) => v1 + v2, inject: [t1, t2] })(container)();
+        injectable({ provide: t1, useFactory: (v3) => v3 + 1, inject: [t3] })(container)();
+        injectable({ provide: t2, useFactory: (v3) => v3 + 10, inject: [t3] })(container)();
+        injectable({ provide: t3, useFactory: () => 100 })(container)();
+
+        const vroot = await container.resolveSingle(troot);
+        expect(vroot).toEqual(211);
+        const v1 = await container.resolveSingle(t1);
+        expect(v1).toEqual(101);
+      });
+
+      it('diamond cyclic dependency', async () => {
+        const container = createContainer();
+        injectable({ provide: troot, useFactory: (v1, v2) => v1 + v2, inject: [t1, t2] })(container)();
+        injectable({ provide: t1, useFactory: (v3) => v3 + 1, inject: [t3] })(container)();
+        injectable({ provide: t2, useFactory: (v3) => v3 + 10, inject: [t3] })(container)();
+        injectable({ provide: t3, useFactory: (v1d) => v1d + 10, inject: [t1] })(container)();
+
+        try {
+          await container.resolveSingle(troot);
+        } catch (e) {
+          expect(e.message).toEqual(`Cyclic dependency detected for token: "tok1",
+  stack: "tok-root" -> "tok1" -> "tok3" -> "tok1"`);
+        }
+      });
+    });
+  });
+
   describe('hard violations', () => {
     it('fail with good trace when token not provided', async () => {
       expect.assertions(3);

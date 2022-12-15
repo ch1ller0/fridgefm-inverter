@@ -31,10 +31,6 @@ export namespace Container {
      */
     resolveSingle: <I extends Helper.CfgElement>(cfg: I, stack?: Stack) => Promise<Helper.ResolvedDepSingle<I>>;
     /**
-     * collectDependencies
-     */
-    resolveMany: <I extends Helper.CfgTuple>(cfgs?: I, stack?: Stack) => Promise<Helper.ResolvedDepTuple<I>>;
-    /**
      * The referral to the parent container if any
      */
     parent?: Constructor;

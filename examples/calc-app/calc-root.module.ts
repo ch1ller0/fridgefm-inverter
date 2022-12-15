@@ -1,20 +1,25 @@
 /* eslint-disable no-console */
 import rl from 'readline';
 import { stdin as input, stdout as output } from 'process';
-import { createToken, modifyToken, createModule, injectable } from '../../src/new-nest-style/index';
+import { createToken, modifyToken, createModule, injectable } from '../../src/index';
 
 type NVal = number;
 type CalcCommand = (cur: NVal, inputVals: number[]) => NVal;
-export const REGISTER_COMMAND_TOKEN = modifyToken.multi(createToken<[string, CalcCommand]>('register-command'));
-export const HANDLER_TOKEN = createToken<(command: string, values: number[]) => NVal>('command-handler');
-export const ROOT_TOKEN = createToken<void>('root');
+export const ROOT = createToken<void>('root');
+export const REGISTER_COMMAND = modifyToken.multi(createToken<[string, CalcCommand]>('register-command'));
+export const HANDLER = createToken<(command: string, values: number[]) => NVal>('command-handler');
+export const WRITE = createToken<(mes: string | number) => void>('root');
 
 export const RootModule = createModule({
   name: 'RootModule',
   providers: [
     injectable({
-      provide: ROOT_TOKEN,
-      useFactory: (handler) => {
+      provide: WRITE,
+      useValue: (mes) => console.log(mes),
+    }),
+    injectable({
+      provide: ROOT,
+      useFactory: (handler, write) => {
         const readline = rl.createInterface({ input, output });
         const recurseAsk = () => {
           readline.question('', (answer) => {
@@ -22,23 +27,22 @@ export const RootModule = createModule({
             const numericValues = values.map((s) => Number(s)).filter((s) => !isNaN(s));
             try {
               const result = handler(command, numericValues);
-              console.log(result);
+              write(result);
             } catch (e) {
-              // @ts-ignore
-              console.log(e.message);
+              write(e.message);
             }
             recurseAsk();
           });
         };
 
-        console.log('Type your query in format: [command] ...[values] For example: plus 1 2');
+        write('Type your query in format: [command] ...[values] For example: plus 1 2');
 
         recurseAsk();
       },
-      inject: [HANDLER_TOKEN],
+      inject: [HANDLER, WRITE] as const,
     }),
     injectable({
-      provide: HANDLER_TOKEN,
+      provide: HANDLER,
       useFactory: (registerCommands) => {
         const commandsMap = registerCommands.reduce((acc, cur) => ({ ...acc, [cur[0]]: cur[1] }), {}) as Record<
           string,
@@ -61,17 +65,17 @@ export const RootModule = createModule({
           return currentVal;
         };
       },
-      inject: [REGISTER_COMMAND_TOKEN],
+      inject: [REGISTER_COMMAND],
     }),
   ],
   extend: {
     withBasicCommands: () => [
       injectable({
-        provide: REGISTER_COMMAND_TOKEN,
+        provide: REGISTER_COMMAND,
         useValue: ['current', (cur) => cur],
       }),
       injectable({
-        provide: REGISTER_COMMAND_TOKEN,
+        provide: REGISTER_COMMAND,
         useValue: ['clear', () => 0],
       }),
     ],

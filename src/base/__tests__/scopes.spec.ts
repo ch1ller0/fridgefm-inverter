@@ -5,23 +5,55 @@ import { injectable } from '../injectable';
 const t0 = createToken<string>('tok-0');
 const t1 = createToken<string>('tok-1');
 const t2 = createToken<string>('tok-2');
+const randomString = (from: string = '') => `${from}${Math.random().toString().slice(2, 6)}`;
+const providers = [
+  injectable({ provide: t0, useFactory: () => randomString('t0'), scope: 'scoped' }),
+  injectable({ provide: t1, useFactory: (v1) => `${v1}+${randomString('t1')}`, scope: 'scoped', inject: [t0] }),
+  injectable({
+    provide: t2,
+    useFactory: (v1, v2) => `${v1}+${v2}+${randomString('t2')}`,
+    scope: 'scoped',
+    inject: [t0, t1],
+  }),
+];
 
 describe('container scopes', () => {
-  it('scoped', async () => {
-    const randomString = (from: string) => `${from}${Math.random().toString().slice(2, 6)}`;
+  it('depending on the singleton value', async () => {
+    const singletonProv = injectable({ provide: t0, useFactory: () => randomString('t0'), scope: 'singleton' });
+    const parentContainer = createContainer();
+    singletonProv(parentContainer)();
+    providers[1](parentContainer)();
+    const childContainers = new Array(3).fill(undefined).map(() => {
+      const cont = createContainer(parentContainer);
+      providers[1](cont)();
+      return cont;
+    });
+
+    const res0P = await parentContainer.resolveSingle(t0);
+    const res00 = await childContainers[0].resolveSingle(t0);
+    const res01 = await childContainers[1].resolveSingle(t0);
+    const res02 = await childContainers[2].resolveSingle(t0);
+    // are all the same because the scope for it is singleton for provider t0
+    expect({ res00, res01, res02 }).toEqual({ res00: res0P, res01: res0P, res02: res0P });
+
+    const res1P = await parentContainer.resolveSingle(t1);
+    const res10 = await childContainers[0].resolveSingle(t1);
+    const res11 = await childContainers[1].resolveSingle(t1);
+    const res12 = await childContainers[2].resolveSingle(t1);
+    // are all different because the provider is registered individually for each container
+    expect({ res10, res11, res12 }).not.toEqual({ res10: res1P, res11: res1P, res12: res1P });
+    // they are different between each other
+    expect(res10).not.toEqual(res11);
+    expect(res11).not.toEqual(res12);
+    expect(res12).not.toEqual(res10);
+    // but the first part is taken from singleton t0
+    expect(res10.split('+')[0]).toEqual(res1P.split('+')[0]);
+  });
+
+  it('complex', async () => {
     const parentContainer = createContainer();
     const childContainer1 = createContainer(parentContainer);
     const childContainer2 = createContainer(parentContainer);
-    const providers = [
-      injectable({ provide: t0, useFactory: () => randomString('t0'), scope: 'scoped' }),
-      injectable({ provide: t1, useFactory: (v1) => `${v1}+${randomString('t1')}`, scope: 'scoped', inject: [t0] }),
-      injectable({
-        provide: t2,
-        useFactory: (v1, v2) => `${v1}+${v2}+${randomString('t2')}`,
-        scope: 'scoped',
-        inject: [t0, t1],
-      }),
-    ];
 
     providers[0](parentContainer)();
     providers[1](parentContainer)();
@@ -65,14 +97,9 @@ describe('container scopes', () => {
     expect(forChild1[1].split('+')[1]).not.toEqual(forParent[1]);
     expect(forChild2[1].split('+')[1]).not.toEqual(forParent[1]);
 
-    // @TODO this might be a problem
-    // the first child gets a parent implementation because we have already switched the context to the parent
+    // the first child gets a parent implementation because we dont have it registered inside it
     expect(forChild1[2]).toEqual(forParent[2]);
-    // I want the last part to be different
-    // console.log({ forParent, forChild1 });
-    // expect(forChild1[2]).not.toEqual(forParent[2]);
-    // expect(forChild1[2].split('+').slice(0, 3).join('+')).toEqual([forChild1[0], forChild1[1]].join('+'));
-    // for the second child the middle part depends on the value from itself
+    // for the second child the middle part depends on the value from itself because provider 2 was registered inside it
     expect(forChild2[2]).not.toEqual(forParent[2]);
     expect(forChild2[2].split('+').slice(0, 3).join('+')).toEqual([forChild2[0], forChild2[1]].join('+'));
   });

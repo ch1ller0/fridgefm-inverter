@@ -29,14 +29,10 @@ Example usage is shown [here in examples](./src/examples/). You can start the ex
 ```
 # cli calculator app
 yarn example src/examples/calc-app/
-# or its debug version
-yarn example:debug src/examples/calc-app/
 ```
 ```
-# basic server app
-yarn example src/examples/server-app/
-# or its debug version
-yarn example:debug src/examples/server-app/
+# basic chat app
+yarn example src/examples/chat-app/
 ```
 
 ## Basic features

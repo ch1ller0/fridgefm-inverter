@@ -11,4 +11,5 @@ const config: ContainerConfig = {
   modules: [RootModule.forRoot({ port: 3001 }), ServerModule, ClientModule, ChatModule, LoggerModule],
   providers: [],
 };
-declareContainer(config).get(ROOT);
+export const rootContainer = declareContainer(config);
+rootContainer.get(ROOT);

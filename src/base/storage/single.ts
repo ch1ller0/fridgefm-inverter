@@ -20,7 +20,7 @@ export const singleStorageFactory = (): Storage => {
       const hasValueRecord = values.has(token.symbol);
       const valueRecord = values.get(token.symbol);
       if (hasValueRecord && typeof valueRecord !== 'undefined') {
-        return Promise.resolve(valueRecord);
+        return valueRecord;
       }
 
       const hasFactoryRecord = factories.has(token.symbol);

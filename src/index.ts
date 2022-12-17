@@ -1,8 +1,7 @@
-export { declareContainer } from './module/public-container';
+export { declareContainer, declareChildContainer } from './module/public-container';
 export { injectable } from './base/injectable';
 export { createToken, modifyToken } from './base/token';
 export { createModule } from './module/module';
-export { exposedTokens } from './module/exposed-tokens';
 
 import type { PublicContainer } from './module/public-container.types';
 import type { Token } from './base/token.types';

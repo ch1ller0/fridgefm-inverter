@@ -1,7 +1,6 @@
 import { NOT_FOUND_SYMBOL } from './injectable';
 import { TokenNotProvidedError, CyclicDepError } from './errors';
-import { singleStorageFactory } from './storage/single';
-import { multiStorageFactory } from './storage/multi';
+import { createStorage } from './storage/index';
 import type { Container } from './container.types';
 import type { Helper } from './injectable.types';
 
@@ -13,9 +12,13 @@ const unwrapCfg = <T>(cfg: Helper.CfgElement<T>) => {
 };
 
 export const createContainer = (parent?: Container.Constructor): Container.Constructor => {
-  const singleStorage = singleStorageFactory();
-  const multiStorage = multiStorageFactory();
+  const storage = createStorage();
+
   const instance: Container.Constructor = {
+    binders: {
+      bindValue: (a) => storage.bindValue(a),
+      bindFactory: (a) => storage.bindFactory(a),
+    },
     resolveSingle: <I extends Helper.CfgElement>(
       cfg: I,
       stack: Container.Stack = new Set(),
@@ -25,7 +28,7 @@ export const createContainer = (parent?: Container.Constructor): Container.Const
         throw new CyclicDepError([...stack, token].map((s) => s.symbol));
       }
 
-      const promiseFound = (!!token.multi ? multiStorage : singleStorage).get(token, stack);
+      const promiseFound = storage.get(token, stack);
       if (promiseFound === NOT_FOUND_SYMBOL) {
         if (typeof parent !== 'undefined') {
           // always search in the parent container, it is an expected behaviour by definition
@@ -46,8 +49,6 @@ export const createContainer = (parent?: Container.Constructor): Container.Const
 
       return Promise.reject(new TokenNotProvidedError([...stack, token].map((s) => s.symbol)));
     },
-    bindValue: ({ token, ...rest }) => (!!token.multi ? multiStorage : singleStorage).bindValue({ token, ...rest }),
-    bindFactory: ({ token, ...rest }) => (!!token.multi ? multiStorage : singleStorage).bindFactory({ token, ...rest }),
     parent,
   };
 

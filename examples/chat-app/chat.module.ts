@@ -1,4 +1,5 @@
 import { createToken, createModule, injectable } from '../../src/index';
+import type { ServerMessage } from './message.types';
 
 export type ChatRecord = {
   chatMessage: string;
@@ -8,9 +9,9 @@ export type ChatRecord = {
 
 export const CHAT_STORE = createToken<{
   allMessages: () => ChatRecord[];
-  pushMessage: (message: string, byId: string) => void;
+  pushMessages: (messages: string[], byId: string) => ChatRecord[];
 }>('chat:store');
-export const CHAT_WRITE = createToken<(rec: ChatRecord) => void>('chat:write');
+export const CHAT_WRITE = createToken<(rec: ServerMessage) => void>('chat:write');
 
 export const ChatModule = createModule({
   name: 'ChatModule',
@@ -22,17 +23,47 @@ export const ChatModule = createModule({
 
         return {
           allMessages: () => [...messageStore.values()],
-          pushMessage: (chatMessage, from) => messageStore.add({ chatMessage, from, date: Date.now() }),
+          pushMessages: (messages, from) => {
+            const now = Date.now();
+            const formatted = messages.map((chatMessage) => ({ chatMessage, from, date: now }));
+            formatted.forEach((m) => {
+              messageStore.add(m);
+            });
+            return formatted;
+          },
         };
       },
       scope: 'singleton',
     }),
-    injectable({
+    injectable<typeof CHAT_WRITE, []>({
       provide: CHAT_WRITE,
-      useValue: (a: ChatRecord) => {
-        const date = new Date(a.date);
-        const time = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
-        console.log(`[${time}] (${a.from}): ${a.chatMessage}`);
+      useFactory: () => {
+        const writeWithTime = (str: string, date: Date = new Date()) => {
+          const time = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
+          console.log(`[${time}] ${str}`);
+        };
+        const writeChatRecord = (a: ChatRecord) => {
+          const date = new Date(a.date);
+          writeWithTime(`(${a.from}): ${a.chatMessage}`, date);
+        };
+
+        return (a) => {
+          if (a.type === 'restoreChat') {
+            a.items.forEach((item) => writeChatRecord(item));
+            return;
+          }
+          if (a.type === 'message') {
+            a.items.forEach((item) => writeChatRecord(item));
+            return;
+          }
+          if (a.type === 'clientActivity') {
+            const action = a.connected ? 'connected' : 'disconnected';
+            writeWithTime(`User "${a.id}" ${action}`);
+            return;
+          }
+          const never: never = a;
+          throw new Error(never);
+        };
       },
     }),
   ],

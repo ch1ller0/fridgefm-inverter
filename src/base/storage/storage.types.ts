@@ -8,8 +8,8 @@ import type { Token } from '../token.types';
  * This is an interface for a mini-container that is supposed to hold its own values
  */
 export type Storage = {
-  bindValue: Container.Constructor['bindValue'];
-  bindFactory: Container.Constructor['bindFactory'];
+  bindValue: Container.Constructor['binders']['bindValue'];
+  bindFactory: Container.Constructor['binders']['bindFactory'];
   get: <I extends Token.Instance<TodoAny>>(
     token: I,
     stack: Container.Stack,

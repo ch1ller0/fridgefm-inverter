@@ -1,67 +1,85 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { WebSocketServer, type WebSocket } from 'ws';
-import { createModule, createToken, injectable } from '../../src/index';
+import { createModule, createToken, injectable, declareChildContainer } from '../../src/index';
 import { LOGGER_CREATE } from '../shared/logger.module';
 import { PORT } from './root.tokens';
-import { CHAT_STORE, type ChatRecord } from './chat.module';
+import { CHAT_STORE } from './chat.module';
+import { UNIQUE_ID } from './client.module';
+import { rootContainer } from './index';
+import type { ServerMessage, ClientMessage } from './message.types';
 
-type Message = { type: 'message'; items: ChatRecord[] } | { type: 'restoreChat'; items: ChatRecord[] };
-type Client = { push: (m: Message) => void };
+type Session = { push: (m: ServerMessage) => void; pushOther: (m: ServerMessage) => void; id: string };
 
 export const SERVER_INIT = createToken<() => void>('server:init');
-export const REGISTER_CLIENT = createToken<(ws: WebSocket, id: string) => void>('server:register');
+export const REGISTER_CLIENT = createToken<(ws: WebSocket) => void>('server:register');
+export const SESSION_ROOT = createToken<Session>('server:session:root');
+export const SESSION_ALL = createToken<Set<Session>>('server:session:all');
+export const REQUEST_WS = createToken<WebSocket>('request:ws');
 
 export const ServerModule = createModule({
   name: 'ServerModule',
   providers: [
+    injectable({ provide: SESSION_ALL, useValue: new Set<Session>() }),
     injectable({
-      provide: REGISTER_CLIENT,
-      useFactory: (createLogger, chatStore) => {
-        const logger = createLogger('service');
-        const clientsSet = new Map<string, Client>();
-
-        return (ws, id) => {
-          const newClient: Client = {
-            push: (a) => ws.send(JSON.stringify(a)),
-          };
-          newClient.push({ type: 'restoreChat', items: chatStore.allMessages() });
-          ws.on('close', () => {
-            logger.info(`Client disconnected: ${id}`);
-            clientsSet.delete(id);
-          });
-          ws.on('message', (raw) => {
-            // @ts-ignore
-            const parsed = JSON.parse(raw);
-            if (parsed?.type === 'message') {
-              parsed.items.forEach((message) => {
-                chatStore.pushMessage(message, id);
-              });
-              const allOtherClients = [...clientsSet.entries()].filter((s) => s[0] !== id);
-              const allMessages = chatStore.allMessages();
-              allOtherClients.forEach((s) => {
-                s[1].push({ type: 'message', items: [allMessages[allMessages.length - 1]] });
-              });
-            }
-          });
-
-          clientsSet.set(id, newClient);
-          logger.info(`Client connected: ${id}`);
+      provide: SESSION_ROOT,
+      useFactory: (ws, id, allSessions, chatStore) => {
+        const newSession: Session = {
+          push: (a) => {
+            ws.send(JSON.stringify(a));
+          },
+          pushOther: (a) => {
+            const allExceptMe = [...allSessions.values()].filter((s) => s.id !== id);
+            allExceptMe.forEach((s) => s.push(a));
+          },
+          id,
         };
+
+        ws.on('close', () => {
+          allSessions.delete(newSession);
+          newSession.pushOther({ type: 'clientActivity', connected: false, id });
+        });
+
+        ws.on('message', (raw: string) => {
+          const parsed = JSON.parse(raw) as ClientMessage;
+          if (parsed?.type === 'message') {
+            const fromatted = chatStore.pushMessages(parsed.items, id);
+            newSession.pushOther({ type: 'message', items: fromatted });
+          }
+        });
+
+        allSessions.add(newSession);
+        newSession.pushOther({ type: 'clientActivity', connected: true, id });
+        newSession.push({ type: 'restoreChat', items: chatStore.allMessages() });
+
+        return newSession;
       },
-      inject: [LOGGER_CREATE, CHAT_STORE] as const,
+      inject: [REQUEST_WS, UNIQUE_ID, SESSION_ALL, CHAT_STORE] as const,
     }),
     injectable({
       provide: SERVER_INIT,
-      inject: [PORT, LOGGER_CREATE, REGISTER_CLIENT] as const,
-      useFactory: (port, createLogger, registerClient) => () => {
+      inject: [PORT, LOGGER_CREATE, SESSION_ALL] as const,
+      useFactory: (port, createLogger, allSessions) => () => {
         const logger = createLogger('server');
         const server = new WebSocketServer({ port });
-        server.on('connection', (ws) => {
-          const clientId = Math.random().toString().slice(2, 8);
-          registerClient(ws, clientId);
+
+        server.on('connection', async (ws) => {
+          return declareChildContainer(rootContainer, {
+            providers: [injectable({ provide: REQUEST_WS, useValue: ws })],
+          }).get(SESSION_ROOT);
         });
 
+        setInterval(() => {
+          const activeSessions = [...allSessions.values()];
+          logger.info({ sessions: activeSessions.map((s) => s.id).join(','), count: activeSessions.length });
+        }, 5000);
+
         logger.info(`Websocket server has successfully started on port ${port}`);
+        logger.info(
+          `
+Create a new terminal tab and run the same script there and it will generate the chat client.
+Do not close this tab! This is a server. 
+You can create as many clients as you want by simply repeating the steps above`,
+        );
 
         return server;
       },

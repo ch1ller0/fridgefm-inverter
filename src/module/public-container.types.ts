@@ -34,5 +34,7 @@ export namespace PublicContainer {
 
   export type Instance = {
     get: Container.Constructor['resolveSingle'];
+    __providers: Injectable.Instance[];
+    __constructor: Container.Constructor;
   };
 }

@@ -1,4 +1,4 @@
-import { createContainer } from '../container';
+import { createBaseContainer } from '../container';
 import { createToken, modifyToken } from '../token';
 import { injectable } from '../injectable';
 
@@ -10,11 +10,11 @@ const t2def = modifyToken.defaultValue(t2base, '[2](default)');
 const t2mul = modifyToken.multi(t2base);
 
 const createFakeContainers = (withParent?: true) => {
-  const parentContainer = createContainer();
+  const parentContainer = createBaseContainer();
   if (typeof withParent === 'undefined') {
     return [parentContainer];
   }
-  return [parentContainer, createContainer(parentContainer)];
+  return [parentContainer, createBaseContainer(parentContainer)];
 };
 
 const fakeInjectables = [

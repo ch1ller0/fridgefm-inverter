@@ -1,4 +1,4 @@
-import { createContainer } from '../container';
+import { createBaseContainer } from '../container';
 import { createToken } from '../token';
 import { injectable } from '../injectable';
 
@@ -20,11 +20,11 @@ const providers = [
 describe('container scopes', () => {
   it('depending on the singleton value', async () => {
     const singletonProv = injectable({ provide: t0, useFactory: () => randomString('t0'), scope: 'singleton' });
-    const parentContainer = createContainer();
+    const parentContainer = createBaseContainer();
     singletonProv(parentContainer)();
     providers[1](parentContainer)();
     const childContainers = new Array(3).fill(undefined).map(() => {
-      const cont = createContainer(parentContainer);
+      const cont = createBaseContainer(parentContainer);
       providers[1](cont)();
       return cont;
     });
@@ -51,9 +51,9 @@ describe('container scopes', () => {
   });
 
   it('complex', async () => {
-    const parentContainer = createContainer();
-    const childContainer1 = createContainer(parentContainer);
-    const childContainer2 = createContainer(parentContainer);
+    const parentContainer = createBaseContainer();
+    const childContainer1 = createBaseContainer(parentContainer);
+    const childContainer2 = createBaseContainer(parentContainer);
 
     providers[0](parentContainer)();
     providers[1](parentContainer)();

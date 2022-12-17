@@ -1,4 +1,4 @@
-import { createContainer } from '../container';
+import { createBaseContainer } from '../container';
 import { createToken, modifyToken } from '../token';
 import { injectable } from '../injectable';
 
@@ -8,11 +8,11 @@ const t1exp = createToken<string>('tok:1:expect');
 const t2dep = modifyToken.multi(createToken<string>('tok:2:dependent'));
 
 const createFakeContainers = (withParent?: true) => {
-  const parentContainer = createContainer();
+  const parentContainer = createBaseContainer();
   if (typeof withParent === 'undefined') {
     return [parentContainer];
   }
-  return [parentContainer, createContainer(parentContainer)];
+  return [parentContainer, createBaseContainer(parentContainer)];
 };
 
 describe('depending', () => {

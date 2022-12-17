@@ -9,6 +9,7 @@
     "inlineSourceMap": true,
     "esModuleInterop": true,
     "strict": true,
+    "removeComments": true,
 
     /* Additional Checks */
     "noUnusedLocals": true,

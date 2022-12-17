@@ -1,4 +1,4 @@
-import { createContainer } from '../base/container';
+import { createBaseContainer } from '../base/container';
 import type { PublicContainer } from './public-container.types';
 import type { Injectable } from '../base/injectable.types';
 import type { Module } from './module.types';
@@ -26,8 +26,8 @@ const constructProviders = ({
   return [...moduleProviders, ...topLevelProvider];
 };
 
-export const declareContainer = (cfg: PublicContainer.Configuration): PublicContainer.Instance => {
-  const container = createContainer();
+export const createContainer = (cfg: PublicContainer.Configuration): PublicContainer.Instance => {
+  const container = createBaseContainer();
   const selfProviders = constructProviders(cfg);
   cfg.events?.containerStart?.();
 
@@ -44,11 +44,11 @@ export const declareContainer = (cfg: PublicContainer.Configuration): PublicCont
   };
 };
 
-export const declareChildContainer = (
+export const createChildContainer = (
   parent: PublicContainer.Instance,
   cfg: PublicContainer.Configuration = {},
 ): PublicContainer.Instance => {
-  const container = createContainer(parent.__constructor);
+  const container = createBaseContainer(parent.__constructor);
   cfg.events?.containerStart?.();
 
   const selfProviders = constructProviders({ providers: cfg.providers, modules: cfg.modules, events: cfg.events });

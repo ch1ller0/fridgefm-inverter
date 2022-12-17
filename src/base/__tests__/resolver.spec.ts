@@ -1,4 +1,4 @@
-import { createContainer } from '../container';
+import { createBaseContainer } from '../container';
 import { createToken } from '../token';
 import { injectable } from '../injectable';
 
@@ -7,7 +7,7 @@ const delay = (to: number) => new Promise((res) => setTimeout(res, to));
 describe('resolver', () => {
   it('really long chain', async () => {
     const mockFactory = jest.fn((prev) => Promise.resolve().then(() => prev + 2));
-    const container = createContainer();
+    const container = createBaseContainer();
     const tokens = new Array(500).fill(undefined).map((_, i) => createToken<number>(`tok${i}`));
     const providers = tokens.map((tok, index) =>
       index === tokens.length - 1
@@ -29,7 +29,7 @@ describe('resolver', () => {
 
   it('failing dependency -> the whole chain fails', async () => {
     expect.assertions(1);
-    const container = createContainer();
+    const container = createBaseContainer();
     const t1 = createToken<number>('tok-1');
     const t2 = createToken<number>('tok-2');
     const t3 = createToken<number>('tok-3');
@@ -55,7 +55,7 @@ describe('resolver', () => {
       const t3 = createToken<number>('tok3');
 
       it('diamond dependency', async () => {
-        const container = createContainer();
+        const container = createBaseContainer();
         injectable({ provide: troot, useFactory: (v1, v2) => v1 + v2, inject: [t1, t2] })(container)();
         injectable({ provide: t1, useFactory: (v3) => v3 + 1, inject: [t3] })(container)();
         injectable({ provide: t2, useFactory: (v3) => v3 + 10, inject: [t3] })(container)();
@@ -68,7 +68,7 @@ describe('resolver', () => {
       });
 
       it('diamond cyclic dependency', async () => {
-        const container = createContainer();
+        const container = createBaseContainer();
         injectable({ provide: troot, useFactory: (v1, v2) => v1 + v2, inject: [t1, t2] })(container)();
         injectable({ provide: t1, useFactory: (v3) => v3 + 1, inject: [t3] })(container)();
         injectable({ provide: t2, useFactory: (v3) => v3 + 10, inject: [t3] })(container)();
@@ -88,7 +88,7 @@ describe('resolver', () => {
     it('fail with good trace when token not provided', async () => {
       // expect.assertions(3);
       const mockFactory = jest.fn((prev) => delay(10).then(() => prev + 2));
-      const container = createContainer();
+      const container = createBaseContainer();
       const tokens = new Array(10).fill(undefined).map((_, i) => createToken<number>(`tok${i}`));
       const providers = tokens.map((tok, index) => {
         const nextToken = tokens[index + 1];
@@ -132,7 +132,7 @@ describe('resolver', () => {
 
     it('recursive -> fails with dep stack', async () => {
       const mockFactory = jest.fn((prev) => Promise.resolve().then(() => prev + 2));
-      const container = createContainer();
+      const container = createBaseContainer();
       const tokens = new Array(5).fill(undefined).map((_, i) => createToken<number>(`tok${i}`));
       const providers = tokens.map((tok, index) =>
         index === tokens.length - 1

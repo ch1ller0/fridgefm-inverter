@@ -39,8 +39,8 @@ export namespace Factory {
     /**
      * Options for factory binding.
      * `scope` types:
-     *   - `singleton` - **This is the default**. Value is created and cached by the parent container if present.
-     *   - `scoped` - Value is created and cached by the container which starts resolving.
+     *   - `scoped` **This is the default**. - Value is created and cached by the container which starts resolving.
+     *   - `singleton` - Value is created and cached by the parent container if present.
      *   - `transient` - Value is recreated every time it is injected.
      */
     scope?: 'singleton' | 'scoped' | 'transient';
@@ -103,14 +103,6 @@ export namespace Injectable {
     | ProviderConfig.AsyncEmptyFactory<T>
     | ProviderConfig.AsyncDependingFactory<T, D>
   );
-
-  /**
-   * Args for async injectable method
-   */
-  export type AsyncArgs<
-    T extends Token.Instance<unknown> = Token.Instance<unknown>,
-    D extends Helper.CfgTuple = Helper.CfgTuple,
-  > = { provide: T } & (ProviderConfig.AsyncEmptyFactory<T> | ProviderConfig.AsyncDependingFactory<T, D>);
 
   /**
    * This is the return type of the injectable function.

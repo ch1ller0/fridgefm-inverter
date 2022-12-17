@@ -11,7 +11,7 @@ const unwrapCfg = <T>(cfg: Helper.CfgElement<T>) => {
   return { token: cfg, optional: false };
 };
 
-export const createContainer = (parent?: Container.Constructor): Container.Constructor => {
+export const createBaseContainer = (parent?: Container.Constructor): Container.Constructor => {
   const storage = createStorage();
 
   const instance: Container.Constructor = {

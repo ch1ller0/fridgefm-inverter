@@ -1,6 +1,6 @@
 {
   "roots": [
-    "<rootDir>/src"
+    "<rootDir>"
   ],
   "transform": {
     "^.+\\.ts$": "ts-jest"
@@ -16,5 +16,6 @@
       "diagnostics": false
     }
   },
-  "verbose": true
+  "verbose": true,
+  "clearMocks": true
 }

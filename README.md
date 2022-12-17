@@ -78,7 +78,7 @@ const defaultToken = modifyToken.defaultValue(baseToken, 5)
         useFactory: (num) => num * 10, // if the token is not registered in the container, you still get the default value for `num`
         inject: [defaultToken] as const
     })
-    const finalValue = await container.resolve(someToken) // 50 (it is a result of 5*10)
+    const finalValue = await container.get(someToken) // 50 (it is a result of 5*10)
     ```
 1. `multi`
     ```typescript
@@ -92,7 +92,7 @@ const defaultToken = modifyToken.defaultValue(baseToken, 5)
     const num2Provider = injectable({ provide: multiNumToken, useValue: 25 })
     const num3Provider = injectable({ provide: multiNumToken, useValue: 35 })
 
-    const finalValue = await container.resolve(someToken) // 75 (it is a sum of all the multiNums)
+    const finalValue = await container.get(someToken) // 75 (it is a sum of all the multiNums)
     ```
 ### Container hierarchy and injection scopes
     ```typescript

@@ -1,17 +1,18 @@
 import { createBaseContainer } from '../container';
 import { createToken } from '../token';
 import { injectable } from '../injectable';
+import { randomString } from '../../../examples/shared/utils';
 
 const t0 = createToken<string>('tok-0');
 const t1 = createToken<string>('tok-1');
 const t2 = createToken<string>('tok-2');
-const randomString = (from: string = '') => `${from}${Math.random().toString().slice(2, 6)}`;
+
 const providers = [
-  injectable({ provide: t0, useFactory: () => randomString('t0'), scope: 'scoped' }),
-  injectable({ provide: t1, useFactory: (v1) => `${v1}+${randomString('t1')}`, scope: 'scoped', inject: [t0] }),
+  injectable({ provide: t0, useFactory: () => randomString(), scope: 'scoped' }),
+  injectable({ provide: t1, useFactory: (v1) => `${v1}+${randomString()}`, scope: 'scoped', inject: [t0] }),
   injectable({
     provide: t2,
-    useFactory: (v1, v2) => `${v1}+${v2}+${randomString('t2')}`,
+    useFactory: (v1, v2) => `${v1}+${v2}+${randomString()}`,
     scope: 'scoped',
     inject: [t0, t1],
   }),
@@ -19,7 +20,7 @@ const providers = [
 
 describe('container scopes', () => {
   it('depending on the singleton value', async () => {
-    const singletonProv = injectable({ provide: t0, useFactory: () => randomString('t0'), scope: 'singleton' });
+    const singletonProv = injectable({ provide: t0, useFactory: () => randomString(), scope: 'singleton' });
     const parentContainer = createBaseContainer();
     singletonProv(parentContainer)();
     providers[1](parentContainer)();

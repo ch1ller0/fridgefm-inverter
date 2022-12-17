@@ -1,4 +1,4 @@
-import { declareContainer } from '../../src/index';
+import { createContainer } from '../../src/index';
 import { LoggerModule } from '../shared/logger.module';
 import { ROOT, RootModule } from './root.module';
 import { ServerModule } from './server.module';
@@ -16,5 +16,5 @@ const config: ContainerConfig = {
   ],
   providers: [],
 };
-export const rootContainer = declareContainer(config);
+export const rootContainer = createContainer(config);
 rootContainer.get(ROOT);

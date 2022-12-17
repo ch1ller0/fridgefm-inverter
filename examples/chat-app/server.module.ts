@@ -1,6 +1,6 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { WebSocketServer, type WebSocket } from 'ws';
-import { createModule, createToken, injectable, declareChildContainer } from '../../src/index';
+import { createModule, createToken, injectable, createChildContainer } from '../../src/index';
 import { LOGGER_CREATE, LOGGER_SCOPED } from '../shared/logger.tokens';
 import { PORT } from './root.tokens';
 import { CHAT_STORE } from './chat.module';
@@ -68,7 +68,7 @@ export const ServerModule = createModule({
         const server = new WebSocketServer({ port });
 
         server.on('connection', (ws) => {
-          return declareChildContainer(rootContainer, {
+          return createChildContainer(rootContainer, {
             providers: [injectable({ provide: REQUEST_WS, useValue: ws })],
           }).get(SESSION_ROOT);
         });

@@ -1,4 +1,4 @@
-import { declareContainer, injectable } from '../../../src/index';
+import { createContainer, injectable } from '../../../src/index';
 import { ROOT, HANDLER } from '../calc-root.module';
 import { RootModule } from '../calc-root.module';
 import { OperationsModule } from '../operations.module';
@@ -12,7 +12,7 @@ const createTestProviders = () => [
 
 describe('integration:calc-app', () => {
   it('does not add basic commands if not explicitly called', async () => {
-    const container = declareContainer({
+    const container = createContainer({
       modules: [RootModule],
       providers: createTestProviders(),
     });
@@ -23,7 +23,7 @@ describe('integration:calc-app', () => {
   });
 
   it('works alone with RootModule.withBasicCommands', async () => {
-    const container = declareContainer({
+    const container = createContainer({
       modules: [RootModule.withBasicCommands()],
       providers: createTestProviders(),
     });
@@ -34,7 +34,7 @@ describe('integration:calc-app', () => {
   });
 
   it('OperationsModule adds operations as expected', async () => {
-    const container = declareContainer({
+    const container = createContainer({
       modules: [OperationsModule, RootModule.withBasicCommands()],
       providers: createTestProviders(),
     });

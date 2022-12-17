@@ -25,7 +25,7 @@ or
 yarn add @fridgefm/inverter
 ```
 ## Examples
-Example usage is shown [here in examples](./src/examples/). You can start the example app 
+Example usage is shown [here in examples](./examples/). You can start the example app 
 ```
 # cli calculator app
 yarn example src/examples/calc-app/
@@ -96,8 +96,8 @@ const defaultToken = modifyToken.defaultValue(baseToken, 5)
     ```
 ### Container hierarchy and injection scopes
     ```typescript
-    const globalContainer = declareContainer({ providers: [] })
-    const childContainer = declareContainer({ parent: globalContainer, providers: [] })
+    const globalContainer = craeteContainer({ providers: [] })
+    const childContainer = createChildContainer({ parent: globalContainer, providers: [] })
     ```
 1. `singleton`
 1. `scoped`

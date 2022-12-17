@@ -1,8 +1,7 @@
 import { createBaseContainer } from '../container';
 import { createToken, modifyToken } from '../token';
 import { injectable } from '../injectable';
-
-const delay = (to: number) => new Promise((resolve) => setTimeout(() => resolve(undefined), to));
+import { delay } from '../../../examples/shared/utils';
 
 const t1exp = createToken<string>('tok:1:expect');
 const t2dep = modifyToken.multi(createToken<string>('tok:2:dependent'));

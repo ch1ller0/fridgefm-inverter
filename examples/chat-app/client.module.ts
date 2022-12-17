@@ -4,6 +4,7 @@ import { stdin as input, stdout as output } from 'process';
 import { WebSocket } from 'ws';
 import { createModule, createToken, injectable } from '../../src/index';
 import { LOGGER_CREATE } from '../shared/logger.tokens';
+import { randomString } from '../shared/utils';
 import { PORT } from './root.tokens';
 import { CHAT_WRITE } from './chat.module';
 import type { ServerMessage } from './message.types';
@@ -18,7 +19,7 @@ export const ClientModule = createModule({
   providers: [
     injectable({
       provide: UNIQUE_ID,
-      useFactory: () => Math.random().toString().slice(2, 8),
+      useFactory: () => randomString().slice(8),
       scope: 'scoped',
     }),
     injectable({

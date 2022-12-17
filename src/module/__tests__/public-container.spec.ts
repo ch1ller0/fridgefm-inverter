@@ -1,31 +1,26 @@
-import { createToken, declareContainer, injectable } from '../../index';
-import { declareChildContainer } from '../public-container';
+import { createToken, createContainer, createChildContainer, injectable } from '../../index';
+import { randomString } from '../../../examples/shared/utils';
 
-const random = () => Math.random().toString().slice(2, 6);
 const RANDOM_SCOPED = createToken<string>('random:scoped');
 const RANDOM_SINGLETON = createToken<string>('random:singleton');
 const RADNOM_TRANSIENT = createToken<string>('random:transient');
 const UNIQUE = createToken<string>('unique');
 
 const providers = [
-  injectable({ provide: RANDOM_SINGLETON, useFactory: random, scope: 'singleton' }),
-  injectable({ provide: RANDOM_SCOPED, useFactory: random, scope: 'scoped' }),
-  injectable({ provide: RADNOM_TRANSIENT, useFactory: random, scope: 'transient' }),
+  injectable({ provide: RANDOM_SINGLETON, useFactory: randomString, scope: 'singleton' }),
+  injectable({ provide: RANDOM_SCOPED, useFactory: randomString, scope: 'scoped' }),
+  injectable({ provide: RADNOM_TRANSIENT, useFactory: randomString, scope: 'transient' }),
 ];
 
 const getUniqueValues = (arr: (string | number)[]) => [...new Set(arr)];
 
 describe('e2e', () => {
   it('different scopes', async () => {
-    const container = declareContainer({ providers });
+    const container = createContainer({ providers });
     const createScope = async (req: string) => {
-      // @TODO this one return the constructorm not public
-      const childContainer = await declareChildContainer(container, {
+      const childContainer = await createChildContainer(container, {
         providers: [injectable({ provide: UNIQUE, useValue: req })],
       });
-      // unique req object for request
-      // unique res object for response
-      // const fromReq = await childContainer.resolveSingle(UNIQUE);
       const [singletons, scopeds, transients] = await Promise.all([
         Promise.all([childContainer.get(RANDOM_SINGLETON), childContainer.get(RANDOM_SINGLETON)]),
         Promise.all([childContainer.get(RANDOM_SCOPED), childContainer.get(RANDOM_SCOPED)]),
@@ -41,6 +36,7 @@ describe('e2e', () => {
       transients: await Promise.all([container.get(RADNOM_TRANSIENT), container.get(RADNOM_TRANSIENT)]),
     };
     const fromChildren = await Promise.all([createScope('first'), createScope('second')]);
+    console.log({ fromParent, fromChildren });
 
     // singletons are the same between different resolves
     expect(fromParent.singletons[0]).toEqual(fromParent.singletons[1]);

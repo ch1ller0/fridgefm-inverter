@@ -1,8 +1,7 @@
 import { createBaseContainer } from '../container';
 import { createToken } from '../token';
 import { injectable } from '../injectable';
-
-const delay = (to: number) => new Promise((res) => setTimeout(res, to));
+import { delay } from '../../../examples/shared/utils';
 
 describe('resolver', () => {
   it('really long chain', async () => {

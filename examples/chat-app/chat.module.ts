@@ -1,6 +1,5 @@
 import { createToken, createModule, injectable } from '../../src/index';
 import type { ServerMessage } from './message.types';
-
 export type ChatRecord = {
   chatMessage: string;
   date: number;

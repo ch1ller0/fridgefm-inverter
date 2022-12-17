@@ -1,7 +1,7 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { WebSocketServer, type WebSocket } from 'ws';
 import { createModule, createToken, injectable, declareChildContainer } from '../../src/index';
-import { LOGGER_CREATE } from '../shared/logger.module';
+import { LOGGER_CREATE, LOGGER_SCOPED } from '../shared/logger.tokens';
 import { PORT } from './root.tokens';
 import { CHAT_STORE } from './chat.module';
 import { UNIQUE_ID } from './client.module';
@@ -22,7 +22,7 @@ export const ServerModule = createModule({
     injectable({ provide: SESSION_ALL, useValue: new Set<Session>() }),
     injectable({
       provide: SESSION_ROOT,
-      useFactory: (ws, id, allSessions, chatStore) => {
+      useFactory: (scopedLogger, ws, id, allSessions, chatStore) => {
         const newSession: Session = {
           push: (a) => {
             ws.send(JSON.stringify(a));
@@ -37,41 +37,41 @@ export const ServerModule = createModule({
         ws.on('close', () => {
           allSessions.delete(newSession);
           newSession.pushOther({ type: 'clientActivity', connected: false, id });
+          scopedLogger.warn('[User disconnected]');
+          return;
         });
 
         ws.on('message', (raw: string) => {
           const parsed = JSON.parse(raw) as ClientMessage;
-          if (parsed?.type === 'message') {
+          if (parsed.type === 'message') {
             const fromatted = chatStore.pushMessages(parsed.items, id);
             newSession.pushOther({ type: 'message', items: fromatted });
+            scopedLogger.info(fromatted[0].chatMessage);
+            return;
           }
         });
 
+        scopedLogger.info('[User connected]');
         allSessions.add(newSession);
         newSession.pushOther({ type: 'clientActivity', connected: true, id });
         newSession.push({ type: 'restoreChat', items: chatStore.allMessages() });
 
         return newSession;
       },
-      inject: [REQUEST_WS, UNIQUE_ID, SESSION_ALL, CHAT_STORE] as const,
+      inject: [LOGGER_SCOPED, REQUEST_WS, UNIQUE_ID, SESSION_ALL, CHAT_STORE] as const,
     }),
     injectable({
       provide: SERVER_INIT,
       inject: [PORT, LOGGER_CREATE, SESSION_ALL] as const,
-      useFactory: (port, createLogger, allSessions) => () => {
+      useFactory: (port, createLogger) => () => {
         const logger = createLogger('server');
         const server = new WebSocketServer({ port });
 
-        server.on('connection', async (ws) => {
+        server.on('connection', (ws) => {
           return declareChildContainer(rootContainer, {
             providers: [injectable({ provide: REQUEST_WS, useValue: ws })],
           }).get(SESSION_ROOT);
         });
-
-        setInterval(() => {
-          const activeSessions = [...allSessions.values()];
-          logger.info({ sessions: activeSessions.map((s) => s.id).join(','), count: activeSessions.length });
-        }, 5000);
 
         logger.info(`Websocket server has successfully started on port ${port}`);
         logger.info(

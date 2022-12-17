@@ -52,6 +52,6 @@ describe('integration:calc-app', () => {
     }).toThrowError('Command "bibka" not found, use one of: "plus", "minus", "multiply", "divide", "current", "clear"');
     expect(handler('clear', [3])).toEqual(0);
     expect(handler('plus', [100])).toEqual(100);
-    expect(handler('divide', [0, 1])).toEqual(Infinity);
+    expect(() => handler('divide', [0, 1])).toThrowError('Division by zero is not supported');
   });
 });

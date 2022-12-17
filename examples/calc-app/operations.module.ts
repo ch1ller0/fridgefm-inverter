@@ -18,7 +18,15 @@ export const OperationsModule = createModule({
     }),
     injectable({
       provide: REGISTER_COMMAND,
-      useValue: ['divide', (cur, inputVals) => inputVals.reduce((acc, val) => acc / val, cur)],
+      useValue: [
+        'divide',
+        (cur, inputVals) => {
+          if (inputVals.some((s) => s === 0)) {
+            throw new Error('Division by zero is not supported');
+          }
+          return inputVals.reduce((acc, val) => acc / val, cur);
+        },
+      ],
     }),
   ],
   imports: [RootModule],

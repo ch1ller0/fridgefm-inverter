@@ -6,9 +6,14 @@ import { ClientModule } from './client.module';
 import { ChatModule } from './chat.module';
 import type { ContainerConfig } from '../../src/index';
 
-// curl "localhost:3001/"
 const config: ContainerConfig = {
-  modules: [RootModule.forRoot({ port: 3001 }), ServerModule, ClientModule, ChatModule, LoggerModule],
+  modules: [
+    RootModule.forRoot({ port: 3001 }),
+    ClientModule.configure({ host: 'ws://127.0.0.1' }),
+    ServerModule,
+    ChatModule,
+    LoggerModule,
+  ],
   providers: [],
 };
 export const rootContainer = declareContainer(config);

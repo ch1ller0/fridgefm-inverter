@@ -3,13 +3,14 @@ import { stdin as input, stdout as output } from 'process';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { WebSocket } from 'ws';
 import { createModule, createToken, injectable } from '../../src/index';
-import { LOGGER_CREATE } from '../shared/logger.module';
+import { LOGGER_CREATE } from '../shared/logger.tokens';
 import { PORT } from './root.tokens';
 import { CHAT_WRITE } from './chat.module';
 import type { ServerMessage } from './message.types';
 
 export const UNIQUE_ID = createToken<string>('client:id');
 export const CLIENT_INIT = createToken<() => void>('client:init');
+export const HOST = createToken<string>('client:host');
 const USER_INPUT = createToken<(ask: string) => Promise<{ answer: string }>>('client:ask');
 
 export const ClientModule = createModule({
@@ -28,10 +29,14 @@ export const ClientModule = createModule({
         const logger = createLogger('client');
 
         return new Promise((resolve) => {
-          client.on('open', () => {
+          client.on('open', (a) => {
             logger.info('Successfully connected to the server');
             logger.info('Type any message and all other clients will see your message');
             resolve(undefined);
+          });
+          client.on('close', () => {
+            logger.error('Server has closed, exiting...');
+            process.exit(1);
           });
         })
           .then(() => {
@@ -69,4 +74,12 @@ export const ClientModule = createModule({
       },
     }),
   ],
+  extend: {
+    configure: (a: { host: string }) => [
+      injectable({
+        provide: HOST,
+        useValue: a.host,
+      }),
+    ],
+  },
 });

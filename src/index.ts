@@ -16,9 +16,8 @@ export type { ContainerConfig, TokenProvide };
  * 1 Fix multi
  * 1 Add modules
  * 1 Add support for creating different scopes    <-- you are here
- * 1 Add edge cases
- * 1 Add events which show the resolving of the modules
  * 1 Add exports field for modules
+ * 1 Add edge cases
  * 1 Add testing module
  * 1 Add container events
  */

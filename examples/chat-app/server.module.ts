@@ -65,6 +65,7 @@ export const ServerModule = createModule({
         });
 
         scopedLogger.info('[User connected]');
+        // we add only newSession object but not the entire ws object - benefit from using child containers
         allSessions.add(newSession);
         newSession.pushOther({ type: 'clientActivity', connected: true, id });
         newSession.push({ type: 'restoreChat', items: chatStore.allMessages() });
@@ -98,5 +99,5 @@ You can create as many clients as you want by simply repeating the steps above`,
       },
     }),
   ],
-  exports: { SERVER_INIT, PORT },
+  exports: { SERVER_INIT },
 });

@@ -8,8 +8,8 @@ type CalcCommand = (cur: NVal, inputVals: number[]) => NVal;
 
 const ROOT = createToken<void>('root');
 const REGISTER_COMMAND = modifyToken.multi(createToken<[string, CalcCommand]>('register-command'));
-const HANDLER = createToken<(command: string, values: number[]) => NVal>('command-handler');
 const WRITE = createToken<(mes: string | number) => void>('root');
+export const HANDLER = createToken<(command: string, values: number[]) => NVal>('command-handler');
 
 export const RootModule = createModule({
   name: 'RootModule',

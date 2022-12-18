@@ -1,10 +1,11 @@
 import type { TodoAny } from '../base/util.types';
 import type { Injectable } from '../base/injectable.types';
+import type { Token } from '../base/token.types';
 
 export namespace Module {
   export type Extension = (...args: TodoAny) => Injectable.Instance[];
   export type ExtensionMap = Record<string, Extension>;
-  export type Exports = Record<string, unknown>;
+  export type Exports = Record<string, Token.AnyInstance>;
 
   export type Config<Ext extends ExtensionMap, Exp extends Exports = {}> = {
     name: string;

@@ -205,8 +205,6 @@ describe('e2e', () => {
         res[2][1][2],
         res[2][2][2],
       ]);
-
-      // console.log({ par, chi1, chi2 });
     });
   });
 });

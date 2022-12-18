@@ -5,8 +5,7 @@ import { ServerModule } from './server.module';
 import { ClientModule } from './client.module';
 
 const { SERVER_INIT } = ServerModule.exports;
-const { CLIENT_INIT } = ClientModule.exports;
-const { PORT } = ClientModule.exports;
+const { CLIENT_INIT, PORT } = ClientModule.exports;
 const ROOT = createToken<void>('root');
 const IS_PORT_BUSY = createToken<(port: number) => Promise<boolean>>('root:is-port-busy');
 

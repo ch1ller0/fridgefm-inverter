@@ -1,5 +1,4 @@
 import type { Token } from './token.types';
-import type { TodoAny } from './util.types';
 
 export class TokenNotProvidedError extends Error {
   depStack: Readonly<symbol[]>;
@@ -29,7 +28,7 @@ export class CyclicDepError extends Error {
 }
 
 export class TokenViolationError extends Error {
-  constructor(readonly message: string, readonly originalToken: Token.Instance<TodoAny>) {
+  constructor(readonly message: string, readonly originalToken: Token.AnyInstance) {
     super(message);
     this.name = 'TokenViolationError';
   }

@@ -1,8 +1,11 @@
 import { createModule, injectable } from '../../src/index';
-import { RootModule, REGISTER_COMMAND } from './calc-root.module';
+import { RootModule } from './calc-root.module';
+
+const { REGISTER_COMMAND } = RootModule.exports;
 
 export const OperationsModule = createModule({
   name: 'OperationsModule',
+  imports: [RootModule],
   providers: [
     injectable({
       provide: REGISTER_COMMAND,
@@ -29,5 +32,4 @@ export const OperationsModule = createModule({
       ],
     }),
   ],
-  imports: [RootModule],
 });

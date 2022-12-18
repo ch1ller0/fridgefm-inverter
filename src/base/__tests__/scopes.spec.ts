@@ -104,4 +104,28 @@ describe('container scopes', () => {
     expect(forChild2[2]).not.toEqual(forParent[2]);
     expect(forChild2[2].split('+').slice(0, 3).join('+')).toEqual([forChild2[0], forChild2[1]].join('+'));
   });
+
+  it('no containers have access to the child', async () => {
+    expect.assertions(3);
+    const parentContainer = createBaseContainer();
+    const childContainer1 = createBaseContainer(parentContainer);
+    const childContainer2 = createBaseContainer(parentContainer);
+    // this provider is only private for the second container
+    injectable({ provide: t0, useFactory: () => 'SUPER_SECRET', scope: 'scoped' })(childContainer2)();
+
+    try {
+      await parentContainer.resolveSingle(t0);
+    } catch (e) {
+      expect(e.message).toContain('Token "tok-0" was not provided');
+    }
+    try {
+      await childContainer1.resolveSingle(t0);
+    } catch (e) {
+      expect(e.message).toContain('Token "tok-0" was not provided');
+    }
+    const protectedVal = await childContainer2.resolveSingle(t0);
+    expect(protectedVal).toEqual('SUPER_SECRET');
+  });
+
+  it.todo('child containers get garbage collected');
 });

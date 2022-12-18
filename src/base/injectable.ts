@@ -20,7 +20,7 @@ export const injectable = <T extends Token.Instance<unknown>, D extends Helper.C
 
     if (typeof args.useFactory !== 'undefined') {
       const { useFactory, provide, scope = 'scoped', inject } = args;
-      if (!!container.parent && (scope === 'singleton' || scope === 'transient')) {
+      if (!!container.parent && scope === 'singleton' && !provide.multi) {
         // shortcut here - we dont want to bind factories again because it will override already cached values for parent
         return () => {};
       }

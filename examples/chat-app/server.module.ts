@@ -1,24 +1,37 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { WebSocketServer, type WebSocket } from 'ws';
-import { createModule, createToken, injectable, createChildContainer } from '../../src/index';
-import { LOGGER_CREATE, LOGGER_SCOPED } from '../shared/logger.tokens';
-import { PORT } from './root.tokens';
-import { CHAT_STORE } from './chat.module';
-import { UNIQUE_ID } from './client.module';
+import { createModule, createToken, injectable, createChildContainer, type TokenProvide } from '../../src/index';
+import { LoggerModule } from '../shared/logger.module';
+import { ChatModule } from './chat.module';
+import { ClientModule } from './client.module';
 import { rootContainer } from './index';
+
 import type { ServerMessage, ClientMessage } from './message.types';
+type Session = {
+  push: (m: ServerMessage) => void;
+  pushOther: (m: ServerMessage) => void;
+  id: string;
+};
 
-type Session = { push: (m: ServerMessage) => void; pushOther: (m: ServerMessage) => void; id: string };
-
-export const SERVER_INIT = createToken<() => void>('server:init');
-export const REGISTER_CLIENT = createToken<(ws: WebSocket) => void>('server:register');
-export const SESSION_ROOT = createToken<Session>('server:session:root');
-export const SESSION_ALL = createToken<Set<Session>>('server:session:all');
-export const REQUEST_WS = createToken<WebSocket>('request:ws');
+const { CHAT_STORE } = ChatModule.exports;
+const { UNIQUE_ID } = ClientModule.exports;
+const { LOGGER_CREATE, LOGGER_GLOBAL } = LoggerModule.exports;
+const { PORT } = ClientModule.exports;
+const SERVER_INIT = createToken<() => void>('server:init');
+const SESSION_ROOT = createToken<Session>('server:session:root');
+const SESSION_ALL = createToken<Set<Session>>('server:session:all');
+const REQUEST_WS = createToken<WebSocket>('request:ws');
+const LOGGER_SCOPED = createToken<TokenProvide<typeof LOGGER_GLOBAL>>('logger:scoped');
 
 export const ServerModule = createModule({
   name: 'ServerModule',
+  imports: [ClientModule, ChatModule],
   providers: [
+    injectable({
+      provide: LOGGER_SCOPED,
+      useFactory: (id, createLogger) => createLogger(id),
+      inject: [UNIQUE_ID, LOGGER_CREATE] as const,
+    }),
     injectable({ provide: SESSION_ALL, useValue: new Set<Session>() }),
     injectable({
       provide: SESSION_ROOT,
@@ -52,6 +65,7 @@ export const ServerModule = createModule({
         });
 
         scopedLogger.info('[User connected]');
+        // we add only newSession object but not the entire ws object - benefit from using child containers
         allSessions.add(newSession);
         newSession.pushOther({ type: 'clientActivity', connected: true, id });
         newSession.push({ type: 'restoreChat', items: chatStore.allMessages() });
@@ -85,4 +99,5 @@ You can create as many clients as you want by simply repeating the steps above`,
       },
     }),
   ],
+  exports: { SERVER_INIT },
 });

@@ -1,11 +1,10 @@
 import { createContainer, injectable } from '../../../src/index';
-import { ROOT, HANDLER } from '../calc-root.module';
-import { RootModule } from '../calc-root.module';
+import { RootModule, HANDLER } from '../calc-root.module';
 import { OperationsModule } from '../operations.module';
 
 const createTestProviders = () => [
   injectable({
-    provide: ROOT,
+    provide: RootModule.exports.ROOT,
     useFactory: () => {},
   }),
 ];

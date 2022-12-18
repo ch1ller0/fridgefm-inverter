@@ -1,15 +1,16 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import net from 'net';
 import { createModule, injectable, createToken } from '../../src/index';
-import { SERVER_INIT } from './server.module';
-import { CLIENT_INIT } from './client.module';
-import { PORT } from './root.tokens';
+import { ServerModule } from './server.module';
+import { ClientModule } from './client.module';
 
-export const ROOT = createToken<void>('root');
-export const IS_PORT_BUSY = createToken<(port: number) => Promise<boolean>>('root:is-port-busy');
+const { SERVER_INIT } = ServerModule.exports;
+const { CLIENT_INIT, PORT } = ClientModule.exports;
+const ROOT = createToken<void>('root');
+const IS_PORT_BUSY = createToken<(port: number) => Promise<boolean>>('root:is-port-busy');
 
 export const RootModule = createModule({
-  name: 'ServerModule',
+  name: 'RootModule',
   providers: [
     injectable({
       provide: IS_PORT_BUSY,
@@ -45,4 +46,5 @@ export const RootModule = createModule({
     // if you want to configure port via dynamic module
     forRoot: ({ port }: { port: number }) => [injectable({ provide: PORT, useValue: port })],
   },
+  exports: { ROOT },
 });

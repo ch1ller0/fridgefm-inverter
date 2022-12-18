@@ -6,11 +6,11 @@ export type ChatRecord = {
   from: string;
 };
 
-export const CHAT_STORE = createToken<{
+const CHAT_STORE = createToken<{
   allMessages: () => ChatRecord[];
   pushMessages: (messages: string[], byId: string) => ChatRecord[];
 }>('chat:store');
-export const CHAT_WRITE = createToken<(rec: ServerMessage) => void>('chat:write');
+const CHAT_WRITE = createToken<(rec: ServerMessage) => void>('chat:write');
 
 export const ChatModule = createModule({
   name: 'ChatModule',
@@ -66,4 +66,5 @@ export const ChatModule = createModule({
       },
     }),
   ],
+  exports: { CHAT_WRITE, CHAT_STORE },
 });

@@ -1,6 +1,5 @@
 import { TokenViolationError } from './errors';
 import type { Token } from './token.types';
-import type { TodoAny } from './util.types';
 
 /**
  * Method for creating tokens that get bound to providers later
@@ -30,7 +29,7 @@ export const modifyToken = {
    * Modifier for making a token multiple. That means that they dont shadow each other but instead are passed as an array of `A[]`.
    * However they still need to be provided in a single manner as just `A`.
    */
-  multi: <T extends Token.Instance<TodoAny>>(token: T) => {
+  multi: <T extends Token.AnyInstance>(token: T) => {
     if (token.multi) {
       throw new TokenViolationError(`Token "${token.symbol.description}" is already multi`, token);
     }

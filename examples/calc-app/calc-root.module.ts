@@ -5,10 +5,11 @@ import { createToken, modifyToken, createModule, injectable } from '../../src/in
 
 type NVal = number;
 type CalcCommand = (cur: NVal, inputVals: number[]) => NVal;
-export const ROOT = createToken<void>('root');
-export const REGISTER_COMMAND = modifyToken.multi(createToken<[string, CalcCommand]>('register-command'));
+
+const ROOT = createToken<void>('root');
+const REGISTER_COMMAND = modifyToken.multi(createToken<[string, CalcCommand]>('register-command'));
+const WRITE = createToken<(mes: string | number) => void>('root');
 export const HANDLER = createToken<(command: string, values: number[]) => NVal>('command-handler');
-export const WRITE = createToken<(mes: string | number) => void>('root');
 
 export const RootModule = createModule({
   name: 'RootModule',
@@ -80,4 +81,5 @@ export const RootModule = createModule({
       }),
     ],
   },
+  exports: { REGISTER_COMMAND, ROOT },
 });

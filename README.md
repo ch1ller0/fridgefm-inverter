@@ -71,7 +71,7 @@ Sometimes you want to generate a value and save something in the closure.
         inject: [numberToken, anotherNumberToken] as const
     })
     ```
-> `useFactory` also has a `scope` field, which you can configure. Refer to [Injection scopes](#container-hierarchy-and-injection-scopes) for more info
+> `useFactory` also has a `scope` field, which you can configure. Refer to [Injection scopes](#injection-scopes) for more info
 
 ### Token modifications
 Set of modificators that allow you to modify your tokens.

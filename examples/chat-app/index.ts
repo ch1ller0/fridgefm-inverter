@@ -1,6 +1,6 @@
 import { createContainer } from '../../src/index';
 import { LoggerModule } from '../shared/logger.module';
-import { ROOT, RootModule } from './root.module';
+import { RootModule } from './root.module';
 import { ServerModule } from './server.module';
 import { ClientModule } from './client.module';
 import { ChatModule } from './chat.module';
@@ -17,4 +17,4 @@ const config: ContainerConfig = {
   providers: [],
 };
 export const rootContainer = createContainer(config);
-rootContainer.get(ROOT);
+rootContainer.get(RootModule.exports.ROOT);

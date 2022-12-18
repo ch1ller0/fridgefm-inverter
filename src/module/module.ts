@@ -1,6 +1,8 @@
 import type { Module } from './module.types';
 
-export const createModule = <E extends Module.ExtensionMap>(dec: Module.Config<E>): Module.Instance<E> => {
+export const createModule = <Ext extends Module.ExtensionMap, Exp extends Module.Exports>(
+  dec: Module.Config<Ext, Exp>,
+): Module.Instance<Ext, Exp> => {
   const symbol = Symbol(dec.name);
   let allProviders = dec.providers;
   const extensionObject = Object.entries(dec.extend || {}).reduce((acc, cur) => {
@@ -26,7 +28,8 @@ export const createModule = <E extends Module.ExtensionMap>(dec: Module.Config<E
       },
       // @TODO add check for duplicating modules with different version
       ...extensionObject,
-    } as Module.Instance<E>);
+      exports: dec.exports,
+    } as Module.Instance<Ext, Exp>);
 
   return createInternalModule();
 };

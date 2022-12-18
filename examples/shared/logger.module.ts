@@ -1,9 +1,11 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { pino } from 'pino';
 import pinoPretty from 'pino-pretty';
-import { createModule, injectable } from '../../src/index';
-import { UNIQUE_ID } from '../chat-app/client.module';
-import { LOGGER_CREATE, LOGGER_GLOBAL, LOGGER_SCOPED } from './logger.tokens';
+import { createModule, injectable, createToken } from '../../src/index';
+import type { Logger } from 'pino';
+
+const LOGGER_CREATE = createToken<(name: string) => Logger>('logger:create');
+const LOGGER_GLOBAL = createToken<Logger>('logger:global');
 
 export const LoggerModule = createModule({
   name: 'LoggerModule',
@@ -20,10 +22,6 @@ export const LoggerModule = createModule({
       },
       inject: [LOGGER_GLOBAL] as const,
     }),
-    injectable({
-      provide: LOGGER_SCOPED,
-      useFactory: (id, createLogger) => createLogger(id),
-      inject: [UNIQUE_ID, LOGGER_CREATE] as const,
-    }),
   ],
+  exports: { LOGGER_CREATE, LOGGER_GLOBAL },
 });

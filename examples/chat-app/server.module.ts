@@ -2,10 +2,10 @@
 import { WebSocketServer, type WebSocket } from 'ws';
 import { createModule, createToken, injectable, createChildContainer, type TokenProvide } from '../../src/index';
 import { LoggerModule } from '../shared/logger.module';
+import { NetworkModule } from '../shared/network.module';
 import { ChatModule } from './chat.module';
 import { ClientModule } from './client.module';
 import { rootContainer } from './index';
-
 import type { ServerMessage, ClientMessage } from './message.types';
 type Session = {
   push: (m: ServerMessage) => void;
@@ -14,23 +14,23 @@ type Session = {
 };
 
 const { CHAT_STORE } = ChatModule.exports;
-const { UNIQUE_ID } = ClientModule.exports;
+const { CLIENT_ID, PORT } = ClientModule.exports;
 const { LOGGER_CREATE, LOGGER_GLOBAL } = LoggerModule.exports;
-const { PORT } = ClientModule.exports;
-const SERVER_INIT = createToken<() => void>('server:init');
+const { NET_SERVICE } = NetworkModule.exports;
+const SERVER_INIT = createToken<() => Promise<WebSocketServer>>('server:init');
 const SESSION_ROOT = createToken<Session>('server:session:root');
 const SESSION_ALL = createToken<Set<Session>>('server:session:all');
-const REQUEST_WS = createToken<WebSocket>('request:ws');
-const LOGGER_SCOPED = createToken<TokenProvide<typeof LOGGER_GLOBAL>>('logger:scoped');
+const SCOPED_WS = createToken<WebSocket>('server:scoped:ws');
+const SCOPED_LOGGER = createToken<TokenProvide<typeof LOGGER_GLOBAL>>('server:scoped:logger');
 
 export const ServerModule = createModule({
   name: 'ServerModule',
   imports: [ClientModule, ChatModule],
   providers: [
     injectable({
-      provide: LOGGER_SCOPED,
+      provide: SCOPED_LOGGER,
       useFactory: (id, createLogger) => createLogger(id),
-      inject: [UNIQUE_ID, LOGGER_CREATE] as const,
+      inject: [CLIENT_ID, LOGGER_CREATE] as const,
     }),
     injectable({ provide: SESSION_ALL, useValue: new Set<Session>() }),
     injectable({
@@ -72,31 +72,38 @@ export const ServerModule = createModule({
 
         return newSession;
       },
-      inject: [LOGGER_SCOPED, REQUEST_WS, UNIQUE_ID, SESSION_ALL, CHAT_STORE] as const,
+      inject: [SCOPED_LOGGER, SCOPED_WS, CLIENT_ID, SESSION_ALL, CHAT_STORE] as const,
     }),
     injectable({
       provide: SERVER_INIT,
-      inject: [PORT, LOGGER_CREATE, SESSION_ALL] as const,
-      useFactory: (port, createLogger) => () => {
-        const logger = createLogger('server');
-        const server = new WebSocketServer({ port });
+      inject: [PORT, LOGGER_CREATE, NET_SERVICE] as const,
+      useFactory: (port, createLogger, netService) => () =>
+        new Promise((resolve, reject) => {
+          const logger = createLogger('server');
+          const host = netService.findInterface({ family: 'IPv4', type: 'en0' })?.address;
+          const server = new WebSocketServer({ port, host });
 
-        server.on('connection', (ws) => {
-          return createChildContainer(rootContainer, {
-            providers: [injectable({ provide: REQUEST_WS, useValue: ws })],
-          }).get(SESSION_ROOT);
-        });
+          server.on('connection', (ws) => {
+            return createChildContainer(rootContainer, {
+              providers: [injectable({ provide: SCOPED_WS, useValue: ws })],
+            }).get(SESSION_ROOT);
+          });
 
-        logger.info(`Websocket server has successfully started on port ${port}`);
-        logger.info(
-          `
+          server.on('listening', () => {
+            logger.info(`Websocket server has successfully started on: "ws://${host}:${port}"`);
+            logger.info(
+              `
 Create a new terminal tab and run the same script there and it will generate the chat client.
 Do not close this tab! This is a server. 
-You can create as many clients as you want by simply repeating the steps above`,
-        );
+You can create as many clients as you want by simply repeating the steps above
+You can also change the "remoteHost" property to "${host}" in "examples/chat-app/index.ts" on a 
+machine from your local network and connect to this server remotely`,
+            );
+            resolve(server);
+          });
 
-        return server;
-      },
+          server.on('error', (e) => reject(e));
+        }),
     }),
   ],
   exports: { SERVER_INIT },

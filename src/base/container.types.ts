@@ -16,7 +16,7 @@ export namespace Container {
      */
     bindValue: <T extends Token.Instance<unknown>>(a: {
       token: T;
-      value: Token.Provide<T> | Promise<Token.Provide<T>>;
+      value: Promise<Token.Provide<T>>;
       injKey: symbol;
     }) => void;
     /**

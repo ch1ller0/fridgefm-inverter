@@ -1,10 +1,16 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { WebSocketServer, type WebSocket } from 'ws';
-import { createModule, createToken, injectable, createChildContainer, type TokenProvide } from '../../src/index';
+import {
+  createModule,
+  createToken,
+  injectable,
+  createChildContainer,
+  internalTokens,
+  type TokenProvide,
+} from '../../src/index';
 import { LoggerModule } from '../shared/logger.module';
 import { ChatModule } from './chat.module';
 import { ClientModule } from './client.module';
-import { rootContainer } from './index';
 
 import type { ServerMessage, ClientMessage } from './message.types';
 type Session = {
@@ -76,13 +82,13 @@ export const ServerModule = createModule({
     }),
     injectable({
       provide: SERVER_INIT,
-      inject: [PORT, LOGGER_CREATE, SESSION_ALL] as const,
-      useFactory: (port, createLogger) => () => {
+      inject: [internalTokens.SELF_CONTAINER, PORT, LOGGER_CREATE, SESSION_ALL] as const,
+      useFactory: (baseContainer, port, createLogger) => () => {
         const logger = createLogger('server');
         const server = new WebSocketServer({ port });
 
         server.on('connection', (ws) => {
-          return createChildContainer(rootContainer, {
+          return createChildContainer(baseContainer, {
             providers: [injectable({ provide: REQUEST_WS, useValue: ws })],
           }).get(SESSION_ROOT);
         });

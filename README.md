@@ -28,11 +28,11 @@ yarn add @fridgefm/inverter
 Example usage is shown [here in examples](./examples/). You can start the example app 
 ```
 # cli calculator app
-yarn example src/examples/calc-app/
+yarn example ./examples/calc-app/
 ```
 ```
 # basic chat app
-yarn example src/examples/chat-app/
+yarn example ./examples/chat-app/
 ```
 
 ## Basic features
@@ -46,7 +46,7 @@ const myToken = createToken<{a: number}>('my:token')
 The most basic method of providing a value is `useValue`. Simply provide a value, which is assignable to `myTokens`'s interface.
     ```typescript
     const myProvider = injectable({
-        provide: someToken, 
+        provide: myToken, 
         useValue: { a: 1 }
     })
     ```
@@ -54,7 +54,7 @@ The most basic method of providing a value is `useValue`. Simply provide a value
 Sometimes you want to generate a value and save something in the closure.
     ```typescript
     const myProvider = injectable({
-        provide: someToken, 
+        provide: myToken, 
         useFactory: () => {
             // do something here if you want... It will run while constructing the provider
             const a = Date.now()
@@ -65,7 +65,7 @@ Sometimes you want to generate a value and save something in the closure.
     or with depdendencies
     ```typescript
     const myProvider = injectable({
-        provide: someToken, 
+        provide: myToken, 
          // type is automatically inferred from all the tokens your provider depends on
         useFactory: (num, anotherNum) => num + anotherNum + 10,
         inject: [numberToken, anotherNumberToken] as const
@@ -88,26 +88,27 @@ const defaultToken = modifyToken.defaultValue(baseToken, 101)
 1. `defaultValue`
     ```typescript
     const myProvider = injectable({
-        provide: someToken,
+        provide: baseToken,
         useFactory: (num) => num * 10, // if the token is not registered in the container, you still get the default value for `num`
         inject: [defaultToken] as const
     })
-    const finalValue = await container.get(someToken) // 1010 (a result of 101*10)
+    const finalValue = await container.get(baseToken) // 1010 (a result of 101*10)
     ```
 1. `multi`
     ```typescript
     const myProvider = injectable({
-        provide: someToken,
+        provide: baseToken,
         useFactory: (multiNums) => multiNums.reduce((acc, cur) => acc + cur, 0), // here `multiNums` is a an array of numbers
         inject: [multiToken] as const
     })
     const num1Provider = injectable({ provide: multiToken, useValue: 15 })
     const num2Provider = injectable({ provide: multiToken, useValue: 25 })
     const num3Provider = injectable({ provide: multiToken, useValue: 35 })
-    const finalValue = await container.get(someToken) // 75 (it is a sum of all the multiNums)
+    const finalValue = await container.get(baseToken) // 75 (it is a sum of all the multiNums)
     ```
+
 ### Container hierarchy
-It is possible to create child containers and develop hierarchies. Child containers are useful when you have some private information (for example for each request) and `no other containers (including the parent one) have access to it`.
+It is possible to create child containers and develop hierarchies. Child containers are useful when you have some private information (for example for each request) and _no other containers (including the parent one) have access to it_.
 
 ```typescript
 const globalContainer = createContainer({ providers: [] })
@@ -115,6 +116,27 @@ const childContainer = createChildContainer(rootContainer, {
     providers: [injectable({ provide: PRIVATE_TOKEN, useValue: token })],
 }).get(VALUE_THAT_DEPENDS_ON_PRIVATE_TOKEN);
 ```
+In a real world such an invocation is sometimes not possible, because it might lead to a cyclic dependencies between modules/files. It happens because we might want to import an inverter module inside the container, and the module needs to reference the container to create a child one. In this case it might lead to errors, where imported modules might end up being undefined.
+That is why there is a different method to create child container:
+```typescript
+import { internalTokens } from './'
+
+injectable({
+    provide: SERVER_INIT,
+    inject: [internalTokens.SELF_CONTAINER] as const,
+    useFactory: (baseContainer) => {
+        const server = new Server();
+
+        server.on('connection', (clientInfo) => {
+            // it creates a child container, which can shadow some of the deps
+            return createChildContainer(baseContainer, {
+                providers: [injectable({ provide: CLIENT_INFO, useValue: clientInfo })],
+            }).get(SESSION_ROOT);
+        });
+    }
+})
+```
+> Warning: this is an experimental feature and the API might change in the future
 
 ### Injection scopes
 Imagine we have created a bunch of conatiners and 

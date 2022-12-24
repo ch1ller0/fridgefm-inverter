@@ -14,7 +14,7 @@ export const injectable = <T extends Token.Instance<unknown>, D extends Helper.C
     if (typeof args.useValue !== 'undefined') {
       const { useValue, provide } = args;
       return () => {
-        container.binders.bindValue({ token: provide, value: useValue, injKey });
+        container.binders.bindValue({ token: provide, value: Promise.resolve(useValue), injKey });
       };
     }
 

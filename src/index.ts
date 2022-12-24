@@ -2,6 +2,7 @@ export { createContainer, createChildContainer } from './module/public-container
 export { injectable } from './base/injectable';
 export { createToken, modifyToken } from './base/token';
 export { createModule } from './module/module';
+export { exportedTokens as internalTokens } from './module/internals';
 
 import type { PublicContainer } from './module/public-container.types';
 import type { Token } from './base/token.types';

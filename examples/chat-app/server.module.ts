@@ -1,11 +1,18 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { WebSocketServer, type WebSocket } from 'ws';
-import { createModule, createToken, injectable, createChildContainer, type TokenProvide } from '../../src/index';
+import {
+  createModule,
+  createToken,
+  injectable,
+  createChildContainer,
+  internalTokens,
+  type TokenProvide,
+} from '../../src/index';
 import { LoggerModule } from '../shared/logger.module';
 import { NetworkModule } from '../shared/network.module';
 import { ChatModule } from './chat.module';
 import { ClientModule } from './client.module';
-import { rootContainer } from './index';
+
 import type { ServerMessage, ClientMessage } from './message.types';
 type Session = {
   push: (m: ServerMessage) => void;
@@ -76,15 +83,15 @@ export const ServerModule = createModule({
     }),
     injectable({
       provide: SERVER_INIT,
-      inject: [PORT, LOGGER_CREATE, NET_SERVICE] as const,
-      useFactory: (port, createLogger, netService) => () =>
+      inject: [internalTokens.SELF_CONTAINER, PORT, LOGGER_CREATE, NET_SERVICE] as const,
+      useFactory: (baseContainer, port, createLogger, netService) => () =>
         new Promise((resolve, reject) => {
           const logger = createLogger('server');
           const host = netService.findInterface({ family: 'IPv4', type: 'en0' })?.address;
           const server = new WebSocketServer({ port, host });
 
           server.on('connection', (ws) => {
-            return createChildContainer(rootContainer, {
+            return createChildContainer(baseContainer, {
               providers: [injectable({ provide: SCOPED_WS, useValue: ws })],
             }).get(SESSION_ROOT);
           });

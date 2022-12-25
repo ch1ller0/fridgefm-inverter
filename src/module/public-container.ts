@@ -1,4 +1,5 @@
 import { createBaseContainer } from '../base/container';
+import { createInternalProviders } from './internals';
 import type { PublicContainer } from './public-container.types';
 import type { Injectable } from '../base/injectable.types';
 import type { Module } from './module.types';
@@ -27,42 +28,42 @@ const constructProviders = ({
 };
 
 export const createContainer = (cfg: PublicContainer.Configuration): PublicContainer.Instance => {
+  cfg.events?.containerStart?.();
   const container = createBaseContainer();
   const selfProviders = constructProviders(cfg);
-  cfg.events?.containerStart?.();
-
-  selfProviders.forEach((singleP) => {
-    singleP(container)();
-  });
-
-  cfg.events?.containerReady?.();
-
-  return {
+  const instance = {
     get: container.resolveSingle,
     __providers: selfProviders,
     __constructor: container,
   };
+  const allProviders = [...selfProviders, ...createInternalProviders(instance)];
+
+  allProviders.forEach((singleP) => singleP(container)());
+
+  cfg.events?.containerReady?.();
+
+  return instance;
 };
 
 export const createChildContainer = (
   parent: PublicContainer.Instance,
   cfg: PublicContainer.Configuration = {},
 ): PublicContainer.Instance => {
-  const container = createBaseContainer(parent.__constructor);
   cfg.events?.containerStart?.();
 
-  const selfProviders = constructProviders({ providers: cfg.providers, modules: cfg.modules, events: cfg.events });
-  parent.__providers.forEach((prov) => {
-    prov(container)();
-  });
-  selfProviders.forEach((prov) => {
-    prov(container)();
-  });
-  cfg.events?.containerReady?.();
-
-  return {
+  const container = createBaseContainer(parent.__constructor);
+  const selfProviders = constructProviders(cfg);
+  const instance = {
     get: container.resolveSingle,
     __providers: parent.__providers,
     __constructor: container,
   };
+
+  [...parent.__providers, ...selfProviders, ...createInternalProviders(instance)].forEach((prov) => {
+    prov(container)();
+  });
+
+  cfg.events?.containerReady?.();
+
+  return instance;
 };

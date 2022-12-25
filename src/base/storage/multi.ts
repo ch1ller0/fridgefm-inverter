@@ -8,7 +8,7 @@ type Item<T> = { key: symbol } & (
       func: (stack: Container.Stack) => Promise<T>;
     }
   | {
-      value: T;
+      value: Promise<T>;
     }
 );
 

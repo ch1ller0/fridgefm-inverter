@@ -2,7 +2,7 @@
     "compilerOptions": {
         "rootDir": "./"
     },
-    "extends": "./tsconfig.json",
-    "include": ["src/**/*", "examples/**/*"],
+    "extends": "./tsconfig.base.json",
+    "include": ["packages/**/*", "apps/**/*"],
     "exclude": []
 }

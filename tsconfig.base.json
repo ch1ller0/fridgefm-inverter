@@ -1,8 +1,8 @@
 {
+  "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
     "target": "es2017",
     "outDir": "lib",
-    "rootDir": "src",
     "moduleResolution": "node",
     "module": "commonjs",
     "declaration": true,
@@ -31,9 +31,8 @@
     "incremental": true,
 
     "lib": ["es2020"],
-    "typeRoots": ["node_modules/@types", "src/types"]
+    "typeRoots": ["node_modules/@types"]
   },
-  "include": ["src"],
   "exclude": ["node_modules/**", "**/__tests__/"],
   "compileOnSave": false,
   "ts-node": {

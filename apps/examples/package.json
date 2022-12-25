@@ -1,0 +1,13 @@
+{
+  "name": "@fridgefm/examples",
+  "private": true,
+  "version": "0.0.0-stub",
+  "description": "Examples",
+  "scripts": {
+    "example": "tsnd"
+  },
+  "dependencies": {
+    "@fridgefm/inverter": "*",
+    "@fridgefm/inverter-test": "*"
+  }
+}

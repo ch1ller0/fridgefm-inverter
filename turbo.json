@@ -1,0 +1,23 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "pipeline": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["lib/**"]
+    },
+    "test:lint": {
+      "outputs": []
+    },
+    "test:types": {
+      "outputs": []
+    },
+    "test:unit": {
+      "outputs": [],
+      "inputs": ["src/**/*.ts"]
+    },
+    "publis": {
+      "dependsOn": ["build", "test:lint", "test:types", "test:unit"],
+      "outputs": []
+    }
+  }
+}

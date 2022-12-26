@@ -3,12 +3,12 @@
   "pipeline": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["build/**"]
+      "outputs": ["build/**"],
+      "outputMode": "new-only"
     },
     "test:typecheck": {
       "dependsOn": ["^test:typecheck", "^build", "build"],
-      "outputs": [],
-      "cache": false
+      "outputs": []
     },
     "publish": {
       "dependsOn": ["build", "test:typecheck"],

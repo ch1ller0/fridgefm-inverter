@@ -30,8 +30,8 @@
     "incremental": true,
 
     "lib": ["es2020"],
-    "typeRoots": ["node_modules/@types"]
+    "typeRoots": ["**/node_modules/@types"]
   },
-  "exclude": ["node_modules/**", "**/__tests__/"],
+  "exclude": ["node_modules/**", "**/__tests__/", "coverage/"],
   "compileOnSave": false
 }

@@ -3,8 +3,7 @@
   "version": "0.0.0-stub",
   "description": "Examples",
   "scripts": {
-    "dev": "ts-node-dev --respawn --transpile-only src/chat-app",
-    "test:unit": "jest -c ../../jest.config.json ./src"
+    "dev": "ts-node-dev --respawn --transpile-only src/chat-app"
   },
   "dependencies": {
     "@fridgefm/inverter": "0.0.0-stub",

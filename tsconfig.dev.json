@@ -4,6 +4,6 @@
         "rootDir": "./"
     },
     "extends": "./tsconfig.base.json",
-    "include": ["packages/**/*", "apps/**/*"],
+    "include": ["packages/**/*", "apps/**/*", "jest.config.ts"],
     "exclude": []
 }

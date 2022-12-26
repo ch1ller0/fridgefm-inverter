@@ -18,6 +18,7 @@
     "dev:chat-app": "ts-node-dev --respawn --transpile-only apps/examples/src/chat-app"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.26.0",
     "@types/jest": "^29.2.4",
     "@types/node": "^17.0.10",
     "@types/ws": "^8.5.3",

@@ -1,5 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
+// eslint-disable-next-line import/no-extraneous-dependencies
 import tsd from 'tsd';
 
 type Diagnostic = {

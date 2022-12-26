@@ -1,18 +1,19 @@
 {
   "roots": [
-    "<rootDir>"
+    "<rootDir>/packages",
+    "<rootDir>/apps"
   ],
   "transform": {
     "^.+\\.ts$": "ts-jest"
   },
   "testRegex": "(test|spec)\\.[jt]sx?$",
   "collectCoverageFrom": [
-    "src/**/*.ts"
+    "packages/**/*.ts"
   ],
   "globals": {
     "ts-jest": {
       "isolatedModules": true,
-      "tsconfig": "tsconfig.dev.json",
+      "tsconfig": "./tsconfig.dev.json",
       "diagnostics": false
     }
   },

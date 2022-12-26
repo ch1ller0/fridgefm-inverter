@@ -1,7 +1,7 @@
-import { createContainer } from '../../src/index';
+import { createContainer } from '@fridgefm/inverter';
 import { RootModule } from './calc-root.module';
 import { OperationsModule } from './operations.module';
-import type { ContainerConfig } from '../../src/index';
+import type { ContainerConfig } from '@fridgefm/inverter';
 
 const config: ContainerConfig = {
   providers: [],

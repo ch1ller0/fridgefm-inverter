@@ -1,11 +1,9 @@
 import rl from 'readline';
+import crypto from 'crypto';
 import { stdin as input, stdout as output } from 'process';
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { WebSocket } from 'ws';
-import { createModule, createToken, injectable, modifyToken } from '../../src/index';
-import { LoggerModule } from '../shared/logger.module';
-import { randomString } from '../shared/utils';
-import { NetworkModule } from '../shared/network.module';
+import { createModule, createToken, injectable, modifyToken } from '@fridgefm/inverter';
+import { LoggerModule, NetworkModule } from '../shared';
 import { ChatModule } from './chat.module';
 import type { ServerMessage } from './message.types';
 
@@ -24,7 +22,7 @@ export const ClientModule = createModule({
   providers: [
     injectable({
       provide: CLIENT_ID,
-      useFactory: () => randomString().slice(8),
+      useFactory: () => crypto.randomBytes(8).toString('hex').slice(8),
       scope: 'scoped',
     }),
     injectable({

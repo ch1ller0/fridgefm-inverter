@@ -1,6 +1,5 @@
-/* eslint-disable import/no-extraneous-dependencies */
 import { networkInterfaces } from 'os';
-import { createModule, injectable, createToken } from '../../src/index';
+import { createModule, injectable, createToken } from '@fridgefm/inverter';
 import type { NetworkInterfaceInfo } from 'os';
 
 const INTERFACE_TYPES = [

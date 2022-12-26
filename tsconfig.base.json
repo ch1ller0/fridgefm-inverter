@@ -2,7 +2,6 @@
   "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
     "target": "es2017",
-    "outDir": "lib",
     "moduleResolution": "node",
     "module": "commonjs",
     "declaration": true,
@@ -34,8 +33,5 @@
     "typeRoots": ["node_modules/@types"]
   },
   "exclude": ["node_modules/**", "**/__tests__/"],
-  "compileOnSave": false,
-  "ts-node": {
-    "transpileOnly": true
-  }
+  "compileOnSave": false
 }

@@ -2,13 +2,21 @@
   "name": "@fridgefm/inverter-test",
   "version": "0.0.0-stub",
   "description": "Testing library for @fridgefm/inverter",
-  "main": "lib/index.js",
-  "typings": "lib/index.d.ts",
-  "module": "lib/index.js",
+  "main": "build/index.js",
+  "typings": "build/index.d.ts",
+  "module": "build/index.js",
   "license": "MIT",
   "keywords": [],
-  "sideEffects": false,
+  "files": ["./build/**"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json --listEmittedFiles",
+    "dev": "tsc -p tsconfig.json --watch",
+    "test:typecheck": "tsc -p tsconfig.json --noEmit",
+    "test:unit": "jest -c ../../jest.config.json ./src",
+    "test:unit:cov": "jest -c ../../jest.config.json --collectCoverage=true"
+  },
   "dependencies": {
-    "@fridgefm/inverter": "*"
-  }
+    "@fridgefm/inverter": "0.0.0-stub"
+  },
+  "sideEffects": false
 }

@@ -5,7 +5,7 @@ import type { Injectable, Helper } from './injectable.types';
 export const NOT_FOUND_SYMBOL = Symbol('__NOT_FOUND_SYMBOL__');
 
 export const injectable = <T extends Token.Instance<unknown>, D extends Helper.CfgTuple>(
-  args: Injectable.SyncArgs<T, D>,
+  args: Injectable.Args<T, D>,
 ): Injectable.Instance => {
   // unique injection key which is used to separate different providers in the container
   const injKey = Symbol();

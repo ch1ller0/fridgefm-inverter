@@ -9,7 +9,7 @@ export const createModule = <Ext extends Module.ExtensionMap, Exp extends Module
     const [key, ext] = cur;
     return {
       ...acc,
-      [key]: (...args: Parameters<typeof ext>) => {
+      [key]: (...args: Parameters<Module.Extension>) => {
         const providers = ext(...args);
         allProviders = allProviders.concat(providers);
         // eslint-disable-next-line @typescript-eslint/no-use-before-define

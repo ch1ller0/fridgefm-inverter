@@ -1,4 +1,4 @@
-import { createModule, injectable } from '../../src/index';
+import { createModule, injectable } from '@fridgefm/inverter';
 import { RootModule } from './calc-root.module';
 
 const { REGISTER_COMMAND } = RootModule.exports;

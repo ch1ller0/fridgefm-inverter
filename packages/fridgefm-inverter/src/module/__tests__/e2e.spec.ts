@@ -1,5 +1,5 @@
 import { createToken, createContainer, createChildContainer, injectable, modifyToken } from '../../index';
-import { randomString } from '../../../examples/shared/utils';
+import { randomString } from '../../base/__tests__/utils.mock';
 import { createModule } from '../module';
 
 const RANDOM_SCOPED = createToken<string>('random:scoped');

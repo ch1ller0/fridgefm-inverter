@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { WebSocketServer, type WebSocket } from 'ws';
 import {
   createModule,
@@ -6,10 +5,9 @@ import {
   injectable,
   createChildContainer,
   internalTokens,
-  type TokenProvide,
-} from '../../src/index';
-import { LoggerModule } from '../shared/logger.module';
-import { NetworkModule } from '../shared/network.module';
+  type Token,
+} from '@fridgefm/inverter';
+import { LoggerModule, NetworkModule } from '../shared';
 import { ChatModule } from './chat.module';
 import { ClientModule } from './client.module';
 
@@ -28,7 +26,7 @@ const SERVER_INIT = createToken<() => Promise<WebSocketServer>>('server:init');
 const SESSION_ROOT = createToken<Session>('server:session:root');
 const SESSION_ALL = createToken<Set<Session>>('server:session:all');
 const SCOPED_WS = createToken<WebSocket>('server:scoped:ws');
-const SCOPED_LOGGER = createToken<TokenProvide<typeof LOGGER_GLOBAL>>('server:scoped:logger');
+const SCOPED_LOGGER = createToken<Token.Provide<typeof LOGGER_GLOBAL>>('server:scoped:logger');
 
 export const ServerModule = createModule({
   name: 'ServerModule',

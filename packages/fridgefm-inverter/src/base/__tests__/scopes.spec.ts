@@ -1,7 +1,7 @@
 import { createBaseContainer } from '../container';
 import { createToken } from '../token';
 import { injectable } from '../injectable';
-import { randomString } from '../../../examples/shared/utils';
+import { randomString } from './utils.mock';
 
 const t0 = createToken<string>('tok-0');
 const t1 = createToken<string>('tok-1');

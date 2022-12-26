@@ -1,14 +1,13 @@
-import { createContainer } from '../../src/index';
-import { LoggerModule } from '../shared/logger.module';
-import { NetworkModule } from '../shared/network.module';
+import { createContainer } from '@fridgefm/inverter';
+import { LoggerModule, NetworkModule } from '../shared';
 import { RootModule } from './root.module';
 import { ServerModule } from './server.module';
 import { ClientModule } from './client.module';
 import { ChatModule } from './chat.module';
-import type { ContainerConfig } from '../../src/index';
+import type { PublicContainer } from '@fridgefm/inverter';
 
 const { ROOT } = RootModule.exports;
-const config: ContainerConfig = {
+const config: PublicContainer.Configuration = {
   modules: [
     NetworkModule,
     ClientModule.configure({
@@ -26,6 +25,7 @@ const config: ContainerConfig = {
 export const rootContainer = createContainer(config);
 
 rootContainer.get(ROOT).catch((e) => {
+  // eslint-disable-next-line no-console
   console.error(e);
   process.exit(1);
 });

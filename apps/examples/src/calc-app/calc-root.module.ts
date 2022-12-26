@@ -1,7 +1,6 @@
-/* eslint-disable no-console */
 import rl from 'readline';
 import { stdin as input, stdout as output } from 'process';
-import { createToken, modifyToken, createModule, injectable } from '../../src/index';
+import { createToken, modifyToken, createModule, injectable } from '@fridgefm/inverter';
 
 type NVal = number;
 type CalcCommand = (cur: NVal, inputVals: number[]) => NVal;
@@ -16,7 +15,10 @@ export const RootModule = createModule({
   providers: [
     injectable({
       provide: WRITE,
-      useValue: (mes) => console.log(mes),
+      useValue: (mes) => {
+        // eslint-disable-next-line no-console
+        console.log(mes);
+      },
     }),
     injectable({
       provide: ROOT,

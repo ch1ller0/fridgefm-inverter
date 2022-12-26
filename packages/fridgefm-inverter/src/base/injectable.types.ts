@@ -91,9 +91,9 @@ namespace ProviderConfig {
 
 export namespace Injectable {
   /**
-   * Args for a sync injectable method
+   * Args for the injectable method
    */
-  export type SyncArgs<
+  export type Args<
     T extends Token.Instance<unknown> = Token.Instance<unknown>,
     D extends Helper.CfgTuple = Helper.CfgTuple,
   > = { provide: T } & (

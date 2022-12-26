@@ -1,4 +1,4 @@
-import { createToken, createModule, injectable } from '../../src/index';
+import { createToken, createModule, injectable } from '@fridgefm/inverter';
 import type { ServerMessage } from './message.types';
 export type ChatRecord = {
   chatMessage: string;
@@ -39,6 +39,7 @@ export const ChatModule = createModule({
       useFactory: () => {
         const writeWithTime = (str: string, date: Date = new Date()) => {
           const time = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
+          // eslint-disable-next-line no-console
           console.log(`[${time}] ${str}`);
         };
         const writeChatRecord = (a: ChatRecord) => {

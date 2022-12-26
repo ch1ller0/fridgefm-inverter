@@ -1,5 +1,4 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { createModule, injectable, createToken } from '../../src/index';
+import { createModule, injectable, createToken } from '@fridgefm/inverter';
 import { ServerModule } from './server.module';
 import { ClientModule } from './client.module';
 

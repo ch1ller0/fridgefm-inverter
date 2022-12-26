@@ -1,7 +1,7 @@
 import { createBaseContainer } from '../container';
 import { createToken, modifyToken } from '../token';
 import { injectable } from '../injectable';
-import { delay } from '../../../examples/shared/utils';
+import { delay } from './utils.mock';
 
 const t1exp = createToken<string>('tok:1');
 const t2base = createToken<string>('tok:2');

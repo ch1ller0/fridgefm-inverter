@@ -3,21 +3,25 @@
   "pipeline": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["lib/**"]
+      "outputs": ["build/**"]
     },
-    "test:lint": {
-      "outputs": []
-    },
-    "test:types": {
-      "outputs": []
-    },
-    "test:unit": {
+    "test:typecheck": {
+      "dependsOn": ["^test:typecheck", "^build", "build"],
       "outputs": [],
-      "inputs": ["src/**/*.ts"]
+      "cache": false
     },
-    "publis": {
-      "dependsOn": ["build", "test:lint", "test:types", "test:unit"],
+    "publish": {
+      "dependsOn": ["build", "test:typecheck"],
       "outputs": []
+    },
+    "dev": {
+      "cache": false,
+      "dependsOn": ["^build"]
     }
-  }
+  },
+  "globalDependencies": [
+    "tsconfig.*.json",
+    "jest.config.json",
+    ".eslintrc.json"
+  ]
 }

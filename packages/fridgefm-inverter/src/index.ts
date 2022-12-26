@@ -4,12 +4,9 @@ export { createToken, modifyToken } from './base/token';
 export { createModule } from './module/module';
 export { exportedTokens as internalTokens } from './module/internals';
 
-import type { PublicContainer } from './module/public-container.types';
-import type { Token } from './base/token.types';
-
-type ContainerConfig = PublicContainer.Configuration;
-type TokenProvide<A extends Token.AnyInstance> = Token.Provide<A>;
-export type { ContainerConfig, TokenProvide };
+export type { PublicContainer } from './module/public-container.types';
+export type { Token } from './base/token.types';
+export type { Injectable } from './base/injectable.types';
 
 /**
  * 1 Add dependency stack

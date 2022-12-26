@@ -1,7 +1,6 @@
-/* eslint-disable import/no-extraneous-dependencies */
 import { pino } from 'pino';
 import pinoPretty from 'pino-pretty';
-import { createModule, injectable, createToken } from '../../src/index';
+import { createModule, injectable, createToken } from '@fridgefm/inverter';
 import type { Logger } from 'pino';
 
 const LOGGER_CREATE = createToken<(name: string) => Logger>('logger:create');

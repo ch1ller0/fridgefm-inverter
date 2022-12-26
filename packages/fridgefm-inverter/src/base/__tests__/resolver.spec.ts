@@ -1,7 +1,7 @@
 import { createBaseContainer } from '../container';
 import { createToken } from '../token';
 import { injectable } from '../injectable';
-import { delay } from '../../../examples/shared/utils';
+import { delay } from './utils.mock';
 
 describe('resolver', () => {
   it('really long chain', async () => {

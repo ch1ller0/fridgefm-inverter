@@ -1,43 +1,37 @@
-import { createContainer, injectable } from '../../../src/index';
+import { Test } from '@fridgefm/inverter-test';
 import { RootModule, HANDLER } from '../calc-root.module';
 import { OperationsModule } from '../operations.module';
 
-const createTestProviders = () => [
-  injectable({
-    provide: RootModule.exports.ROOT,
-    useFactory: () => {},
-  }),
-];
+const noopRoot = { provide: RootModule.exports.ROOT, useFactory: () => {} };
 
 describe('integration:calc-app', () => {
   it('does not add basic commands if not explicitly called', async () => {
-    const container = createContainer({
-      modules: [RootModule],
-      providers: createTestProviders(),
-    });
-    const handler = await container.get(HANDLER);
+    const handler = await Test.createTestingContainer({ modules: [RootModule] })
+      .overrideProvider(noopRoot)
+      .compile()
+      .get(HANDLER);
+
     expect(() => handler('current', [])).toThrowError('Command "current" not found, use one of:');
     expect(() => handler('clear', [])).toThrowError('Command "clear" not found, use one of:');
     expect(() => handler('plus', [])).toThrowError('Command "plus" not found, use one of:');
   });
 
   it('works alone with RootModule.withBasicCommands', async () => {
-    const container = createContainer({
-      modules: [RootModule.withBasicCommands()],
-      providers: createTestProviders(),
-    });
-    const handler = await container.get(HANDLER);
+    const handler = await Test.createTestingContainer({ modules: [RootModule.withBasicCommands()] })
+      .overrideProvider(noopRoot)
+      .compile()
+      .get(HANDLER);
+
     expect(() => handler('plus', [])).toThrowError('Command "plus" not found, use one of: "current", "clear"');
     expect(handler('current', [1, 2])).toEqual(0);
     expect(handler('clear', [1, 2])).toEqual(0);
   });
 
   it('OperationsModule adds operations as expected', async () => {
-    const container = createContainer({
-      modules: [OperationsModule, RootModule.withBasicCommands()],
-      providers: createTestProviders(),
-    });
-    const handler = await container.get(HANDLER);
+    const handler = await Test.createTestingContainer({ modules: [OperationsModule, RootModule.withBasicCommands()] })
+      .overrideProvider(noopRoot)
+      .compile()
+      .get(HANDLER);
 
     expect(handler('current', [])).toEqual(0);
     expect(handler('multiply', [17, 27])).toEqual(0);

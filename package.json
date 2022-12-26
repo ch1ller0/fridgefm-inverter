@@ -13,9 +13,7 @@
     "test:lint": "eslint --ext .js,.ts -c ./.eslintrc.json .",
     "test:typecheck": "turbo run test:typecheck",
     "test:unit": "jest -c ./jest.config.ts ./",
-    "test:unit:cov": "jest -c ./jest.config.ts --collectCoverage=true ./",
-    "dev": "turbo run dev",
-    "dev:chat-app": "ts-node-dev --respawn --transpile-only apps/examples/src/chat-app"
+    "test:unit:cov": "jest -c ./jest.config.ts --collectCoverage=true ./"
   },
   "devDependencies": {
     "@changesets/cli": "^2.26.0",

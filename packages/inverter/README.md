@@ -24,16 +24,6 @@ or
 ```
 yarn add @fridgefm/inverter
 ```
-## Examples
-Example usage is shown [here in examples](./examples/). You can start the example app 
-```
-# cli calculator app
-yarn example ./examples/calc-app/
-```
-```
-# basic chat app
-yarn example ./examples/chat-app/
-```
 
 ## Basic features
 ### Injection types

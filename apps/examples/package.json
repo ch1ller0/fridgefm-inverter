@@ -3,7 +3,8 @@
   "version": "0.0.0-stub",
   "description": "Examples",
   "scripts": {
-    "dev": "ts-node-dev --respawn --transpile-only src/chat-app"
+    "dev": "ts-node-dev --respawn --transpile-only src/chat-app",
+    "test:typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
     "@fridgefm/inverter": "0.0.0-stub",

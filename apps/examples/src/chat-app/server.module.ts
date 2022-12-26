@@ -62,9 +62,9 @@ export const ServerModule = createModule({
         ws.on('message', (raw: string) => {
           const parsed = JSON.parse(raw) as ClientMessage;
           if (parsed.type === 'message') {
-            const fromatted = chatStore.pushMessages(parsed.items, id);
-            newSession.pushOther({ type: 'message', items: fromatted });
-            scopedLogger.info(fromatted[0].chatMessage);
+            const formatted = chatStore.pushMessages(parsed.items, id);
+            newSession.pushOther({ type: 'message', items: formatted });
+            scopedLogger.info(formatted[0]!.chatMessage);
             return;
           }
         });

@@ -23,6 +23,7 @@
     "listEmittedFiles": false,
     "listFiles": false,
     "pretty": true,
+    "skipLibCheck": true,
 
     /* Experimental Options */
     "experimentalDecorators": true,

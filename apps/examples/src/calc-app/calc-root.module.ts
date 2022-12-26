@@ -32,6 +32,7 @@ export const RootModule = createModule({
               const result = handler(command, numericValues);
               write(result);
             } catch (e) {
+              // @ts-ignore
               write(e.message);
             }
             recurseAsk();

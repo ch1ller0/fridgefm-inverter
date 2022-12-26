@@ -1,0 +1,22 @@
+{
+  "name": "@fridgefm/inverter-test",
+  "version": "0.2.3",
+  "description": "Testing library for @fridgefm/inverter",
+  "main": "build/index.js",
+  "typings": "build/index.d.ts",
+  "module": "build/index.js",
+  "license": "MIT",
+  "keywords": [],
+  "files": [
+    "./build/**"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json --listEmittedFiles",
+    "dev": "tsc -p tsconfig.json --watch",
+    "test:typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@fridgefm/inverter": "0.2.3"
+  },
+  "sideEffects": false
+}

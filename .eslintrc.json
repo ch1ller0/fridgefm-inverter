@@ -7,6 +7,7 @@
   "parserOptions": {
     "project": "./tsconfig.dev.json"
   },
+  "ignorePatterns": ["build/", "coverage/"],
   "overrides": [{
     "files": ["**/*.spec.ts", "src/examples/**/*"],
     "rules": {

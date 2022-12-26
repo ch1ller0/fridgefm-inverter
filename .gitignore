@@ -1,5 +1,5 @@
 node_modules
-lib
+build
 .idea/*
 .vscode
 coverage
@@ -7,3 +7,4 @@ coverage
 *.log
 *.tsbuildinfo
 .env
+.turbo

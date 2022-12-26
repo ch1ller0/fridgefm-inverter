@@ -1,0 +1,27 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "pipeline": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["build/**"],
+      "outputMode": "new-only"
+    },
+    "test:typecheck": {
+      "dependsOn": ["^test:typecheck", "^build", "build"],
+      "outputs": []
+    },
+    "publish": {
+      "dependsOn": ["build", "test:typecheck"],
+      "outputs": []
+    },
+    "dev": {
+      "cache": false,
+      "dependsOn": ["^build"]
+    }
+  },
+  "globalDependencies": [
+    "tsconfig.*.json",
+    "jest.config.json",
+    ".eslintrc.json"
+  ]
+}

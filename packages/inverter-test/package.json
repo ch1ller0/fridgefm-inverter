@@ -18,5 +18,8 @@
   "dependencies": {
     "@fridgefm/inverter": "0.2.4"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  }
 }

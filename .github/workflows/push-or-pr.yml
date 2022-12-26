@@ -6,8 +6,7 @@ on:
     branches:
     - main
 
-name: Build, Test and maybe Publish
-# TODO fix all this 
+name: Build and Test
 
 jobs:
   test:
@@ -31,9 +30,11 @@ jobs:
     - name: Install deps
       if: steps.cache-modules.outputs.cache-hit != 'true'
       run: yarn install
+    - name: Building packages
+      run: yarn build
     - name: Unit test
       run: yarn test:unit
     - name: ESLint
       run: yarn test:lint
-    - name: Types test
-      run: yarn test:types
+    - name: Type checking
+      run: yarn test:typecheck

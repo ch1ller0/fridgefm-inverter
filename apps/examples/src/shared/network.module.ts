@@ -1,33 +1,14 @@
-import { networkInterfaces } from 'os';
+import { networkInterfaces, type NetworkInterfaceInfo } from 'os';
 import { createModule, injectable, createToken } from '@fridgefm/inverter';
-import type { NetworkInterfaceInfo } from 'os';
-
-const INTERFACE_TYPES = [
-  'lo0',
-  'lo0',
-  'lo0',
-  'anpi1',
-  'anpi0',
-  'anpi2',
-  'ap1',
-  'en0',
-  'en0',
-  'en0',
-  'awdl0',
-  'llw0',
-  'utun0',
-  'utun1',
-  'utun2',
-] as const;
 
 type NetInterface = {
   address: string;
-  type: typeof INTERFACE_TYPES[number];
+  type: string; // lo, en, ...
   family: NetworkInterfaceInfo['family'];
 };
 
 const NET_SERVICE = createToken<{
-  findInterface: (query: Partial<Pick<NetInterface, 'family' | 'type'>>) => NetInterface | undefined;
+  getInternalInterface: () => NetInterface | undefined;
 }>('network:service');
 
 export const NetworkModule = createModule({
@@ -41,15 +22,8 @@ export const NetworkModule = createModule({
           .flat() as NetInterface[];
 
         return {
-          findInterface: (query) => {
-            if (!Object.keys(query).length) {
-              return undefined;
-            }
-
-            return interfaces.find((s) =>
-              Object.entries(query).reduce((acc, [key, expected]) => acc && s[key] === expected, true as boolean),
-            );
-          },
+          getInternalInterface: () =>
+            interfaces.find(({ address, family }) => address.startsWith('192.168') && family === 'IPv4'),
         };
       },
     }),

@@ -12,9 +12,9 @@ const config: Config = {
       },
     ],
   },
-  coveragePathIgnorePatterns: ['build', 'apps/examples'], // ignore coverage from examples
-  testRegex: '(test|spec)\\.[jt]sx?$',
   collectCoverageFrom: ['packages/**/*.ts', 'apps/**/*.ts'],
+  coveragePathIgnorePatterns: ['build', 'apps/examples', '__tests__'], // ignore coverage from examples
+  testRegex: '(test|spec)\\.[jt]sx?$',
   verbose: true,
   clearMocks: true,
 };

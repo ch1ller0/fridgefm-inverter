@@ -85,7 +85,7 @@ export const ServerModule = createModule({
       useFactory: (baseContainer, port, createLogger, netService) => () =>
         new Promise((resolve, reject) => {
           const logger = createLogger('server');
-          const host = netService.findInterface({ family: 'IPv4', type: 'en0' })?.address;
+          const host = netService.getInternalInterface()?.address;
           const server = new WebSocketServer({ port, host });
 
           server.on('connection', (ws) => {

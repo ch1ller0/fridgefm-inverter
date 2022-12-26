@@ -9,16 +9,11 @@ const LOGGER_GLOBAL = createToken<Logger>('logger:global');
 export const LoggerModule = createModule({
   name: 'LoggerModule',
   providers: [
-    injectable({
-      provide: LOGGER_GLOBAL,
-      useValue: pino(pinoPretty()),
-    }),
+    injectable({ provide: LOGGER_GLOBAL, useValue: pino(pinoPretty()) }),
     injectable({
       scope: 'singleton',
       provide: LOGGER_CREATE,
-      useFactory: (globalLogger) => {
-        return (name) => globalLogger.child({ name });
-      },
+      useFactory: (globalLogger) => (name) => globalLogger.child({ name }),
       inject: [LOGGER_GLOBAL] as const,
     }),
   ],

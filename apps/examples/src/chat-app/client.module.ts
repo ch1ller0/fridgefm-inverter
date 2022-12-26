@@ -37,8 +37,8 @@ export const ClientModule = createModule({
       ] as const,
       useFactory: (port, createLogger, lineRead, chatWrite, netService, remoteHost) => {
         const logger = createLogger('client');
-        const selfHost = netService.findInterface({ family: 'IPv4', type: 'en0' })?.address;
-        const host = remoteHost || selfHost || '127.0.0.1';
+        const internalNetworkHost = netService.getInternalInterface()?.address;
+        const host = remoteHost || internalNetworkHost || '127.0.0.1';
         const serverUrl = `ws://${host}:${port}`;
 
         return () => {
@@ -47,8 +47,10 @@ export const ClientModule = createModule({
           return new Promise((resolve, reject) => {
             client.on('error', (e) => reject(e));
             client.on('open', () => {
-              logger.info(`Successfully connected to the ${host === selfHost ? 'local server' : 'remote server'}`);
-              logger.info({ serverUrl, localServer: host === selfHost });
+              logger.info(
+                `Successfully connected to the ${host === internalNetworkHost ? 'local server' : 'remote server'}`,
+              );
+              logger.info({ serverUrl, localServer: host === internalNetworkHost });
               logger.info('Type any message and all other clients will see your message');
             });
             client.on('message', (raw: string) => {

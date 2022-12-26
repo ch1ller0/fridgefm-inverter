@@ -5,7 +5,7 @@ export class TokenNotProvidedError extends Error {
 
   constructor(depStack: symbol[]) {
     const descriptionStack = depStack.map((s) => `"${s.description}"`);
-    const failedTokenDescription = descriptionStack.at(descriptionStack.length - 1);
+    const failedTokenDescription = descriptionStack[descriptionStack.length - 1];
     super(`Token ${failedTokenDescription} was not provided,
   stack: ${descriptionStack.join(' -> ')}`);
     this.depStack = depStack;
@@ -18,7 +18,7 @@ export class CyclicDepError extends Error {
 
   constructor(depStack: symbol[]) {
     const descriptionStack = depStack.map((s) => `"${s.description}"`);
-    const failedTokenDescription = descriptionStack.at(descriptionStack.length - 1);
+    const failedTokenDescription = descriptionStack[descriptionStack.length - 1];
 
     super(`Cyclic dependency detected for token: ${failedTokenDescription},
   stack: ${descriptionStack.join(' -> ')}`);

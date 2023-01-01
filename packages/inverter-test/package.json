@@ -6,7 +6,15 @@
   "typings": "build/index.d.ts",
   "module": "build/index.js",
   "license": "MIT",
-  "keywords": [],
+    "keywords": [
+    "ioc",
+    "di",
+    "typescript",
+    "node",
+    "dependency injection",
+    "dependency inversion",
+    "inversion of control"
+  ],
   "files": [
     "./build/**"
   ],

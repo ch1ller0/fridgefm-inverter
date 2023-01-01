@@ -8,3 +8,5 @@ coverage
 *.tsbuildinfo
 .env
 .turbo
+
+.DS_Store

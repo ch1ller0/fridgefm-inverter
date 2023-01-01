@@ -9,8 +9,8 @@ A powerful and tiny IoC library with Typescript-first support. Lets you create _
 
 This is a monorepo that consists of several packages:
 
-- [@fridgefm/inverter](./packages/inverter/README.md) - The core part of the inverter.
-- [@fridgefm/inverter-test](./packages/inverter-test/README.md) - Testing utilities for inverter.
+- [@fridgefm/inverter](./packages/inverter/) - The core part of the inverter.
+- [@fridgefm/inverter-test](./packages/inverter-test/) - Testing utilities for inverter.
 
 ## Examples
-You can find the examples [here](./apps/examples/)
+You can find the example usage of these libraries [here](./apps/examples/)

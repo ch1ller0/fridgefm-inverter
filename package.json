@@ -12,8 +12,8 @@
     "build": "turbo run build",
     "test:lint": "eslint --ext .js,.ts -c ./.eslintrc.json .",
     "test:typecheck": "turbo run test:typecheck",
-    "test:unit": "jest -c ./jest.config.ts ./",
-    "test:unit:cov": "jest -c ./jest.config.ts --collectCoverage=true ./"
+    "test:unit:gc": "node --expose-gc ./node_modules/.bin/jest --logHeapUsage -i -c ./jest.config.ts",
+    "test:unit:cov": "yarn test:unit:gc --collectCoverage"
   },
   "devDependencies": {
     "@changesets/cli": "^2.26.0",

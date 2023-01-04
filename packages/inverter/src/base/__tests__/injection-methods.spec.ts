@@ -54,6 +54,13 @@ describe('injection-methods', () => {
       expect(res).toEqual('[1](value)');
     });
 
+    it('basic optional', async () => {
+      const [container] = createFakeContainers();
+
+      const res = await container.resolveSingle({ token: t1exp, optional: true });
+      expect(res).toEqual(undefined);
+    });
+
     it('empty factory', async () => {
       const [container] = createFakeContainers();
       fakeInjectables[0].factory(container)();
@@ -120,6 +127,15 @@ describe('injection-methods', () => {
       // @TODO add type chceking here
       const res = await Promise.all([container.resolveSingle(t1), container.resolveSingle(t2)]);
       expect(res).toEqual([100, 101]);
+    });
+
+    it('fail if incorrect injection type', () => {
+      const [container] = createFakeContainers();
+
+      expect(() => {
+        // @ts-expect-error
+        injectable({ provide: t1exp, useNothing: 1 })(container)();
+      }).toThrowError('How did you get here');
     });
   });
 });

@@ -1,7 +1,7 @@
 import { createBaseContainer } from '../container';
 import { createToken } from '../token';
 import { injectable } from '../injectable';
-import { randomString } from './utils.mock';
+import { randomString, delay } from './utils.mock';
 
 const t0 = createToken<string>('tok-0');
 const t1 = createToken<string>('tok-1');
@@ -12,7 +12,7 @@ const providers = [
   injectable({ provide: t1, useFactory: (v1) => `${v1}+${randomString()}`, scope: 'scoped', inject: [t0] }),
   injectable({
     provide: t2,
-    useFactory: (v1, v2) => `${v1}+${v2}+${randomString()}`,
+    useFactory: (v0, v1) => `${v0}+${v1}+${randomString()}`,
     scope: 'scoped',
     inject: [t0, t1],
   }),
@@ -127,5 +127,40 @@ describe('container scopes', () => {
     expect(protectedVal).toEqual('SUPER_SECRET');
   });
 
-  it.todo('child containers get garbage collected');
+  it('child containers get garbage collected', async () => {
+    const finalizationMock = jest.fn();
+    // @ts-ignore
+    const garbageRegistry = new FinalizationRegistry(finalizationMock);
+    const parentContainer = createBaseContainer();
+    const fakeServer = {
+      cb: jest.fn((v: string) => Promise.resolve(v)),
+      on: function (cb: (v: string) => void) {
+        // @ts-ignore
+        this.cb = cb;
+      },
+    };
+
+    fakeServer.on((value) => {
+      const childContainer = createBaseContainer(parentContainer);
+      providers.forEach((p) => {
+        p(childContainer)();
+      });
+      injectable({ provide: t0, useValue: value })(childContainer)();
+      garbageRegistry.register(childContainer, value, { a: 1 });
+      return childContainer.resolveSingle(t2);
+    });
+
+    const res = await Promise.all([fakeServer.cb('0'), fakeServer.cb('1'), fakeServer.cb('2')]);
+    expect(res[0].startsWith('0+0')).toEqual(true);
+    expect(res[1].startsWith('1+1')).toEqual(true);
+    expect(res[2].startsWith('2+2')).toEqual(true);
+
+    // means that the --expose-gc flag is enabled
+    if (!!global.gc) {
+      global.gc();
+      await delay(200);
+      expect(finalizationMock).toHaveBeenCalledTimes(3);
+      expect(finalizationMock.mock.calls.map((s) => s[0]).sort()).toEqual(['0', '1', '2']);
+    }
+  });
 });

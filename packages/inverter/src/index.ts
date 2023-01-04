@@ -6,7 +6,7 @@ export { exportedTokens as internalTokens } from './module/internals';
 
 export type { PublicContainer } from './module/public-container.types';
 export type { Token } from './base/token.types';
-export type { Injectable } from './base/injectable.types';
+export type { Injectable, Helper as _Helper } from './base/injectable.types';
 
 /**
  * 1 Add dependency stack

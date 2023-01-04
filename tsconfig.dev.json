@@ -1,7 +1,8 @@
 {
     "$schema": "https://json.schemastore.org/tsconfig",
     "compilerOptions": {
-        "rootDir": "./"
+        "rootDir": "./",
+        "lib": ["esnext"]
     },
     "extends": "./tsconfig.base.json",
     "include": ["packages/**/*", "apps/**/*", "jest.config.ts"],

@@ -34,14 +34,14 @@ jobs:
     - name: Install deps
       if: steps.cache-node-modules.outputs.cache-hit != 'true'
       run: npm ci
-    - name: Building packages
-      run: npm run build
-    - name: Unit testing (with GC)
-      run: npm run test:unit:gc
     - name: ESLint
       run: npm run test:lint
     - name: Type checking
       run: npm run test:typecheck
+    - name: Building packages
+      run: npm run build
+    - name: Unit testing (with GC)
+      run: npm run test:unit:gc
     - name: Create Release Pull Request or Publish to npm
       id: changesets
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'

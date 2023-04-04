@@ -11,7 +11,7 @@
     "@fridgefm/inverter": "0.2.5",
     "@fridgefm/inverter-test": "0.2.5",
     "pino": "^8.7.0",
-    "pino-pretty": "^9.1.1",
+    "pino-pretty": "^10.0.0",
     "ts-node-dev": "^2.0.0",
     "ws": "^8.11.0"
   }

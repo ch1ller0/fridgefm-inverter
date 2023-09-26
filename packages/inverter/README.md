@@ -2,7 +2,7 @@
 A powerful and tiny IoC library with Typescript-first support. Lets you create _highly scalable modular apps and libraries_.
 
 [![npm package](https://img.shields.io/npm/v/@fridgefm/inverter?style=flat-square)](https://www.npmjs.com/package/@fridgefm/inverter)
-[![minzipped size](https://img.shields.io/bundlephobia/minzip/@fridgefm/inverter?style=flat-square)](https://bundlephobia.com/package/@fridgefm/inverter)
+[![minzipped size](https://deno.bundlejs.com/?q=@fridgefm/inverter&badge=)](https://bundlejs.com/?q=%40fridgefm%2Finverter)
 [![downloads](https://img.shields.io/npm/dt/@fridgefm/inverter?style=flat-square)](https://www.npmjs.com/package/@fridgefm/inverter)
 [![open issues](https://img.shields.io/github/issues-raw/ch1ller0/fridgefm-inverter?style=flat-square)](https://github.com/ch1ller0/fridgefm-inverter/issues)
 

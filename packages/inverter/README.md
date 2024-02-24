@@ -43,33 +43,39 @@ const myToken = createToken<{ a: number }>("my:token");
 
 1. `useValue`\
     The most basic method of providing a value is `useValue`. Simply provide a value, which is assignable to `myTokens`'s interface.
-   `typescript
-const myProvider = injectable({
-    provide: myToken, 
-    useValue: { a: 1 }
-})
-`
+
+   ```typescript
+   const myProvider = injectable({
+     provide: myToken,
+     useValue: { a: 1 },
+   });
+   ```
+
 1. `useFactory`\
     Sometimes you want to generate a value and save something in the closure.
-   `typescript
-const myProvider = injectable({
-    provide: myToken, 
-    useFactory: () => {
-        // do something here if you want... It will run while constructing the provider
-        const a = Date.now()
-        return { a }
-    }
-})
-`
+
+   ```typescript
+   const myProvider = injectable({
+     provide: myToken,
+     useFactory: () => {
+       // do something here if you want... It will run while constructing the provider
+       const a = Date.now();
+       return { a };
+     },
+   });
+   ```
+
    or with depdendencies
-   `typescript
-const myProvider = injectable({
-    provide: myToken, 
+
+   ```typescript
+   const myProvider = injectable({
+     provide: myToken,
      // type is automatically inferred from all the tokens your provider depends on
-    useFactory: (num, anotherNum) => num + anotherNum + 10,
-    inject: [numberToken, anotherNumberToken] as const
-})
-`
+     useFactory: (num, anotherNum) => num + anotherNum + 10,
+     inject: [numberToken, anotherNumberToken] as const,
+   });
+   ```
+
    > `useFactory` also has a `scope` field, which you can configure. Refer to [Injection scopes](#injection-scopes) for more info
 
 ### Token modifications
@@ -154,7 +160,7 @@ injectable({
 
 ### Injection scopes
 
-Imagine we have created a bunch of conatiners: 1 parent and 2 childs:
+Imagine we have created a bunch of containers: 1 parent and 2 childs:
 
 ```typescript
 const container = createContainer({ providers });
@@ -181,42 +187,42 @@ Now the result of calling `resolveAll` depends on the `SCOPE` variable. There ar
 1. `singleton`\
    Caches the value globally for the parent and all the chilren
 
-```typescript
-const provider = injectable({
-  provide: RANDOM,
-  useFactory: () => randomString(),
-  scope: "singleton",
-});
-await resolveAll();
-//  parent           child-1          child-2
-// [5e546e, 5e546e] [5e546e, 5e546e] [5e546e, 5e546e]
-```
+   ```typescript
+   const provider = injectable({
+     provide: RANDOM,
+     useFactory: () => randomString(),
+     scope: "singleton",
+   });
+   await resolveAll();
+   //  parent           child-1          child-2
+   // [5e546e, 5e546e] [5e546e, 5e546e] [5e546e, 5e546e]
+   ```
 
 1. `scoped`\
    This is the default\
    Caches the result per-container
 
-```typescript
-const provider = injectable({
-  provide: RANDOM,
-  useFactory: () => randomString(),
-  scope: "scoped",
-});
-await resolveAll();
-//  parent           child-1          child-2
-// [b539d7, b539d7] [02176f, 02176f] [99a3e0, 99a3e0]
-```
+   ```typescript
+   const provider = injectable({
+     provide: RANDOM,
+     useFactory: () => randomString(),
+     scope: "scoped",
+   });
+   await resolveAll();
+   //  parent           child-1          child-2
+   // [b539d7, b539d7] [02176f, 02176f] [99a3e0, 99a3e0]
+   ```
 
 1. `transient`\
    Does not cache at all
 
-```typescript
-const provider = injectable({
-  provide: RANDOM,
-  useFactory: () => randomString(),
-  scope: "transient",
-});
-await resolveAll();
-//  parent           child-1          child-2
-// [e63742, 59defd] [0abb46, 5cd9a1] [690125, 227e8c]
-```
+   ```typescript
+   const provider = injectable({
+     provide: RANDOM,
+     useFactory: () => randomString(),
+     scope: "transient",
+   });
+   await resolveAll();
+   //  parent           child-1          child-2
+   // [e63742, 59defd] [0abb46, 5cd9a1] [690125, 227e8c]
+   ```

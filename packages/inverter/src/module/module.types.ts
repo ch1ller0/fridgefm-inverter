@@ -1,4 +1,4 @@
-import type { TodoAny } from '../base/util.types';
+import type { TodoAny, EmptyObj, NonNullableUnknown } from '../base/util.types';
 import type { Injectable } from '../base/injectable.types';
 import type { Token } from '../base/token.types';
 
@@ -7,7 +7,7 @@ export namespace Module {
   export type ExtensionMap = Record<string, Extension>;
   export type Exports = Record<string, Token.AnyInstance>;
 
-  export type Config<Ext extends ExtensionMap, Exp extends Exports = {}> = {
+  export type Config<Ext extends ExtensionMap, Exp extends Exports = EmptyObj> = {
     name: string;
     providers: Injectable.Instance[];
     imports?: Instance[];
@@ -15,7 +15,7 @@ export namespace Module {
     exports?: Exp;
   };
 
-  type Internal<Ext extends ExtensionMap = {}> = {
+  type Internal<Ext extends ExtensionMap = EmptyObj> = {
     /**
      * @internal
      */
@@ -40,7 +40,10 @@ export namespace Module {
     };
   };
 
-  export type Instance<Ext extends ExtensionMap = {}, Exp extends Exports = {}> = Internal<Ext> & {
+  export type Instance<
+    Ext extends ExtensionMap = NonNullableUnknown,
+    Exp extends Exports = NonNullableUnknown,
+  > = Internal<Ext> & {
     +readonly [Index in keyof Ext]: (...args: Parameters<Ext[Index]>) => Instance<Ext>;
   } & {
     exports: Exp;

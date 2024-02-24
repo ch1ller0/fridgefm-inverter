@@ -133,7 +133,6 @@ describe('injection-methods', () => {
       const [container] = createFakeContainers();
 
       expect(() => {
-        // @ts-expect-error
         injectable({ provide: t1exp, useNothing: 1 })(container)();
       }).toThrowError('How did you get here');
     });

@@ -33,7 +33,7 @@ export const multiStorageFactory = (): Storage => {
       const prevMulti = multies.get(token.symbol) || [];
       multies.set(token.symbol, prevMulti.concat({ key: injKey, func }));
     },
-    // @ts-ignore
+    // @ts-expect-error this is fine
     get: (token, stack) => {
       const items = multies.get(token.symbol);
       if (typeof items !== 'undefined') {

@@ -19,4 +19,5 @@ const config: Config = {
   clearMocks: true,
 };
 
+// eslint-disable-next-line import/no-default-export
 export default config;

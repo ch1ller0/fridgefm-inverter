@@ -32,7 +32,7 @@ export const RootModule = createModule({
               const result = handler(command, numericValues);
               write(result);
             } catch (e) {
-              // @ts-ignore
+              // @ts-expect-error trust me
               write(e.message);
             }
             recurseAsk();

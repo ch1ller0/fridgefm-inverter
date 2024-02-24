@@ -31,7 +31,7 @@ export const createModule = <Ext extends Module.ExtensionMap, Exp extends Module
       // @TODO add check for duplicating modules with different version
       ...createExtensionObject(providers),
       exports: dec.exports,
-    } as Module.Instance<Ext, Exp>);
+    }) as Module.Instance<Ext, Exp>;
 
   return createInternalModule(dec.providers);
 };

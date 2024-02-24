@@ -1,6 +1,6 @@
 {
   "extends": [
-    "airbnb-typescript/base",
+    "plugin:@typescript-eslint/strict",
     "plugin:prettier/recommended"
   ],
   "plugins": ["import", "prettier"],
@@ -26,6 +26,8 @@
     }],
     "import/extensions": 0,
     "@typescript-eslint/no-explicit-any": 2,
+    "@typescript-eslint/no-namespace": 0,
+    "@typescript-eslint/no-invalid-void-type": 0,
     "@typescript-eslint/consistent-type-imports": 2,
     "no-underscore-dangle": 0,
     "no-console": 2,

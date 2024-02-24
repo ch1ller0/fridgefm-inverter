@@ -28,7 +28,6 @@ describe('integration:shared', () => {
       en0: [{ address: '192.168.178.1', family: 'IPv4' }],
       utun2: [{ address: 'fe80::ce81:b1c:bd2c:69e', family: 'IPv6' }],
     };
-    // @ts-ignore
     jest.spyOn(os, 'networkInterfaces').mockReturnValue(networkMocks);
 
     it('ok', async () => {

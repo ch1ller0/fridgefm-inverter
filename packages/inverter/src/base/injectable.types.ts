@@ -10,15 +10,15 @@ export namespace Helper {
     ? A extends Token.Instance<infer B> & { multi: true }
       ? B[]
       : A extends Token.Instance<infer B>
-      ? B | undefined
-      : never
+        ? B | undefined
+        : never
     : T extends CfgSingleAll<infer A>
-    ? A extends Token.Instance<infer B> & { multi: true }
-      ? B[]
-      : A extends Token.Instance<infer B>
-      ? B
-      : never
-    : never;
+      ? A extends Token.Instance<infer B> & { multi: true }
+        ? B[]
+        : A extends Token.Instance<infer B>
+          ? B
+          : never
+      : never;
 
   /**
    * Tuple of passed config deps for a provider

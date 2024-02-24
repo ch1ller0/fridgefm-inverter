@@ -154,13 +154,13 @@ injectable({
 
 ### Injection scopes
 
-Imagine we have created a bunch of conatiners and
+Imagine we have created a bunch of conatiners: 1 parent and 2 childs:
 
 ```typescript
 const container = createContainer({ providers });
 const childContainers = [
-  createChildContainer({}, container),
-  createChildContainer(container),
+  createContainer({}, container),
+  createContainer({}, container),
 ];
 const allContainers = [container, ...childContainers];
 const provider = injectable({

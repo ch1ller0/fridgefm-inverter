@@ -129,13 +129,11 @@ describe('container scopes', () => {
 
   it('child containers get garbage collected', async () => {
     const finalizationMock = jest.fn();
-    // @ts-ignore
     const garbageRegistry = new FinalizationRegistry(finalizationMock);
     const parentContainer = createBaseContainer();
     const fakeServer = {
       cb: jest.fn((v: string) => Promise.resolve(v)),
       on: function (cb: (v: string) => void) {
-        // @ts-ignore
         this.cb = cb;
       },
     };

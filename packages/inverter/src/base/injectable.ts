@@ -30,10 +30,10 @@ export const injectable = <T extends Token.Instance<unknown>, D extends Helper.C
         stack?: Container.Stack,
       ): Promise<Helper.ResolvedDepTuple<I>> => {
         if (typeof cfgs === 'undefined') {
-          // @ts-ignore
+          // @ts-expect-error this is fine
           return Promise.resolve([]);
         }
-        // @ts-ignore
+        // @ts-expect-error this is fine
         return Promise.all(cfgs.map((cfg) => container.resolveSingle(cfg, stack)));
       };
 

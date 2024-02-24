@@ -57,7 +57,7 @@ export const ServerModule = createModule({
           if (parsed.type === 'message') {
             const formatted = chatStore.pushMessages(parsed.items, id);
             newSession.pushOther({ type: 'message', items: formatted });
-            scopedLogger.info(formatted[0]!.chatMessage);
+            scopedLogger.info(formatted[0]?.chatMessage);
             return;
           }
         });

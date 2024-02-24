@@ -10,6 +10,7 @@ const fnToken = createToken<Fn>('token');
 
 // such format is required because the test depending on
 // those types count on line nums and strongly bound to format
+// eslint-disable-next-line import/no-default-export
 export default [
   {
     __test_anchor: true,

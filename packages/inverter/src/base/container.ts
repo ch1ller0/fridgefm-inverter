@@ -43,7 +43,7 @@ export const createBaseContainer = (parent?: Container.Constructor): Container.C
         return Promise.resolve(token.defaultValue);
       }
       if (!!optional) {
-        // @ts-ignore
+        // @ts-expect-error this is fine
         return Promise.resolve(undefined);
       }
 

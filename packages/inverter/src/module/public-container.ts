@@ -27,16 +27,19 @@ const constructProviders = ({
   return [...moduleProviders, ...topLevelProvider];
 };
 
-export const createContainer = (cfg: PublicContainer.Configuration): PublicContainer.Instance => {
+export const createContainer = (
+  cfg: PublicContainer.Configuration,
+  parent?: PublicContainer.Instance,
+): PublicContainer.Instance => {
   cfg.events?.containerStart?.();
-  const container = createBaseContainer();
+  const container = createBaseContainer(parent?.__constructor);
   const selfProviders = constructProviders(cfg);
   const instance = {
     get: container.resolveSingle,
     __providers: selfProviders,
     __constructor: container,
   };
-  const allProviders = [...selfProviders, ...createInternalProviders(instance)];
+  const allProviders = [...(parent?.__providers ?? []), ...selfProviders, ...createInternalProviders(instance)];
 
   allProviders.forEach((singleP) => singleP(container)());
 
@@ -45,25 +48,11 @@ export const createContainer = (cfg: PublicContainer.Configuration): PublicConta
   return instance;
 };
 
+/**
+ * @deprecated
+ * use createContainer with a second argument instead
+ */
 export const createChildContainer = (
   parent: PublicContainer.Instance,
   cfg: PublicContainer.Configuration = {},
-): PublicContainer.Instance => {
-  cfg.events?.containerStart?.();
-
-  const container = createBaseContainer(parent.__constructor);
-  const selfProviders = constructProviders(cfg);
-  const instance = {
-    get: container.resolveSingle,
-    __providers: parent.__providers,
-    __constructor: container,
-  };
-
-  [...parent.__providers, ...selfProviders, ...createInternalProviders(instance)].forEach((prov) => {
-    prov(container)();
-  });
-
-  cfg.events?.containerReady?.();
-
-  return instance;
-};
+): PublicContainer.Instance => createContainer(cfg, parent);

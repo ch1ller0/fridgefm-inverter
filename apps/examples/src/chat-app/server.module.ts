@@ -1,12 +1,5 @@
 import { WebSocketServer, type WebSocket } from 'ws';
-import {
-  createModule,
-  createToken,
-  injectable,
-  createChildContainer,
-  internalTokens,
-  type Token,
-} from '@fridgefm/inverter';
+import { createModule, createToken, injectable, createContainer, internalTokens, type Token } from '@fridgefm/inverter';
 import { LoggerModule, NetworkModule } from '../shared';
 import { ChatModule } from './chat.module';
 import { ClientModule } from './client.module';
@@ -89,9 +82,12 @@ export const ServerModule = createModule({
           const server = new WebSocketServer({ port, host });
 
           server.on('connection', (ws) => {
-            return createChildContainer(baseContainer, {
-              providers: [injectable({ provide: SCOPED_WS, useValue: ws })],
-            }).get(SESSION_ROOT);
+            return createContainer(
+              {
+                providers: [injectable({ provide: SCOPED_WS, useValue: ws })],
+              },
+              baseContainer,
+            ).get(SESSION_ROOT);
           });
 
           server.on('listening', () => {

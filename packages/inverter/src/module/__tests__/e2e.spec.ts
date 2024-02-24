@@ -1,4 +1,4 @@
-import { createToken, createContainer, createChildContainer, injectable, modifyToken } from '../../index';
+import { createToken, createContainer, injectable, modifyToken } from '../../index';
 import { randomString } from '../../base/__tests__/utils.mock';
 import { createModule } from '../module';
 
@@ -18,11 +18,14 @@ const getUniqueValues = (arr: (string | number)[]) => [...new Set(arr)];
 
 describe('e2e', () => {
   it('different scopes', async () => {
-    const container = createContainer({ providers });
+    const parentContainer = createContainer({ providers });
     const createScope = async (req: string) => {
-      const childContainer = createChildContainer(container, {
-        providers: [injectable({ provide: STRING, useValue: req })],
-      });
+      const childContainer = createContainer(
+        {
+          providers: [injectable({ provide: STRING, useValue: req })],
+        },
+        parentContainer,
+      );
       const [singletons, scopeds, transients] = await Promise.all([
         Promise.all([childContainer.get(RANDOM_SINGLETON), childContainer.get(RANDOM_SINGLETON)]),
         Promise.all([childContainer.get(RANDOM_SCOPED), childContainer.get(RANDOM_SCOPED)]),
@@ -33,9 +36,9 @@ describe('e2e', () => {
     };
 
     const fromParent = {
-      singletons: await Promise.all([container.get(RANDOM_SINGLETON), container.get(RANDOM_SINGLETON)]),
-      scopeds: await Promise.all([container.get(RANDOM_SCOPED), container.get(RANDOM_SCOPED)]),
-      transients: await Promise.all([container.get(RANDOM_TRANSIENT), container.get(RANDOM_TRANSIENT)]),
+      singletons: await Promise.all([parentContainer.get(RANDOM_SINGLETON), parentContainer.get(RANDOM_SINGLETON)]),
+      scopeds: await Promise.all([parentContainer.get(RANDOM_SCOPED), parentContainer.get(RANDOM_SCOPED)]),
+      transients: await Promise.all([parentContainer.get(RANDOM_TRANSIENT), parentContainer.get(RANDOM_TRANSIENT)]),
     };
     const fromChildren = await Promise.all([createScope('first'), createScope('second')]);
 
@@ -127,10 +130,10 @@ describe('e2e', () => {
           injectable({ provide: STRING, useFactory: randomString, scope: 'transient' }),
         ],
       });
-      const container = createContainer({ modules: [mod, mod, mod] });
-      const childContainer = createChildContainer(container, { modules: [mod, mod, mod] });
+      const parentContainer = createContainer({ modules: [mod, mod, mod] });
+      const childContainer = createContainer({ modules: [mod, mod, mod] }, parentContainer);
 
-      const par = [await container.get(STRING), await container.get(STRING)];
+      const par = [await parentContainer.get(STRING), await parentContainer.get(STRING)];
       const chi = [await childContainer.get(STRING), await childContainer.get(STRING)];
       // all the values are unique
       expect(getUniqueValues([...chi, ...par])).toEqual([...chi, ...par]);
@@ -145,11 +148,11 @@ describe('e2e', () => {
           injectable({ provide: STRING_MULTI, useFactory: randomString, scope: 'transient' }),
         ],
       });
-      const container = createContainer({ modules: [mod, mod] });
-      const child1 = createChildContainer(container, { modules: [] });
-      const child2 = createChildContainer(container, { modules: [] });
+      const parentContainer = createContainer({ modules: [mod, mod] });
+      const child1 = createContainer({ modules: [] }, parentContainer);
+      const child2 = createContainer({ modules: [] }, parentContainer);
       const res = await Promise.all(
-        [container, child1, child2].map((c) =>
+        [parentContainer, child1, child2].map((c) =>
           Promise.all([c.get(STRING_MULTI), c.get(STRING_MULTI), c.get(STRING_MULTI)]),
         ),
       );

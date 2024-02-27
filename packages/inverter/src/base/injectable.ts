@@ -65,6 +65,6 @@ export const injectable = <T extends Token.Instance<unknown>, D extends Helper.C
       };
     }
 
-    throw new Error('How did you get here');
+    throw new Error('Incorrect args passed to injectable factory');
   };
 };

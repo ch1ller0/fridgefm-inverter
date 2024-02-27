@@ -28,15 +28,15 @@ export const createBaseContainer = (parent?: Container.Constructor): Container.C
         throw new CyclicDepError([...stack, token].map((s) => s.symbol));
       }
 
-      const promiseFound = storage.get(token, stack);
-      if (promiseFound === NOT_FOUND_SYMBOL) {
+      const resolvedValue = storage.get(token, stack);
+      if (resolvedValue === NOT_FOUND_SYMBOL) {
         if (typeof parent !== 'undefined') {
           // always search in the parent container, it is an expected behaviour by definition
           return parent.resolveSingle(cfg);
         }
       } else {
         stack.delete(token);
-        return promiseFound;
+        return resolvedValue;
       }
 
       if (typeof token.defaultValue !== 'undefined') {

@@ -1,7 +1,6 @@
 import { createBaseContainer } from '../container';
 import { createToken, modifyToken } from '../token';
 import { injectable } from '../injectable';
-import { delay } from './utils.mock';
 
 const t1exp = createToken<string>('tok:1:expect');
 const t2dep = modifyToken.multi(createToken<string>('tok:2:dependent'));
@@ -23,8 +22,8 @@ describe('depending', () => {
         injectable({ provide: t2dep, useValue: '1' }),
         injectable({ provide: t2dep, useFactory: () => '2' }),
         injectable({ provide: t2dep, useValue: '3' }),
-        injectable({ provide: t2dep, useFactory: () => delay(10).then(() => '4') }),
-        injectable({ provide: t2dep, useFactory: () => delay(1).then(() => '5') }),
+        injectable({ provide: t2dep, useFactory: () => '4' }),
+        injectable({ provide: t2dep, useFactory: () => '5' }),
       ];
       providers.forEach((f) => f(container)());
 

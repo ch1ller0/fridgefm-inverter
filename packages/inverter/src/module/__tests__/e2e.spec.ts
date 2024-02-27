@@ -19,28 +19,28 @@ const getUniqueValues = (arr: (string | number)[]) => [...new Set(arr)];
 describe('e2e', () => {
   it('different scopes', async () => {
     const parentContainer = createContainer({ providers });
-    const createScope = async (req: string) => {
+    const createScope = (req: string) => {
       const childContainer = createContainer(
         {
           providers: [injectable({ provide: STRING, useValue: req })],
         },
         parentContainer,
       );
-      const [singletons, scopeds, transients] = await Promise.all([
-        Promise.all([childContainer.get(RANDOM_SINGLETON), childContainer.get(RANDOM_SINGLETON)]),
-        Promise.all([childContainer.get(RANDOM_SCOPED), childContainer.get(RANDOM_SCOPED)]),
-        Promise.all([childContainer.get(RANDOM_TRANSIENT), childContainer.get(RANDOM_TRANSIENT)]),
-      ]);
+      const [singletons, scopeds, transients] = [
+        [childContainer.get(RANDOM_SINGLETON), childContainer.get(RANDOM_SINGLETON)],
+        [childContainer.get(RANDOM_SCOPED), childContainer.get(RANDOM_SCOPED)],
+        [childContainer.get(RANDOM_TRANSIENT), childContainer.get(RANDOM_TRANSIENT)],
+      ];
 
       return { singletons, scopeds, transients };
     };
 
     const fromParent = {
-      singletons: await Promise.all([parentContainer.get(RANDOM_SINGLETON), parentContainer.get(RANDOM_SINGLETON)]),
-      scopeds: await Promise.all([parentContainer.get(RANDOM_SCOPED), parentContainer.get(RANDOM_SCOPED)]),
-      transients: await Promise.all([parentContainer.get(RANDOM_TRANSIENT), parentContainer.get(RANDOM_TRANSIENT)]),
+      singletons: [parentContainer.get(RANDOM_SINGLETON), parentContainer.get(RANDOM_SINGLETON)],
+      scopeds: [parentContainer.get(RANDOM_SCOPED), parentContainer.get(RANDOM_SCOPED)],
+      transients: [parentContainer.get(RANDOM_TRANSIENT), parentContainer.get(RANDOM_TRANSIENT)],
     };
-    const fromChildren = await Promise.all([createScope('first'), createScope('second')]);
+    const fromChildren = [createScope('first'), createScope('second')];
 
     // singletons are the same between different resolves
     expect(fromParent.singletons[0]).toEqual(fromParent.singletons[1]);
@@ -151,11 +151,11 @@ describe('e2e', () => {
       const parentContainer = createContainer({ modules: [mod, mod] });
       const child1 = createContainer({ modules: [] }, parentContainer);
       const child2 = createContainer({ modules: [] }, parentContainer);
-      const res = await Promise.all(
-        [parentContainer, child1, child2].map((c) =>
-          Promise.all([c.get(STRING_MULTI), c.get(STRING_MULTI), c.get(STRING_MULTI)]),
-        ),
-      );
+      const res = [parentContainer, child1, child2].map((c) => [
+        c.get(STRING_MULTI),
+        c.get(STRING_MULTI),
+        c.get(STRING_MULTI),
+      ]);
 
       // [container, callNo, scope]
       expect(getUniqueValues([res[0][0][0], res[0][1][0], res[0][2][0]])).toEqual([res[0][0][0]]);

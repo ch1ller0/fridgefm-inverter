@@ -132,7 +132,7 @@ describe('container scopes', () => {
     const garbageRegistry = new FinalizationRegistry(finalizationMock);
     const parentContainer = createBaseContainer();
     const fakeServer = {
-      cb: jest.fn((v: string) => Promise.resolve(v)),
+      cb: jest.fn((v: string) => v),
       on: function (cb: (v: string) => void) {
         this.cb = cb;
       },
@@ -148,7 +148,7 @@ describe('container scopes', () => {
       return childContainer.resolveSingle(t2);
     });
 
-    const res = await Promise.all([fakeServer.cb('0'), fakeServer.cb('1'), fakeServer.cb('2')]);
+    const res = [fakeServer.cb('0'), fakeServer.cb('1'), fakeServer.cb('2')];
     expect(res[0].startsWith('0+0')).toEqual(true);
     expect(res[1].startsWith('1+1')).toEqual(true);
     expect(res[2].startsWith('2+2')).toEqual(true);

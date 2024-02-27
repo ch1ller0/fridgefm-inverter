@@ -12,10 +12,9 @@ const moduleRef = Test.createTestingContainer({
 describe('integration:shared', () => {
   describe('LoggerModule', () => {
     it('child', async () => {
-      await moduleRef
-        .compile()
-        .get(LOGGER_CREATE)
-        .then((createChild) => createChild('fake-name'));
+      const createChild = moduleRef.compile().get(LOGGER_CREATE);
+
+      createChild('fake-name');
 
       expect(mocks.loggerGlobal.child).toHaveBeenCalledTimes(1);
       expect(mocks.loggerGlobal.child).toHaveBeenLastCalledWith({ name: 'fake-name' });

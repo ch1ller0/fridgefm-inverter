@@ -28,7 +28,7 @@ export namespace Helper {
   /**
    * Tuple of token declaration provided value types
    */
-  export type ResolvedDepSingle<T extends CfgSingleAll<TodoAny>> = Awaited<CfgProvide<T>>;
+  export type ResolvedDepSingle<T extends CfgSingleAll<TodoAny>> = CfgProvide<T>;
   export type ResolvedDepTuple<T extends CfgTuple> = {
     +readonly [Index in keyof T]: ResolvedDepSingle<T[Index]>;
   };
@@ -76,13 +76,13 @@ namespace ProviderConfig {
     useValue?: never;
   };
   export type AsyncEmptyFactory<T extends Token.Instance<unknown>> = {
-    useFactory: () => Promise<Token.Provide<T>>;
+    useFactory: () => Token.Provide<T>;
     scope?: Factory.Options['scope'];
     inject?: never;
     useValue?: never;
   };
   export type AsyncDependingFactory<T extends Token.Instance<unknown>, D extends Helper.CfgTuple = Helper.CfgTuple> = {
-    useFactory: (...deps: Helper.ResolvedDepTuple<D>) => Promise<Token.Provide<T>>;
+    useFactory: (...deps: Helper.ResolvedDepTuple<D>) => Token.Provide<T>;
     scope?: Factory.Options['scope'];
     inject: D;
     useValue?: never;

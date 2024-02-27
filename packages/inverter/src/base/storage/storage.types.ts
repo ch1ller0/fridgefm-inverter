@@ -12,5 +12,5 @@ export type Storage = {
   get: <I extends Token.AnyInstance>(
     token: I,
     stack: Container.Stack,
-  ) => Promise<Helper.ResolvedDepSingle<I>> | typeof NOT_FOUND_SYMBOL;
+  ) => Helper.ResolvedDepSingle<I> | typeof NOT_FOUND_SYMBOL;
 };

@@ -5,10 +5,10 @@ import type { Container } from '../container.types';
 
 type Item<T> = { key: symbol } & (
   | {
-      func: (stack: Container.Stack) => Promise<T>;
+      func: (stack: Container.Stack) => T;
     }
   | {
-      value: Promise<T>;
+      value: T;
     }
 );
 
@@ -37,7 +37,7 @@ export const multiStorageFactory = (): Storage => {
     get: (token, stack) => {
       const items = multies.get(token.symbol);
       if (typeof items !== 'undefined') {
-        return Promise.all(items.map((s) => ('func' in s ? s.func(stack) : Promise.resolve(s.value))));
+        return items.map((s) => ('func' in s ? s.func(stack) : s.value));
       }
 
       return NOT_FOUND_SYMBOL;

@@ -22,7 +22,7 @@ export const createBaseContainer = (parent?: Container.Constructor): Container.C
     resolveSingle: <I extends Helper.CfgElement>(
       cfg: I,
       stack: Container.Stack = new Set(),
-    ): Promise<Helper.ResolvedDepSingle<I>> => {
+    ): Helper.ResolvedDepSingle<I> => {
       const { token, optional } = unwrapCfg(cfg);
       if (stack.has(token)) {
         throw new CyclicDepError([...stack, token].map((s) => s.symbol));
@@ -40,14 +40,13 @@ export const createBaseContainer = (parent?: Container.Constructor): Container.C
       }
 
       if (typeof token.defaultValue !== 'undefined') {
-        return Promise.resolve(token.defaultValue);
+        return token.defaultValue;
       }
       if (!!optional) {
-        // @ts-expect-error this is fine
-        return Promise.resolve(undefined);
+        return undefined;
       }
 
-      return Promise.reject(new TokenNotProvidedError([...stack, token].map((s) => s.symbol)));
+      throw new TokenNotProvidedError([...stack, token].map((s) => s.symbol));
     },
     parent,
   };

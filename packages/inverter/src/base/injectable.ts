@@ -1,4 +1,3 @@
-import type { Container } from './container.types';
 import type { Token } from './token.types';
 import type { Injectable, Helper } from './injectable.types';
 
@@ -25,16 +24,6 @@ export const injectable = <T extends Token.Instance<unknown>, D extends Helper.C
         return () => {};
       }
 
-      const resolveMany = <I extends Helper.CfgTuple>(
-        cfgs?: I,
-        stack?: Container.Stack,
-      ): Helper.ResolvedDepTuple<I> => {
-        if (typeof cfgs === 'undefined') {
-          return [];
-        }
-        return cfgs.map((cfg) => container.resolveSingle(cfg, stack));
-      };
-
       if (scope === 'transient') {
         return () => {
           // run factory on each injection and recollect deps on global level
@@ -43,7 +32,7 @@ export const injectable = <T extends Token.Instance<unknown>, D extends Helper.C
             injKey,
             func: (stack) => {
               stack.add(provide);
-              const resolvedDeps = resolveMany(inject, stack);
+              const resolvedDeps = container.resolveMany(inject, stack);
               return useFactory(...resolvedDeps);
             },
           });
@@ -56,7 +45,7 @@ export const injectable = <T extends Token.Instance<unknown>, D extends Helper.C
           injKey,
           func: (stack) => {
             stack.add(provide);
-            const resolvedDeps = resolveMany(inject, stack);
+            const resolvedDeps = container.resolveMany(inject, stack);
             const value = useFactory(...resolvedDeps);
             container.binders.bindValue({ token: provide, value, injKey });
             return value;

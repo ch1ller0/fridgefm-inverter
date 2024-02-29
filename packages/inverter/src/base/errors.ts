@@ -1,9 +1,11 @@
 import type { Token } from './token.types';
 
-export class TokenNotProvidedError extends Error {
-  depStack: Readonly<symbol[]>;
+type DepStack = Readonly<symbol[]>;
 
-  constructor(depStack: symbol[]) {
+export class TokenNotProvidedError extends Error {
+  depStack: DepStack;
+
+  constructor(depStack: DepStack) {
     const descriptionStack = depStack.map((s) => `"${s.description}"`);
     const failedTokenDescription = descriptionStack[descriptionStack.length - 1];
     super(`Token ${failedTokenDescription} was not provided,
@@ -14,9 +16,9 @@ export class TokenNotProvidedError extends Error {
 }
 
 export class CyclicDepError extends Error {
-  depStack: Readonly<symbol[]>;
+  depStack: DepStack;
 
-  constructor(depStack: symbol[]) {
+  constructor(depStack: DepStack) {
     const descriptionStack = depStack.map((s) => `"${s.description}"`);
     const failedTokenDescription = descriptionStack[descriptionStack.length - 1];
 

@@ -1,10 +1,16 @@
 import { NOT_FOUND_SYMBOL } from './injectable';
 import { TokenNotProvidedError, CyclicDepError } from './errors';
 import { createStorage } from './storage/index';
+import type { Token } from './token.types';
 import type { Container } from './container.types';
 import type { Helper } from './injectable.types';
 
-const unwrapCfg = <T>(cfg: Helper.CfgElement<T>) => {
+const unwrapCfg = <T>(
+  cfg: Helper.CfgElement<T>,
+): {
+  token: Token.Instance<T>;
+  optional: boolean;
+} => {
   if ('token' in cfg) {
     return cfg;
   }
@@ -43,10 +49,18 @@ export const createBaseContainer = (parent?: Container.Constructor): Container.C
         return token.defaultValue;
       }
       if (!!optional) {
+        // @ts-expect-error it is fine
         return undefined;
       }
 
       throw new TokenNotProvidedError([...stack, token].map((s) => s.symbol));
+    },
+    resolveMany: <I extends Helper.CfgTuple>(cfgs?: I, stack?: Container.Stack): Helper.ResolvedDepTuple<I> => {
+      if (typeof cfgs === 'undefined') {
+        return [] as Helper.ResolvedDepTuple<I>;
+      }
+      // @ts-expect-error the type is even wider
+      return cfgs.map((cfg) => instance.resolveSingle(cfg, stack));
     },
     parent,
   };

@@ -4,7 +4,7 @@
   "description": "Examples",
   "private": true,
   "scripts": {
-    "dev": "tsx watch",
+    "dev": "tsx",
     "test:typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

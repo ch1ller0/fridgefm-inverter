@@ -22,10 +22,10 @@ const config: PublicContainer.Configuration = {
   ],
 };
 
-export const rootContainer = createContainer(config);
-
-rootContainer.get(ROOT).catch((e) => {
+try {
+  createContainer(config).get(ROOT);
+} catch (e) {
   // eslint-disable-next-line no-console
   console.error(e);
   process.exit(1);
-});
+}

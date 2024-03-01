@@ -1,5 +1,13 @@
 # @fridgefm/inverter-test
 
+## 0.3.0
+
+### Patch Changes
+
+- Updated dependencies [588ce64]
+- Updated dependencies [ca44129]
+  - @fridgefm/inverter@0.3.0
+
 ## 0.2.5
 
 ### Patch Changes

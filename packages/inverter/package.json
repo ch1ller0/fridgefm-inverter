@@ -1,6 +1,6 @@
 {
   "name": "@fridgefm/inverter",
-  "version": "0.2.5",
+  "version": "0.3.0",
   "description": "Inversion of control library",
   "main": "build/index.js",
   "typings": "build/index.d.ts",

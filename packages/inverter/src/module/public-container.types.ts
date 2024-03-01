@@ -30,7 +30,6 @@ export namespace PublicContainer {
     modules?: Module.Instance[];
     providers?: Injectable.Instance[];
     events?: Events;
-    mode?: 'sync' | 'async';
   };
 
   export type Instance = {

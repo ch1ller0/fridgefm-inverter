@@ -111,20 +111,21 @@ describe('injection-methods', () => {
   });
 
   describe('edge cases', () => {
-    it('type is correct when resolveing promises', async () => {
+    it('type is correct when resolving promises', async () => {
       const [container] = createFakeContainers();
       const t1 = createToken<Promise<number>>('tok:1:promise');
-      const t2 = createToken<number>('tok:2:promise');
+      const t2 = createToken<Promise<number>>('tok:2:promise');
 
       injectable({
         provide: t2,
-        useFactory: (a) => delay(10).then(() => a + 1),
+        useFactory: (a) =>
+          a.then((val) => {
+            return delay(10).then(() => val + 1);
+          }),
         inject: [t1],
       })(container)();
       injectable({ provide: t1, useValue: delay(50).then(() => 100) })(container)();
 
-      // should be numbers array here, not promises
-      // @TODO add type chceking here
       const res = await Promise.all([container.resolveSingle(t1), container.resolveSingle(t2)]);
       expect(res).toEqual([100, 101]);
     });
@@ -134,7 +135,7 @@ describe('injection-methods', () => {
 
       expect(() => {
         injectable({ provide: t1exp, useNothing: 1 })(container)();
-      }).toThrowError('How did you get here');
+      }).toThrow('Incorrect args passed to injectable factory');
     });
   });
 });

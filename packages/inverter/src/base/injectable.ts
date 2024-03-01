@@ -1,4 +1,3 @@
-import type { Container } from './container.types';
 import type { Token } from './token.types';
 import type { Injectable, Helper } from './injectable.types';
 
@@ -14,7 +13,7 @@ export const injectable = <T extends Token.Instance<unknown>, D extends Helper.C
     if (typeof args.useValue !== 'undefined') {
       const { useValue, provide } = args;
       return () => {
-        container.binders.bindValue({ token: provide, value: Promise.resolve(useValue), injKey });
+        container.binders.bindValue({ token: provide, value: useValue, injKey });
       };
     }
 
@@ -25,18 +24,6 @@ export const injectable = <T extends Token.Instance<unknown>, D extends Helper.C
         return () => {};
       }
 
-      const resolveMany = <I extends Helper.CfgTuple>(
-        cfgs?: I,
-        stack?: Container.Stack,
-      ): Promise<Helper.ResolvedDepTuple<I>> => {
-        if (typeof cfgs === 'undefined') {
-          // @ts-expect-error this is fine
-          return Promise.resolve([]);
-        }
-        // @ts-expect-error this is fine
-        return Promise.all(cfgs.map((cfg) => container.resolveSingle(cfg, stack)));
-      };
-
       if (scope === 'transient') {
         return () => {
           // run factory on each injection and recollect deps on global level
@@ -45,7 +32,8 @@ export const injectable = <T extends Token.Instance<unknown>, D extends Helper.C
             injKey,
             func: (stack) => {
               stack.add(provide);
-              return resolveMany(inject, stack).then((resolvedDeps) => useFactory(...resolvedDeps));
+              const resolvedDeps = container.resolveMany(inject, stack);
+              return useFactory(...resolvedDeps);
             },
           });
         };
@@ -57,14 +45,15 @@ export const injectable = <T extends Token.Instance<unknown>, D extends Helper.C
           injKey,
           func: (stack) => {
             stack.add(provide);
-            const promise = resolveMany(inject, stack).then((resolvedDeps) => useFactory(...resolvedDeps));
-            container.binders.bindValue({ token: provide, value: promise, injKey });
-            return promise;
+            const resolvedDeps = container.resolveMany(inject, stack);
+            const value = useFactory(...resolvedDeps);
+            container.binders.bindValue({ token: provide, value, injKey });
+            return value;
           },
         });
       };
     }
 
-    throw new Error('How did you get here');
+    throw new Error('Incorrect args passed to injectable factory');
   };
 };

@@ -47,12 +47,3 @@ export const createContainer = (
 
   return instance;
 };
-
-/**
- * @deprecated
- * use createContainer with a second argument instead
- */
-export const createChildContainer = (
-  parent: PublicContainer.Instance,
-  cfg: PublicContainer.Configuration = {},
-): PublicContainer.Instance => createContainer(cfg, parent);

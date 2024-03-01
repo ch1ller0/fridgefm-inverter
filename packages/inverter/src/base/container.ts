@@ -1,10 +1,16 @@
 import { NOT_FOUND_SYMBOL } from './injectable';
 import { TokenNotProvidedError, CyclicDepError } from './errors';
 import { createStorage } from './storage/index';
+import type { Token } from './token.types';
 import type { Container } from './container.types';
 import type { Helper } from './injectable.types';
 
-const unwrapCfg = <T>(cfg: Helper.CfgElement<T>) => {
+const unwrapCfg = <T>(
+  cfg: Helper.CfgElement<T>,
+): {
+  token: Token.Instance<T>;
+  optional: boolean;
+} => {
   if ('token' in cfg) {
     return cfg;
   }
@@ -22,32 +28,39 @@ export const createBaseContainer = (parent?: Container.Constructor): Container.C
     resolveSingle: <I extends Helper.CfgElement>(
       cfg: I,
       stack: Container.Stack = new Set(),
-    ): Promise<Helper.ResolvedDepSingle<I>> => {
+    ): Helper.ResolvedDepSingle<I> => {
       const { token, optional } = unwrapCfg(cfg);
       if (stack.has(token)) {
         throw new CyclicDepError([...stack, token].map((s) => s.symbol));
       }
 
-      const promiseFound = storage.get(token, stack);
-      if (promiseFound === NOT_FOUND_SYMBOL) {
+      const resolvedValue = storage.get(token, stack);
+      if (resolvedValue === NOT_FOUND_SYMBOL) {
         if (typeof parent !== 'undefined') {
           // always search in the parent container, it is an expected behaviour by definition
           return parent.resolveSingle(cfg);
         }
       } else {
         stack.delete(token);
-        return promiseFound;
+        return resolvedValue;
       }
 
       if (typeof token.defaultValue !== 'undefined') {
-        return Promise.resolve(token.defaultValue);
+        return token.defaultValue;
       }
       if (!!optional) {
-        // @ts-expect-error this is fine
-        return Promise.resolve(undefined);
+        // @ts-expect-error it is fine
+        return undefined;
       }
 
-      return Promise.reject(new TokenNotProvidedError([...stack, token].map((s) => s.symbol)));
+      throw new TokenNotProvidedError([...stack, token].map((s) => s.symbol));
+    },
+    resolveMany: <I extends Helper.CfgTuple>(cfgs?: I, stack?: Container.Stack): Helper.ResolvedDepTuple<I> => {
+      if (typeof cfgs === 'undefined') {
+        return [] as Helper.ResolvedDepTuple<I>;
+      }
+      // @ts-expect-error the type is even wider
+      return cfgs.map((cfg) => instance.resolveSingle(cfg, stack));
     },
     parent,
   };

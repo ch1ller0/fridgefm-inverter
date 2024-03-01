@@ -1,4 +1,4 @@
-export { createContainer, createChildContainer } from './module/public-container';
+export { createContainer } from './module/public-container';
 export { injectable } from './base/injectable';
 export { createToken, modifyToken } from './base/token';
 export { createModule } from './module/module';

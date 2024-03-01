@@ -28,24 +28,20 @@ export namespace Helper {
   /**
    * Tuple of token declaration provided value types
    */
-  export type ResolvedDepSingle<T extends CfgSingleAll<TodoAny>> = Awaited<CfgProvide<T>>;
+  export type ResolvedDepSingle<T extends CfgSingleAll<TodoAny>> = CfgProvide<T>;
   export type ResolvedDepTuple<T extends CfgTuple> = {
     +readonly [Index in keyof T]: ResolvedDepSingle<T[Index]>;
   };
 }
 
-export namespace Factory {
-  export type Options = {
-    /**
-     * Options for factory binding.
-     * `scope` types:
-     *   - `scoped` **This is the default**. - Value is created and cached by the container which starts resolving.
-     *   - `singleton` - Value is created and cached by the parent container if present.
-     *   - `transient` - Value is recreated every time it is injected.
-     */
-    scope?: 'singleton' | 'scoped' | 'transient';
-  };
-}
+/**
+ * Options for factory binding.
+ * `scope` types:
+ *   - `scoped` **This is the default**. - Value is created and cached by the container which starts resolving.
+ *   - `singleton` - Value is created and cached by the parent container if present.
+ *   - `transient` - Value is recreated every time it is injected.
+ */
+type Scope = 'singleton' | 'scoped' | 'transient';
 
 namespace ProviderConfig {
   export type Value<T extends Token.Instance<unknown>> = {
@@ -62,7 +58,7 @@ namespace ProviderConfig {
      * Type of injection which runs the factory with empty dependencies and caches it based on the `scope` value.
      */
     useFactory: () => Token.Provide<T>;
-    scope?: Factory.Options['scope'];
+    scope?: Scope;
     inject?: never;
     useValue?: never;
   };
@@ -71,19 +67,7 @@ namespace ProviderConfig {
      * Type of injection which runs the factory with dependencies and caches it based on the `scope` value.
      */
     useFactory: (...deps: Helper.ResolvedDepTuple<D>) => Token.Provide<T>;
-    scope?: Factory.Options['scope'];
-    inject: D;
-    useValue?: never;
-  };
-  export type AsyncEmptyFactory<T extends Token.Instance<unknown>> = {
-    useFactory: () => Promise<Token.Provide<T>>;
-    scope?: Factory.Options['scope'];
-    inject?: never;
-    useValue?: never;
-  };
-  export type AsyncDependingFactory<T extends Token.Instance<unknown>, D extends Helper.CfgTuple = Helper.CfgTuple> = {
-    useFactory: (...deps: Helper.ResolvedDepTuple<D>) => Promise<Token.Provide<T>>;
-    scope?: Factory.Options['scope'];
+    scope?: Scope;
     inject: D;
     useValue?: never;
   };
@@ -100,8 +84,6 @@ export namespace Injectable {
     | ProviderConfig.Value<T>
     | ProviderConfig.EmptyFactory<T>
     | ProviderConfig.DependingFactory<T, D>
-    | ProviderConfig.AsyncEmptyFactory<T>
-    | ProviderConfig.AsyncDependingFactory<T, D>
   );
 
   /**

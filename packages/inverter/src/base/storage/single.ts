@@ -4,8 +4,8 @@ import type { TodoAny } from '../util.types';
 import type { Container } from '../container.types';
 
 export const singleStorageFactory = (): Storage => {
-  const values = new Map<symbol, Promise<TodoAny>>();
-  const factories = new Map<symbol, (stack: Container.Stack) => Promise<TodoAny>>();
+  const values = new Map<symbol, TodoAny>();
+  const factories = new Map<symbol, (stack: Container.Stack) => TodoAny>();
 
   return {
     bindValue: ({ token, value }) => {
